@@ -4,7 +4,7 @@ import Foundation
 /// Information about a single stop (GTFS-compliant)
 public extension Foli {
     
-    struct Stop: Codable, Sendable, Identifiable {
+    struct Stop: Codable, Sendable, Identifiable, Equatable {
         /// The unique identifier for the stop (GTFS `stop_id`)
         public let id: String
         /// The human-readable name of the stop (GTFS `stop_name`)
@@ -86,6 +86,16 @@ public extension Foli {
 // MARK: - Stop List Response
 /// Response containing all known stops (GTFS stops.txt)
 public struct FoliStopList: Codable {
+    
+    /// Private helper struct to decode the API response format where lat/lon are numbers
+    private struct APIStopData: Decodable {
+        let stop_name: String
+        let stop_code: String?
+        let stop_lat: Double?
+        let stop_lon: Double?
+        let zone_id: String?
+    }
+    
     /// Array of all stops
     public let stops: [Foli.Stop]
     
@@ -94,18 +104,19 @@ public struct FoliStopList: Codable {
     }
     
     /// Helper to decode the top-level dictionary as an array of stops with IDs
+    /// Handles numeric values for stop_lat and stop_lon from the API
     public init(from decoder: Decoder) throws {
         let container = try decoder.singleValueContainer()
-        let dictionary = try container.decode([String: [String: String]].self)
+        let dictionary = try container.decode([String: APIStopData].self)
         
         self.stops = dictionary.map { (id, stopData) in
             Foli.Stop(
                 id: id,
-                stopName: stopData["stop_name"] ?? "",
-                stopCode: stopData["stop_code"],
-                stopLat: stopData["stop_lat"].flatMap { Double($0) },
-                stopLon: stopData["stop_lon"].flatMap { Double($0) },
-                zoneId: stopData["zone_id"]
+                stopName: stopData.stop_name,
+                stopCode: stopData.stop_code,
+                stopLat: stopData.stop_lat,
+                stopLon: stopData.stop_lon,
+                zoneId: stopData.zone_id
             )
         }.sorted { $0.id < $1.id }
     }

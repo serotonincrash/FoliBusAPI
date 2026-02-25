@@ -12,6 +12,7 @@ public struct FoliStops: DynamicProperty, Sendable {
     @State private var error: Foli.APIError?
     
     private let client: FoliClient
+    @State private var _needsRefresh = true
     
     /// Create a new FoliStops property wrapper
     /// - Parameter client: The FoliClient to use (defaults to shared)
@@ -21,7 +22,15 @@ public struct FoliStops: DynamicProperty, Sendable {
     
     /// The wrapped value - the array of all stops
     public var wrappedValue: [Foli.Stop] {
-        get { stops }
+        get {
+            if _needsRefresh {
+                _needsRefresh = false
+                Task { @MainActor in
+                    self.refresh()
+                }
+            }
+            return stops
+        }
         nonmutating set { stops = newValue }
     }
     
