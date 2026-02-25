@@ -12,6 +12,7 @@ public struct FoliRoutes: DynamicProperty, Sendable {
     @State private var error: Foli.APIError?
     
     private let client: FoliClient
+    @State private var _needsRefresh = true
     
     /// Create a new FoliRoutes property wrapper
     /// - Parameter client: The FoliClient to use (defaults to shared)
@@ -21,7 +22,15 @@ public struct FoliRoutes: DynamicProperty, Sendable {
     
     /// The wrapped value - the array of all routes
     public var wrappedValue: [Foli.Route] {
-        get { routes }
+        get {
+            if _needsRefresh {
+                _needsRefresh = false
+                Task { @MainActor in
+                    self.refresh()
+                }
+            }
+            return routes
+        }
         nonmutating set { routes = newValue }
     }
     
@@ -75,27 +84,12 @@ public struct FoliRoutesProjection: Sendable {
         routes.wrappedValue.sorted { $0.shortName < $1.shortName }
     }
     
-    /// Get routes sorted by long name
-    public var sortedByLongName: [Foli.Route] {
-        routes.wrappedValue.sorted { $0.longName < $1.longName }
-    }
-    
     /// Get routes sorted by ID
     public var sortedById: [Foli.Route] {
         routes.wrappedValue.sorted { $0.id < $1.id }
     }
     
-    /// Get only bus routes
-    public var busRoutes: [Foli.Route] {
-        routes.wrappedValue.filter { $0.isBus }.sorted { $0.shortName < $1.shortName }
-    }
-    
-    /// Get only tram routes
-    public var tramRoutes: [Foli.Route] {
-        routes.wrappedValue.filter { $0.isTram }.sorted { $0.shortName < $1.shortName }
-    }
-    
-    /// Search for routes by name, short name, or ID
+    /// Search for routes by short name, long name, or ID
     /// - Parameter query: The search query
     /// - Returns: Array of matching routes sorted by short name
     public func search(query: String) -> [Foli.Route] {
