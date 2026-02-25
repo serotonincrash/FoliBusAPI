@@ -14,6 +14,7 @@ public struct FoliStop: DynamicProperty, Sendable {
     private let stopId: String
     private let client: FoliClient
     private let refreshInterval: TimeInterval?
+    @State private var _needsRefresh = true
     
     /// Create a new FoliStop property wrapper
     /// - Parameters:
@@ -47,7 +48,18 @@ public struct FoliStop: DynamicProperty, Sendable {
     
     /// The wrapped value - the array of arrivals at the monitored stop
     public var wrappedValue: [Foli.Arrival] {
-        get { arrivals }
+        get {
+            if _needsRefresh {
+                _needsRefresh = false
+                Task { @MainActor in
+                    self.refresh()
+                    if let refreshInterval = self.refreshInterval {
+                        self.startAutoRefresh()
+                    }
+                }
+            }
+            return arrivals
+        }
         nonmutating set { arrivals = newValue }
     }
     

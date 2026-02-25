@@ -14,6 +14,7 @@ public struct FoliRoute: DynamicProperty, Sendable {
     private let routeId: String
     private let client: FoliClient
     private let refreshInterval: TimeInterval?
+    @State private var _needsRefresh = true
     
     /// Create a new FoliRoute property wrapper
     /// - Parameters:
@@ -32,7 +33,18 @@ public struct FoliRoute: DynamicProperty, Sendable {
     
     /// The wrapped value - the route data
     public var wrappedValue: Foli.Route? {
-        get { route }
+        get {
+            if _needsRefresh {
+                _needsRefresh = false
+                Task { @MainActor in
+                    self.refresh()
+                    if let refreshInterval = self.refreshInterval {
+                        self.startAutoRefresh()
+                    }
+                }
+            }
+            return route
+        }
         nonmutating set { route = newValue }
     }
     
