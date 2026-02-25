@@ -37,3 +37,8 @@ dependencies: [
 
 ## Usage
 See USAGE.md. More
+
+## Todos 
+- Caching
+- rethink architecture - currently you can't dependency inject to retrieve arrivals using @FoliStop
+- documentation

@@ -6,6 +6,7 @@ import SwiftUI
 public extension Foli {
     
     struct Route: Codable, Sendable, Identifiable {
+        
         /// The unique identifier for the route (GTFS route_id)
         public let id: String
         /// Short name of the route (GTFS route_short_name) - often the line number
@@ -48,7 +49,7 @@ public extension Foli {
         }
         
         enum CodingKeys: String, CodingKey {
-            case id
+            case id = "route_id"
             case shortName = "route_short_name"
             case longName = "route_long_name"
             case routeDesc = "route_desc"
@@ -114,42 +115,44 @@ public struct FoliRouteList: Codable {
     public init(routes: [Foli.Route]) {
         self.routes = routes
     }
+    // MARK: - API Decoding Helper
+    /// Helper struct to decode the API response format where route_type is a number
+    struct APIRouteData: Codable {
+        let route_id: String
+        let route_short_name: String
+        let route_long_name: String
+        let route_desc: String?
+        let route_type: Int
+        let route_url: String?
+        let route_color: String?
+        let route_text_color: String?
+        let agency_id: String?
+    }
     
-    /// Helper to decode the top-level dictionary as an array of routes with IDs
+    /// Helper to decode an array of route dictionaries from the API
+    /// The API returns an array of routes with route_id as a field, not as dictionary keys
     public init(from decoder: Decoder) throws {
         let container = try decoder.singleValueContainer()
-        let dictionary = try container.decode([String: [String: String]].self)
+        let array = try container.decode([Foli.Route].self)
         
-        self.routes = dictionary.map { (id, routeData) in
-            Foli.Route(
-                id: id,
-                shortName: routeData["route_short_name"] ?? "",
-                longName: routeData["route_long_name"] ?? "",
-                routeDesc: routeData["route_desc"],
-                routeType: Int(routeData["route_type"] ?? "3") ?? 3,
-                routeUrl: routeData["route_url"],
-                routeColor: routeData["route_color"],
-                routeTextColor: routeData["route_text_color"],
-                agencyId: routeData["agency_id"]
-            )
-        }.sorted { $0.id < $1.id }
+        self.routes = array.sorted { $0.id < $1.id }
     }
     
     public func encode(to encoder: Encoder) throws {
         var container = encoder.singleValueContainer()
-        let dictionary = Dictionary(uniqueKeysWithValues: routes.map { route -> (String, [String: String]) in
-            var data: [String: String] = [
-                "route_short_name": route.shortName,
-                "route_long_name": route.longName,
-                "route_type": String(route.routeType)
-            ]
-            if let desc = route.routeDesc { data["route_desc"] = desc }
-            if let url = route.routeUrl { data["route_url"] = url }
-            if let color = route.routeColor { data["route_color"] = color }
-            if let textColor = route.routeTextColor { data["route_text_color"] = textColor }
-            if let agency = route.agencyId { data["agency_id"] = agency }
-            return (route.id, data)
-        })
-        try container.encode(dictionary)
+        let array = routes.map { route -> APIRouteData in
+            APIRouteData(
+                route_id: route.id,
+                route_short_name: route.shortName,
+                route_long_name: route.longName,
+                route_desc: route.routeDesc,
+                route_type: route.routeType,
+                route_url: route.routeUrl,
+                route_color: route.routeColor,
+                route_text_color: route.routeTextColor,
+                agency_id: route.agencyId
+            )
+        }
+        try container.encode(array)
     }
 }
