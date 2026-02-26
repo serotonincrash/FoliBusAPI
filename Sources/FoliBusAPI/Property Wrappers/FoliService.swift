@@ -61,7 +61,7 @@ public extension FoliService {
     enum ResourceState<T> {
         case idle
         case loading
-        case loaded(T)
+        case success(T)
         case error(Foli.APIError)
     }
 }
@@ -94,7 +94,7 @@ public extension FoliService {
         if isLoading {
             return .loading
         } else if let data = arrivalsData[stopId] {
-            return .loaded(data)
+            return .success(data)
         } else if let error = arrivalsErrors[stopId] {
             return .error(error)
         }
@@ -192,7 +192,7 @@ public extension FoliService {
         if stopsLoading {
             return .loading
         } else if !stopsData.isEmpty {
-            return .loaded(stopsData)
+            return .success(stopsData)
         } else if let error = stopsError {
             return .error(error)
         }
@@ -257,7 +257,7 @@ public extension FoliService {
         if isLoading {
             return .loading
         } else if let stop = stopData[stopId] {
-            return .loaded(stop)
+            return .success(stop)
         } else if let error = stopErrors[stopId] {
             return .error(error)
         }
@@ -313,7 +313,7 @@ public extension FoliService {
         if routesLoading {
             return .loading
         } else if !routesData.isEmpty {
-            return .loaded(routesData)
+            return .success(routesData)
         } else if let error = routesError {
             return .error(error)
         }
@@ -383,7 +383,7 @@ public extension FoliService {
         if isLoading {
             return .loading
         } else if let route = routeData[routeId] {
-            return .loaded(route)
+            return .success(route)
         } else if let error = routeErrors[routeId] {
             return .error(error)
         }
