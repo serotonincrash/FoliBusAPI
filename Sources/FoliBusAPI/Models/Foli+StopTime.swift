@@ -8,7 +8,8 @@
 import Foundation
 
 public extension Foli {
-    struct StopTime: Codable {
+    struct StopTime: Codable, Sendable, Identifiable, Equatable {
+        public let id = UUID()
         public let tripId: String
         public let arrivalTime: String
         public let departureTime: String
