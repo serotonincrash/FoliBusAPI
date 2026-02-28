@@ -22,7 +22,7 @@ public extension FoliService {
     /// - Parameter routeId: The route ID to fetch
     /// - Returns: The route if found
     func fetchRoute(id routeId: String) async throws -> Foli.Route {
-        guard let route = try await client.fetchRoute(byId: routeId) else {
+        guard let route = try await client.fetchRoute(forRoute: routeId) else {
             throw Foli.APIError.noData
         }
         return route
@@ -36,7 +36,7 @@ public extension FoliService {
     /// - Parameter lineRef: The line reference (e.g., "15")
     /// - Returns: Array of matching routes
     func fetchRoutes(byLineRef lineRef: String) async throws -> [Foli.Route] {
-        return try await client.fetchRoutes(byLineRef: lineRef)
+        return try await client.fetchRoutes(for: lineRef)
     }
     
 }

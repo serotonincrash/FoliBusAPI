@@ -22,7 +22,7 @@ public extension FoliService {
     /// - Parameter stopId: The stop ID to fetch
     /// - Returns: The stop if found
     func fetchStop(id stopId: String) async throws -> Foli.Stop {
-        guard let stop = try await client.fetchStop(byId: stopId) else {
+        guard let stop = try await client.fetchStop(for: stopId) else {
             throw Foli.APIError.noData
         }
         return stop
