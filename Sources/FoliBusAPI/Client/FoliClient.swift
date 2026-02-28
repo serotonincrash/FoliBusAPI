@@ -16,10 +16,26 @@ public actor FoliClient {
     /// URLSession for making network requests
     internal let session: URLSession
     
+    /// Cache for GTFS data (optional - set to enable caching)
+    internal var cache: (any Foli.Cache)?
+    
+    /// Whether this client should cache its static GTFS data
+    internal var cacheBehavior: Foli.CacheBehavior = .cachedOrFetch
+    
     /// Custom initializer for dependency injection (useful for testing)
-    public init(session: URLSession = .shared) {
+    public init(session: URLSession = .shared, cachedBy cacheBehavior: Foli.CacheBehavior = .cachedOrFetch) {
         self.session = session
+        self.cacheBehavior = cacheBehavior
+        
+        do {
+            self.cache = try Foli.DiskCache()
+        } catch {
+            print("An error occured initialising the cache for FoliAPI.")
+            self.cacheBehavior = .noCache
+        }
+        
     }
+
     
     // MARK: - Helper Methods
     

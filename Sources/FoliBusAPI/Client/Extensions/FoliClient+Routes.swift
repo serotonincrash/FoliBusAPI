@@ -12,9 +12,10 @@ import Foundation
 @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
 public extension FoliClient {
     
+    
     /// Fetch the complete list of all known routes from GTFS
     /// - Returns: An array of all routes
-    func fetchRoutes() async throws -> [Foli.Route] {
+    public func fetchRoutesFromNetwork() async throws -> [Foli.Route] {
         let url = try makeGTFSEndpointURL(path: "/routes")
         let (data, response) = try await session.data(from: url)
         
@@ -34,7 +35,7 @@ public extension FoliClient {
     /// Fetch a specific route by its ID
     /// - Parameter routeId: The ID of route to fetch
     /// - Returns: The route if found
-    func fetchRoute(byId routeId: String) async throws -> Foli.Route? {
+    public func fetchRoute(forRoute routeId: String) async throws -> Foli.Route? {
         let routes = try await fetchRoutes()
         return routes.first { $0.id == routeId }
     }
@@ -42,8 +43,37 @@ public extension FoliClient {
     /// Fetch routes that match a given line reference (e.g., "15")
     /// - Parameter lineRef: The line reference to search for
     /// - Returns: Array of matching routes
-    func fetchRoutes(byLineRef lineRef: String) async throws -> [Foli.Route] {
+    public func fetchRoutes(for lineRef: String) async throws -> [Foli.Route] {
         let routes = try await fetchRoutes()
         return routes.filter { $0.shortName == lineRef }
+    }
+    
+    // MARK: - Routes with Caching
+    
+    /// Fetch routes with optional caching control
+    /// - Returns: Array of Route objects
+    public func fetchRoutes() async throws -> [Foli.Route] {
+        switch self.cacheBehavior {
+        case .cachedOrFetch:
+            if let cached = try await cache?.loadRoutes() {
+                return cached
+            }
+            // fallthrough to fetch
+            fallthrough
+            
+        case .forceRefresh:
+            let routes = try await fetchRoutesFromNetwork()
+            try? await cache?.saveRoutes(routes)
+            return routes
+            
+        case .cachedOnly:
+            guard let cached = try await cache?.loadRoutes() else {
+                throw Foli.APIError.noData
+            }
+            return cached
+            
+        case .noCache:
+            return try await fetchRoutesFromNetwork()
+        }
     }
 }

@@ -51,14 +51,14 @@ public final class FoliBusAPI {
     /// - Parameter routeId: The ID of the route to fetch
     /// - Returns: The route if found
     public static func fetchRoute(byId routeId: String) async throws -> Foli.Route? {
-        return try await client.fetchRoute(byId: routeId)
+        return try await client.fetchRoute(forRoute: routeId)
     }
     
     /// Fetch routes that match a given line reference (e.g., "15")
     /// - Parameter lineRef: The line reference to search for
     /// - Returns: Array of matching routes
     public static func fetchRoutes(byLineRef lineRef: String) async throws -> [Foli.Route] {
-        return try await client.fetchRoutes(byLineRef: lineRef)
+        return try await client.fetchRoutes(for: lineRef)
     }
     
     /// Fetch routes of a specific type
