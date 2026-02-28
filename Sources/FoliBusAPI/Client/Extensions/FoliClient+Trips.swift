@@ -14,7 +14,7 @@ public extension FoliClient {
     
     /// Fetch all GTFS trips
     /// - Returns: Array of Trip objects
-    func fetchTrips() async throws -> [Foli.Trip] {
+    func fetchTripsFromNetwork() async throws -> [Foli.Trip] {
         let url = try makeEndpointURL(path: "/gtfs/trips")
         let (data, response) = try await session.data(from: url)
         
@@ -27,6 +27,35 @@ public extension FoliClient {
             return try JSONDecoder().decode([Foli.Trip].self, from: data)
         } catch {
             throw Foli.APIError.decodingError(error)
+        }
+    }
+    
+    // MARK: - Trips with Caching
+    
+    /// Fetch trips with optional caching control
+    /// - Returns: Array of Trip objects
+    func fetchTrips() async throws -> [Foli.Trip] {
+        switch self.cacheBehavior {
+        case .cachedOrFetch:
+            if let cached = try await cache?.loadTrips() {
+                return cached
+            }
+            // fallthrough to fetch
+            fallthrough
+            
+        case .forceRefresh:
+            let trips = try await fetchTripsFromNetwork()
+            try? await cache?.saveTrips(trips)
+            return trips
+            
+        case .cachedOnly:
+            guard let cached = try await cache?.loadTrips() else {
+                throw Foli.APIError.noData
+            }
+            return cached
+            
+        case .noCache:
+            return try await fetchTripsFromNetwork()
         }
     }
 }
