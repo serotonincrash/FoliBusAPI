@@ -16,5 +16,6 @@ public extension Foli {
         case stopTimes
         case stopTimesForTrip(String)
         case stopTimesForStop(String)
+        case calendarDates
     }
 }
