@@ -60,5 +60,15 @@ public extension Foli {
         /// Get the age of cached data in seconds, or nil if not cached
         func cacheAge(for type: Foli.CacheResource) async -> TimeInterval?
         
+        /// Get the dataset ID being used for cached data
+        /// - Parameter type: The specific resource type to check, or nil to get the most recently cached dataset ID
+        /// - Returns: The dataset ID, or nil if no cached data exists
+        func currentDatasetId(for type: Foli.CacheResource?) async throws -> String?
+        
+        /// The configuration for this cache
+        var configuration: Foli.CacheTimeout { get }
+        
+        /// The most recently cached dataset ID across all resources
+        var currentDatasetId: String? { get async throws }
     }
 }

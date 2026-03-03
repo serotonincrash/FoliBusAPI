@@ -34,4 +34,12 @@ public extension FoliClient {
     func cacheAge(for type: Foli.CacheResource) async -> TimeInterval? {
         await cache?.cacheAge(for: type)
     }
+    
+    /// Get the dataset ID being used for cached data
+    /// - Parameter type: The specific resource type to check, or nil to get the most recently cached dataset ID
+    /// - Returns: The dataset ID, or nil if no cached data exists
+    func currentDatasetId(for type: Foli.CacheResource? = nil) async throws -> String? {
+        guard let cache = cache else { return nil }
+        return try await cache.currentDatasetId(for: type)
+    }
 }
