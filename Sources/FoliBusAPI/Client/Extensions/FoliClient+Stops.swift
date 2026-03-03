@@ -14,7 +14,7 @@ public extension FoliClient {
     
     /// Fetch the complete list of all known stops via GTFS API
     /// - Returns: An array of all stops
-    public func fetchStopsFromNetwork() async throws -> [Foli.Stop] {
+    func fetchStopsFromNetwork() async throws -> [Foli.Stop] {
         let url = try makeGTFSEndpointURL(path: "/stops")
         let (data, response) = try await session.data(from: url)
         
@@ -34,7 +34,7 @@ public extension FoliClient {
     /// Fetch a specific stop by its ID via GTFS API
     /// - Parameter stopId: The ID of the stop to fetch
     /// - Returns: The stop if found
-    public func fetchStop(for stopId: String) async throws -> Foli.Stop? {
+    func fetchStop(for stopId: String) async throws -> Foli.Stop? {
         let stops = try await fetchStops()
         return stops.first { $0.id == stopId }
     }
@@ -44,7 +44,7 @@ public extension FoliClient {
     /// Fetch stops with optional caching control
     /// - Parameter cacheBehavior: Cache behavior (default: .cachedOrFetch)
     /// - Returns: Array of Stop objects
-    public func fetchStops() async throws -> [Foli.Stop] {
+    func fetchStops() async throws -> [Foli.Stop] {
         switch self.cacheBehavior {
         case .cachedOrFetch:
             if let cached = try await cache?.loadStops() {
