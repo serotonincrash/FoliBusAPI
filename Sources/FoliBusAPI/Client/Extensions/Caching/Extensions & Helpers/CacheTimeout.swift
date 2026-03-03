@@ -16,19 +16,13 @@ public extension Foli {
         /// How long cached data remains valid before requiring a refresh
         public let validityDuration: TimeInterval
         
-        /// Enable/disable caching
-        public let isEnabled: Bool
-        
         public init(
             validityDuration: TimeInterval = defaultValidityDuration,
-            isEnabled: Bool = true
         ) {
             self.validityDuration = validityDuration
-            self.isEnabled = isEnabled
         }
         
         public static let `default` = CacheTimeout()
-        public static let disabled = CacheTimeout(isEnabled: false)
         public static let shortLived = CacheTimeout(validityDuration: 60 * 60) // 1 hour
         public static let longLived = CacheTimeout(validityDuration: 7 * 24 * 60 * 60) // 7 days
     }

@@ -44,17 +44,17 @@ public extension Foli {
         
         private let fileManager: FileManager
         private let cacheDirectory: URL
-        public let configuration: Foli.CacheTimeout
+        public let timeoutDuration: Foli.CacheTimeout
         private let baseURL: String = "https://data.foli.fi/gtfs/v0"
         private let session: URLSession
         
         // MARK: - Initialization
         
         public init(
-            configuration: Foli.CacheTimeout = .default,
+            timeout: Foli.CacheTimeout = .default,
             fileManager: FileManager = .default
         ) throws {
-            self.configuration = configuration
+            self.timeoutDuration = timeout
             self.fileManager = fileManager
             self.session = URLSession.shared
             
@@ -147,7 +147,6 @@ public extension Foli {
         }
         
         public func hasValidCache(for type: Foli.CacheResource) async -> Bool {
-            guard configuration.isEnabled else { return false }
             
             // Load metadata from the cached file
             guard let metadata = try? await loadMetadata(for: type) else {
@@ -156,7 +155,7 @@ public extension Foli {
             
             // Check time-based validity
             let age = Date().timeIntervalSince(metadata.cachedAt)
-            let isTimeValid = age <= configuration.validityDuration
+            let isTimeValid = age <= timeoutDuration.validityDuration
             
             if isTimeValid {
                 // Cache is still within time window
@@ -208,7 +207,6 @@ public extension Foli {
         // MARK: - Private Methods
         
         private func load<T: Codable>(type: Foli.CacheResource) async throws -> T? {
-            guard configuration.isEnabled else { return nil }
             
             guard await hasValidCache(for: type) else {
                 return nil
@@ -226,7 +224,6 @@ public extension Foli {
         }
         
         private func save<T: Codable>(_ value: T, type: Foli.CacheResource) async throws {
-            guard configuration.isEnabled else { return }
             
             // Fetch the current dataset ID from the API
             let datasetId = try await fetchLatestDatasetId()

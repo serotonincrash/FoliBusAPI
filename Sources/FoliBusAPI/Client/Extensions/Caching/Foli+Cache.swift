@@ -66,7 +66,7 @@ public extension Foli {
         func currentDatasetId(for type: Foli.CacheResource?) async throws -> String?
         
         /// The configuration for this cache
-        var configuration: Foli.CacheTimeout { get }
+        var timeoutDuration: Foli.CacheTimeout { get }
         
         /// The most recently cached dataset ID across all resources
         var currentDatasetId: String? { get async throws }
