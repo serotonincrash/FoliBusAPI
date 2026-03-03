@@ -15,7 +15,7 @@ public extension FoliClient {
     
     /// Fetch the complete list of all known routes from GTFS
     /// - Returns: An array of all routes
-    public func fetchRoutesFromNetwork() async throws -> [Foli.Route] {
+    func fetchRoutesFromNetwork() async throws -> [Foli.Route] {
         let url = try makeGTFSEndpointURL(path: "/routes")
         let (data, response) = try await session.data(from: url)
         
@@ -35,7 +35,7 @@ public extension FoliClient {
     /// Fetch a specific route by its ID
     /// - Parameter routeId: The ID of route to fetch
     /// - Returns: The route if found
-    public func fetchRoute(forRoute routeId: String) async throws -> Foli.Route? {
+    func fetchRoute(forRoute routeId: String) async throws -> Foli.Route? {
         let routes = try await fetchRoutes()
         return routes.first { $0.id == routeId }
     }
@@ -43,7 +43,7 @@ public extension FoliClient {
     /// Fetch routes that match a given line reference (e.g., "15")
     /// - Parameter lineRef: The line reference to search for
     /// - Returns: Array of matching routes
-    public func fetchRoutes(for lineRef: String) async throws -> [Foli.Route] {
+    func fetchRoutes(for lineRef: String) async throws -> [Foli.Route] {
         let routes = try await fetchRoutes()
         return routes.filter { $0.shortName == lineRef }
     }
@@ -52,7 +52,7 @@ public extension FoliClient {
     
     /// Fetch routes with optional caching control
     /// - Returns: Array of Route objects
-    public func fetchRoutes() async throws -> [Foli.Route] {
+    func fetchRoutes() async throws -> [Foli.Route] {
         switch self.cacheBehavior {
         case .cachedOrFetch:
             if let cached = try await cache?.loadRoutes() {

@@ -15,7 +15,7 @@ public extension FoliClient {
     /// Fetch all GTFS stop times
     /// Not recommended for use, not data-efficient.
     /// - Returns: Array of StopTime objects
-    public func fetchStopTimesFromNetwork() async throws -> [Foli.StopTime] {
+    func fetchStopTimesFromNetwork() async throws -> [Foli.StopTime] {
         let url = try makeEndpointURL(path: "/gtfs/stop_times")
         let (data, response) = try await session.data(from: url)
         
@@ -35,7 +35,7 @@ public extension FoliClient {
     /// Fetch GTFS stop times for a specific trip ID
     /// - Parameter tripId: The ID of the trip
     /// - Returns: Array of StopTime objects associated with the trip
-    public func fetchStopTimesFromNetwork(forTrip tripId: String) async throws -> [Foli.StopTime] {
+    func fetchStopTimesFromNetwork(forTrip tripId: String) async throws -> [Foli.StopTime] {
         // Assuming endpoint structure /gtfs/stop_times/{tripId} based on API documentation
         let url = try makeEndpointURL(path: "/gtfs/stop_times/\(tripId)")
         let (data, response) = try await session.data(from: url)
@@ -55,7 +55,7 @@ public extension FoliClient {
     /// Fetch GTFS stop times for a specific stop ID
     /// - Parameter stopId: The ID of the stop
     /// - Returns: Array of StopTime objects associated with the stop
-    public func fetchStopTimesFromNetwork(forStop stopId: String) async throws -> [Foli.StopTime] {
+    func fetchStopTimesFromNetwork(forStop stopId: String) async throws -> [Foli.StopTime] {
         // Assuming endpoint structure /gtfs/stop_times/{stopId} or similar dedicated endpoint
         let url = try makeEndpointURL(path: "/gtfs/stop_times/\(stopId)")
         let (data, response) = try await session.data(from: url)
