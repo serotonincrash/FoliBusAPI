@@ -9,7 +9,7 @@ import Foundation
 
 public extension Foli {
     /// Cache configuration
-    struct CacheConfiguration: Sendable {
+    struct CacheTimeout: Sendable {
         /// Default cache validity duration in seconds (24 hours)
         public static let defaultValidityDuration: TimeInterval = 24 * 60 * 60
         
@@ -27,9 +27,9 @@ public extension Foli {
             self.isEnabled = isEnabled
         }
         
-        public static let `default` = CacheConfiguration()
-        public static let disabled = CacheConfiguration(isEnabled: false)
-        public static let shortLived = CacheConfiguration(validityDuration: 60 * 60) // 1 hour
-        public static let longLived = CacheConfiguration(validityDuration: 7 * 24 * 60 * 60) // 7 days
+        public static let `default` = CacheTimeout()
+        public static let disabled = CacheTimeout(isEnabled: false)
+        public static let shortLived = CacheTimeout(validityDuration: 60 * 60) // 1 hour
+        public static let longLived = CacheTimeout(validityDuration: 7 * 24 * 60 * 60) // 7 days
     }
 }
