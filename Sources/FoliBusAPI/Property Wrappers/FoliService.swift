@@ -24,8 +24,8 @@ public struct FoliService: DynamicProperty, Sendable {
     
     /// Initialize using the shared singleton instance
     /// - Important: Call `FoliClient.configure()` before using this initializer to customize cache settings
-    public init() async throws {
-        self.client = try await FoliClient.shared
+    public init() async {
+        self.client = await FoliClient.shared
     }
     
     public var wrappedValue: FoliService {
