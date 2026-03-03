@@ -14,7 +14,7 @@ public extension FoliClient {
     
     /// Fetch all GTFS trips
     /// - Returns: Array of Trip objects
-    func fetchTrips() async throws -> [Foli.Trip] {
+    func fetchTripsFromNetwork() async throws -> [Foli.Trip] {
         let url = try makeEndpointURL(path: "/gtfs/trips")
         let (data, response) = try await session.data(from: url)
         
@@ -27,6 +27,82 @@ public extension FoliClient {
             return try JSONDecoder().decode([Foli.Trip].self, from: data)
         } catch {
             throw Foli.APIError.decodingError(error)
+        }
+    }
+    
+    /// Fetch GTFS trips for a specific route
+    /// - Parameter routeId: The ID of the route to fetch trips for
+    /// - Returns: Array of Trip objects belonging to the specified route
+    func fetchTripsFromNetwork(forRoute routeId: String) async throws -> [Foli.Trip] {
+        let url = try makeEndpointURL(path: "/gtfs/trips/route/\(routeId)")
+        let (data, response) = try await session.data(from: url)
+        
+        guard let httpResponse = response as? HTTPURLResponse,
+              (200...299).contains(httpResponse.statusCode) else {
+            throw Foli.APIError.invalidResponse
+        }
+        
+        do {
+            return try JSONDecoder().decode([Foli.Trip].self, from: data)
+        } catch {
+            throw Foli.APIError.decodingError(error)
+        }
+    }
+    
+    // MARK: - Trips with Caching
+    
+    /// Fetch trips with optional caching control
+    /// - Returns: Array of Trip objects
+    func fetchTrips() async throws -> [Foli.Trip] {
+        switch self.cacheBehavior {
+        case .cachedOrFetch:
+            if let cached = try await cache?.loadTrips() {
+                return cached
+            }
+            // fallthrough to fetch
+            fallthrough
+            
+        case .forceRefresh:
+            let trips = try await fetchTripsFromNetwork()
+            try? await cache?.saveTrips(trips)
+            return trips
+            
+        case .cachedOnly:
+            guard let cached = try await cache?.loadTrips() else {
+                throw Foli.APIError.noData
+            }
+            return cached
+            
+        case .noCache:
+            return try await fetchTripsFromNetwork()
+        }
+    }
+    
+    /// Fetch trips for a specific route with optional caching control
+    /// - Parameter routeId: The ID of the route to fetch trips for
+    /// - Returns: Array of Trip objects belonging to the specified route
+    func fetchTrips(forRoute routeId: String) async throws -> [Foli.Trip] {
+        switch self.cacheBehavior {
+        case .cachedOrFetch:
+            if let cached = try await cache?.loadTrips(forRoute: routeId) {
+                return cached
+            }
+            // fallthrough to fetch
+            fallthrough
+            
+        case .forceRefresh:
+            let trips = try await fetchTripsFromNetwork(forRoute: routeId)
+            try? await cache?.saveTrips(trips, forRoute: routeId)
+            return trips
+            
+        case .cachedOnly:
+            guard let cached = try await cache?.loadTrips(forRoute: routeId) else {
+                throw Foli.APIError.noData
+            }
+            return cached
+            
+        case .noCache:
+            return try await fetchTripsFromNetwork(forRoute: routeId)
         }
     }
 }

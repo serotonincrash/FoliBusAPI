@@ -17,8 +17,15 @@ public struct FoliService: DynamicProperty, Sendable {
     
     internal let client: FoliClient
     
-    public init(client: FoliClient = .shared) {
+    /// Initialize with a custom client
+    public init(client: FoliClient) {
         self.client = client
+    }
+    
+    /// Initialize using the shared singleton instance
+    /// - Important: Call `FoliClient.configure()` before using this initializer to customize cache settings
+    public init() async {
+        self.client = await FoliClient.shared
     }
     
     public var wrappedValue: FoliService {
