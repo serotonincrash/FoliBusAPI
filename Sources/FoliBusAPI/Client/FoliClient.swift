@@ -20,7 +20,7 @@ public actor FoliClient {
     internal var cache: (any Foli.Cache)?
     
     /// Whether this client should cache its static GTFS data
-    internal var cacheBehavior: Foli.CacheBehavior = .cachedOrFetch
+    public var cacheBehavior: Foli.CacheBehavior = .cachedOrFetch
     
     /// Custom initializer for dependency injection (useful for testing)
     public init(session: URLSession = .shared, cachedBy cacheBehavior: Foli.CacheBehavior = .cachedOrFetch, withTimeout timeout: Foli.CacheTimeout = .default) {

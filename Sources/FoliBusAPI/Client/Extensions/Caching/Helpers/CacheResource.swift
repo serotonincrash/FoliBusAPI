@@ -13,6 +13,7 @@ public extension Foli {
         case routes
         case stops
         case trips
+        case tripsForRoute(String)
         case stopTimes
         case stopTimesForTrip(String)
         case stopTimesForStop(String)
