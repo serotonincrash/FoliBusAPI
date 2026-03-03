@@ -23,12 +23,13 @@ public actor FoliClient {
     internal var cacheBehavior: Foli.CacheBehavior = .cachedOrFetch
     
     /// Custom initializer for dependency injection (useful for testing)
-    public init(session: URLSession = .shared, cachedBy cacheBehavior: Foli.CacheBehavior = .cachedOrFetch) {
+    public init(session: URLSession = .shared, cachedBy cacheBehavior: Foli.CacheBehavior = .cachedOrFetch, withTimeout timeout: Foli.CacheTimeout = .default) {
         self.session = session
         self.cacheBehavior = cacheBehavior
         
         do {
-            self.cache = try Foli.DiskCache()
+            // set cache mode here?
+            self.cache = try Foli.DiskCache(timeout: timeout)
         } catch {
             print("An error occured initialising the cache for FoliAPI.")
             self.cacheBehavior = .noCache
