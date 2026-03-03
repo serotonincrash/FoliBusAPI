@@ -104,6 +104,14 @@ public extension Foli {
             try await save(trips, type: .trips)
         }
         
+        public func loadTrips(forRoute routeId: String) async throws -> [Foli.Trip]? {
+            return try await load(type: .tripsForRoute(routeId))
+        }
+        
+        public func saveTrips(_ trips: [Foli.Trip], forRoute routeId: String) async throws {
+            try await save(trips, type: .tripsForRoute(routeId))
+        }
+        
         public func loadStopTimes() async throws -> [Foli.StopTime]? {
             return try await load(type: .stopTimes)
         }
@@ -126,6 +134,14 @@ public extension Foli {
         
         public func saveStopTimes(_ stopTimes: [Foli.StopTime], forStop stopId: String) async throws {
             try await save(stopTimes, type: .stopTimesForStop(stopId))
+        }
+        
+        public func loadCalendarDates() async throws -> [Foli.CalendarDate]? {
+            return try await load(type: .calendarDates)
+        }
+        
+        public func saveCalendarDates(_ calendarDates: [Foli.CalendarDate]) async throws {
+            try await save(calendarDates, type: .calendarDates)
         }
         
         public func clearAllCache() async throws {
@@ -256,12 +272,16 @@ public extension Foli {
                 filename = "stops.json"
             case .trips:
                 filename = "trips.json"
+            case .tripsForRoute(let routeId):
+                filename = "trips_route_\(routeId).json"
             case .stopTimes:
                 filename = "stop_times.json"
             case .stopTimesForTrip(let tripId):
                 filename = "stop_times_trip_\(tripId).json"
             case .stopTimesForStop(let stopId):
                 filename = "stop_times_stop_\(stopId).json"
+            case .calendarDates:
+                filename = "calendar_dates.json"
             }
             
             return cacheDirectory.appendingPathComponent(filename)
@@ -312,6 +332,9 @@ public extension Foli {
             case .trips:
                 let temp = try decoder.decode(CachedData<[Foli.Trip]>.self, from: data)
                 cachedData = temp
+            case .tripsForRoute:
+                let temp = try decoder.decode(CachedData<[Foli.Trip]>.self, from: data)
+                cachedData = temp
             case .stopTimes:
                 let temp = try decoder.decode(CachedData<[Foli.StopTime]>.self, from: data)
                 cachedData = temp
@@ -320,6 +343,9 @@ public extension Foli {
                 cachedData = temp
             case .stopTimesForStop:
                 let temp = try decoder.decode(CachedData<[Foli.StopTime]>.self, from: data)
+                cachedData = temp
+            case .calendarDates:
+                let temp = try decoder.decode(CachedData<[Foli.CalendarDate]>.self, from: data)
                 cachedData = temp
             }
             
@@ -341,6 +367,10 @@ public extension Foli {
                 let newMetadata = DatasetMetadata(datasetId: oldMetadata.datasetId, cachedAt: Date())
                 newData = CachedData(metadata: newMetadata, data: cached.data)
             case let cached as CachedData<[Foli.StopTime]>:
+                oldMetadata = cached.metadata
+                let newMetadata = DatasetMetadata(datasetId: oldMetadata.datasetId, cachedAt: Date())
+                newData = CachedData(metadata: newMetadata, data: cached.data)
+            case let cached as CachedData<[Foli.CalendarDate]>:
                 oldMetadata = cached.metadata
                 let newMetadata = DatasetMetadata(datasetId: oldMetadata.datasetId, cachedAt: Date())
                 newData = CachedData(metadata: newMetadata, data: cached.data)

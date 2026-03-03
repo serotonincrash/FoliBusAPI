@@ -30,6 +30,12 @@ public extension Foli {
         /// Save trips to cache with current timestamp
         func saveTrips(_ trips: [Foli.Trip]) async throws
         
+        /// Load cached trips for a specific route
+        func loadTrips(forRoute routeId: String) async throws -> [Foli.Trip]?
+        
+        /// Save trips for a specific route
+        func saveTrips(_ trips: [Foli.Trip], forRoute routeId: String) async throws
+        
         /// Load cached stop times if available and not expired
         func loadStopTimes() async throws -> [Foli.StopTime]?
         
@@ -47,6 +53,12 @@ public extension Foli {
         
         /// Save stop times for a specific stop
         func saveStopTimes(_ stopTimes: [Foli.StopTime], forStop stopId: String) async throws
+        
+        /// Load cached calendar dates if available and not expired
+        func loadCalendarDates() async throws -> [Foli.CalendarDate]?
+        
+        /// Save calendar dates to cache with current timestamp
+        func saveCalendarDates(_ calendarDates: [Foli.CalendarDate]) async throws
         
         /// Clear all cached data
         func clearAllCache() async throws

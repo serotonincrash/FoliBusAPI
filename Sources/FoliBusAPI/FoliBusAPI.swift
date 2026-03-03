@@ -80,5 +80,13 @@ public final class FoliBusAPI {
     public static func fetchTramRoutes() async throws -> [Foli.Route] {
         return try await fetchRoutes(ofType: 0)
     }
+    
+    // MARK: - Convenience Methods - Calendar Dates (GTFS)
+    
+    /// Fetch all calendar date exceptions from GTFS
+    /// - Returns: Array of calendar date exceptions
+    public static func fetchCalendarDates() async throws -> [Foli.CalendarDate] {
+        return try await client.fetchCalendarDates()
+    }
 }
 
