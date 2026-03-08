@@ -1,44 +1,33 @@
 import Foundation
+import SwiftUI
 
 /// Main client for interacting with the Foli public transport API
+///
+/// To configure caching behavior, inject a configured client via SwiftUI environment
+/// at your app's root, or pass it explicitly to views that need it.
+///
+/// ## Environment Setup
+/// ```swift
+/// @main
+/// struct MyApp: App {
+///     var body: any Scene {
+///         WindowGroup {
+///             ContentView()
+///                 .environment(\.foliClient, .configured(cacheBehavior: .forceRefresh))
+///         }
+///     }
+/// }
+/// ```
+///
+/// ## Direct Usage
+/// ```swift
+/// struct MyView: View {
+///     let client: FoliClient = .configured(cacheBehavior: .forceRefresh)
+///     @FoliService(client: client) var foliService
+/// }
+/// ```
 @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
 public actor FoliClient {
-    
-    /// Configuration for the shared singleton instance
-    private struct SharedConfiguration: Sendable {
-        var session: URLSession = .shared
-        var cacheBehavior: Foli.CacheBehavior = .cachedOrFetch
-        var cacheTimeout: Foli.CacheTimeout = .default
-    }
-    
-    /// Internal storage for shared configuration
-    @MainActor private static var _configuration = SharedConfiguration()
-    
-    /// Shared singleton instance
-    /// Use `FoliClient.configure()` before first access to customize caching behavior
-    public static var shared: FoliClient {
-        get async {
-            let client = await FoliClient(cachedBy: self._configuration.cacheBehavior, withTimeout: self._configuration.cacheTimeout)
-            return client
-        }
-    }
-    
-    /// Configure the shared singleton instance.
-    /// Must be called before first access to `FoliClient.shared`.
-    /// - Parameters:
-    ///   - cacheBehavior: The cache behavior to use
-    ///   - cacheTimeout: The cache timeout duration
-    ///   - session: Optional custom URLSession
-    @MainActor
-    public static func configure(
-        cacheBehavior: Foli.CacheBehavior = .cachedOrFetch,
-        cacheTimeout: Foli.CacheTimeout = .default,
-        session: URLSession = .shared
-    ) {
-        _configuration.session = session
-        _configuration.cacheBehavior = cacheBehavior
-        _configuration.cacheTimeout = cacheTimeout
-    }
     
     /// Base URL for the Foli API
     private let baseURL = "https://data.foli.fi/siri"
@@ -90,3 +79,48 @@ public actor FoliClient {
         return url
     }
 }
+
+// MARK: - Convenience Factory
+
+@available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
+extension FoliClient {
+    
+    /// Creates a configured FoliClient with custom cache settings
+    /// - Parameters:
+    ///   - cacheBehavior: The cache behavior to use
+    ///   - cacheTimeout: The cache timeout duration
+    ///   - session: Optional custom URLSession
+    /// - Returns: A configured FoliClient instance
+    public static func configured(
+        cacheBehavior: Foli.CacheBehavior = .cachedOrFetch,
+        cacheTimeout: Foli.CacheTimeout = .default,
+        session: URLSession = .shared
+    ) -> FoliClient {
+        FoliClient(
+            session: session,
+            cachedBy: cacheBehavior,
+            withTimeout: cacheTimeout
+        )
+    }
+}
+
+// MARK: - SwiftUI Environment Support
+
+@available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
+extension EnvironmentValues {
+    
+    /// The FoliClient instance to use for FoliService
+    /// Set this at your app's root to configure caching behavior:
+    /// ```swift
+    /// RootView().environment(\.foliClient, .configured(cacheBehavior: .forceRefresh))
+    /// ```
+    public var foliClient: FoliClient? {
+        get { self[FoliClientKey.self] }
+        set { self[FoliClientKey.self] = newValue }
+    }
+    
+    private struct FoliClientKey: EnvironmentKey {
+        static let defaultValue: FoliClient? = nil
+    }
+}
+
