@@ -15,14 +15,26 @@ public extension FoliClient {
     /// Fetch all GTFS trips
     /// - Returns: Array of Trip objects
     func fetchTripsFromNetwork() async throws -> [Foli.Trip] {
-        try await requestGTFS("/trips", as: [Foli.Trip].self)
+        try await performDeduplicated(.trips) { [self] in
+            try await requestGTFS("/trips/all", as: [Foli.Trip].self)
+        }
     }
     
     /// Fetch GTFS trips for a specific route
     /// - Parameter routeId: The ID of the route to fetch trips for
     /// - Returns: Array of Trip objects belonging to the specified route
     func fetchTripsFromNetwork(forRoute routeId: String) async throws -> [Foli.Trip] {
-        try await requestGTFS("/trips/route/\(routeId)", as: [Foli.Trip].self)
+        try await performDeduplicated(.tripsForRoute(routeId)) { [self] in
+            try await requestGTFS("/trips/route/\(routeId)", as: [Foli.Trip].self)
+        }
+    }
+
+    /// Fetch GTFS trip metadata for a specific trip ID
+    /// - Parameter tripId: The ID of the trip to fetch
+    /// - Returns: The trip if found
+    func fetchTrip(tripId: String) async throws -> Foli.Trip? {
+        let trips = try await requestGTFS("/trips/trip/\(tripId)", as: [Foli.Trip].self)
+        return trips.first
     }
     
     // MARK: - Trips with Caching

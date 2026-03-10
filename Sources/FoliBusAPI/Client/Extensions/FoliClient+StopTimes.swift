@@ -16,7 +16,9 @@ public extension FoliClient {
     /// Not recommended for use, not data-efficient.
     /// - Returns: Array of StopTime objects
     func fetchStopTimesFromNetwork() async throws -> [Foli.StopTime] {
-        try await requestGTFS("/stop_times", as: [Foli.StopTime].self)
+        try await performDeduplicated(.stopTimes) { [self] in
+            try await requestGTFS("/stop_times", as: [Foli.StopTime].self)
+        }
     }
     
     
@@ -24,16 +26,20 @@ public extension FoliClient {
     /// - Parameter tripId: The ID of the trip
     /// - Returns: Array of StopTime objects associated with the trip
     func fetchStopTimesFromNetwork(forTrip tripId: String) async throws -> [Foli.StopTime] {
-        // Assuming endpoint structure /gtfs/stop_times/{tripId} based on API documentation
-        try await requestGTFS("/stop_times/\(tripId)", as: [Foli.StopTime].self)
+        // Documented endpoint: /gtfs/stop_times/trip/{tripId}
+        try await performDeduplicated(.stopTimesForTrip(tripId)) { [self] in
+            try await requestGTFS("/stop_times/trip/\(tripId)", as: [Foli.StopTime].self)
+        }
     }
     
     /// Fetch GTFS stop times for a specific stop ID
     /// - Parameter stopId: The ID of the stop
     /// - Returns: Array of StopTime objects associated with the stop
     func fetchStopTimesFromNetwork(forStop stopId: String) async throws -> [Foli.StopTime] {
-        // Assuming endpoint structure /gtfs/stop_times/{stopId} or similar dedicated endpoint
-        try await requestGTFS("/stop_times/\(stopId)", as: [Foli.StopTime].self)
+        // Documented endpoint: /gtfs/stop_times/stop/{stopId}
+        try await performDeduplicated(.stopTimesForStop(stopId)) { [self] in
+            try await requestGTFS("/stop_times/stop/\(stopId)", as: [Foli.StopTime].self)
+        }
     }
     
     // MARK: - Stop Times with Caching
