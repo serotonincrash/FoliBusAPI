@@ -45,6 +45,11 @@ public final class DefaultFoliClientProvider: FoliClientProviding, @unchecked Se
     }
 }
 
+@available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
+extension DefaultFoliClientProvider {
+    public static let shared = DefaultFoliClientProvider()
+}
+
 /// Main client for interacting with the Foli public transport API
 ///
 /// To configure client behavior for SwiftUI, inject a configured provider via the environment
@@ -93,6 +98,9 @@ public actor FoliClient {
     /// Whether this client should cache its static GTFS data
     internal var cacheBehavior: Foli.CacheBehavior = .cachedOrFetch
     
+    /// Shared decoder for API responses.
+    private let decoder = JSONDecoder()
+
     /// Custom initializer for dependency injection (useful for testing)
     public init(session: URLSession = .shared, cachedBy cacheBehavior: Foli.CacheBehavior = .cachedOrFetch, withTimeout timeout: Foli.CacheTimeout = .default) {
         self.session = session
@@ -126,6 +134,39 @@ public actor FoliClient {
             throw Foli.APIError.invalidURL
         }
         return url
+    }
+
+    /// Fetch and decode a response from a SIRI endpoint.
+    internal func requestSIRI<T: Decodable>(_ path: String, as type: T.Type = T.self) async throws -> T {
+        let url = try makeEndpointURL(path: path)
+        return try await request(url, as: type)
+    }
+
+    /// Fetch and decode a response from a GTFS endpoint.
+    internal func requestGTFS<T: Decodable>(_ path: String, as type: T.Type = T.self) async throws -> T {
+        let url = try makeGTFSEndpointURL(path: path)
+        return try await request(url, as: type)
+    }
+
+    private func request<T: Decodable>(_ url: URL, as type: T.Type) async throws -> T {
+        do {
+            let (data, response) = try await session.data(from: url)
+
+            guard let httpResponse = response as? HTTPURLResponse,
+                  (200...299).contains(httpResponse.statusCode) else {
+                throw Foli.APIError.invalidResponse
+            }
+
+            do {
+                return try decoder.decode(T.self, from: data)
+            } catch {
+                throw Foli.APIError.decodingError(error)
+            }
+        } catch let error as Foli.APIError {
+            throw error
+        } catch {
+            throw Foli.APIError.networkError(error)
+        }
     }
 }
 

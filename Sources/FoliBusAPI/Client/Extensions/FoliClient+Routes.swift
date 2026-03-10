@@ -16,20 +16,8 @@ public extension FoliClient {
     /// Fetch the complete list of all known routes from GTFS
     /// - Returns: An array of all routes
     func fetchRoutesFromNetwork() async throws -> [Foli.Route] {
-        let url = try makeGTFSEndpointURL(path: "/routes")
-        let (data, response) = try await session.data(from: url)
-        
-        guard let httpResponse = response as? HTTPURLResponse,
-              (200...299).contains(httpResponse.statusCode) else {
-            throw Foli.APIError.invalidResponse
-        }
-        
-        do {
-            let routeList = try JSONDecoder().decode(FoliRouteList.self, from: data)
-            return routeList.routes
-        } catch {
-            throw Foli.APIError.decodingError(error)
-        }
+        let routeList = try await requestGTFS("/routes", as: FoliRouteList.self)
+        return routeList.routes
     }
     
     /// Fetch a specific route by its ID
