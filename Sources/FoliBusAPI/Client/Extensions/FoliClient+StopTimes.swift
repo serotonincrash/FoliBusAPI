@@ -16,19 +16,7 @@ public extension FoliClient {
     /// Not recommended for use, not data-efficient.
     /// - Returns: Array of StopTime objects
     func fetchStopTimesFromNetwork() async throws -> [Foli.StopTime] {
-        let url = try makeGTFSEndpointURL(path: "/stop_times")
-        let (data, response) = try await session.data(from: url)
-        
-        guard let httpResponse = response as? HTTPURLResponse,
-              (200...299).contains(httpResponse.statusCode) else {
-            throw Foli.APIError.invalidResponse
-        }
-        
-        do {
-            return try JSONDecoder().decode([Foli.StopTime].self, from: data)
-        } catch {
-            throw Foli.APIError.decodingError(error)
-        }
+        try await requestGTFS("/stop_times", as: [Foli.StopTime].self)
     }
     
     
@@ -37,19 +25,7 @@ public extension FoliClient {
     /// - Returns: Array of StopTime objects associated with the trip
     func fetchStopTimesFromNetwork(forTrip tripId: String) async throws -> [Foli.StopTime] {
         // Assuming endpoint structure /gtfs/stop_times/{tripId} based on API documentation
-        let url = try makeGTFSEndpointURL(path: "/stop_times/\(tripId)")
-        let (data, response) = try await session.data(from: url)
-        
-        guard let httpResponse = response as? HTTPURLResponse,
-              (200...299).contains(httpResponse.statusCode) else {
-            throw Foli.APIError.invalidResponse
-        }
-        
-        do {
-            return try JSONDecoder().decode([Foli.StopTime].self, from: data)
-        } catch {
-            throw Foli.APIError.decodingError(error)
-        }
+        try await requestGTFS("/stop_times/\(tripId)", as: [Foli.StopTime].self)
     }
     
     /// Fetch GTFS stop times for a specific stop ID
@@ -57,19 +33,7 @@ public extension FoliClient {
     /// - Returns: Array of StopTime objects associated with the stop
     func fetchStopTimesFromNetwork(forStop stopId: String) async throws -> [Foli.StopTime] {
         // Assuming endpoint structure /gtfs/stop_times/{stopId} or similar dedicated endpoint
-        let url = try makeGTFSEndpointURL(path: "/stop_times/\(stopId)")
-        let (data, response) = try await session.data(from: url)
-        
-        guard let httpResponse = response as? HTTPURLResponse,
-              (200...299).contains(httpResponse.statusCode) else {
-            throw Foli.APIError.invalidResponse
-        }
-        
-        do {
-            return try JSONDecoder().decode([Foli.StopTime].self, from: data)
-        } catch {
-            throw Foli.APIError.decodingError(error)
-        }
+        try await requestGTFS("/stop_times/\(stopId)", as: [Foli.StopTime].self)
     }
     
     // MARK: - Stop Times with Caching

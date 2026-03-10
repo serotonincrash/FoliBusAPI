@@ -15,38 +15,14 @@ public extension FoliClient {
     /// Fetch all GTFS trips
     /// - Returns: Array of Trip objects
     func fetchTripsFromNetwork() async throws -> [Foli.Trip] {
-        let url = try makeGTFSEndpointURL(path: "/trips")
-        let (data, response) = try await session.data(from: url)
-        
-        guard let httpResponse = response as? HTTPURLResponse,
-              (200...299).contains(httpResponse.statusCode) else {
-            throw Foli.APIError.invalidResponse
-        }
-        
-        do {
-            return try JSONDecoder().decode([Foli.Trip].self, from: data)
-        } catch {
-            throw Foli.APIError.decodingError(error)
-        }
+        try await requestGTFS("/trips", as: [Foli.Trip].self)
     }
     
     /// Fetch GTFS trips for a specific route
     /// - Parameter routeId: The ID of the route to fetch trips for
     /// - Returns: Array of Trip objects belonging to the specified route
     func fetchTripsFromNetwork(forRoute routeId: String) async throws -> [Foli.Trip] {
-        let url = try makeGTFSEndpointURL(path: "/trips/route/\(routeId)")
-        let (data, response) = try await session.data(from: url)
-        
-        guard let httpResponse = response as? HTTPURLResponse,
-              (200...299).contains(httpResponse.statusCode) else {
-            throw Foli.APIError.invalidResponse
-        }
-        
-        do {
-            return try JSONDecoder().decode([Foli.Trip].self, from: data)
-        } catch {
-            throw Foli.APIError.decodingError(error)
-        }
+        try await requestGTFS("/trips/route/\(routeId)", as: [Foli.Trip].self)
     }
     
     // MARK: - Trips with Caching

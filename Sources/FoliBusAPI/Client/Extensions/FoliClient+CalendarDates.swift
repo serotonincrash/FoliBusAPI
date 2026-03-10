@@ -15,20 +15,8 @@ public extension FoliClient {
     /// Fetch all GTFS calendar date exceptions
     /// - Returns: Array of CalendarDate objects
     func fetchCalendarDatesFromNetwork() async throws -> [Foli.CalendarDate] {
-        let url = try makeGTFSEndpointURL(path: "/calendar_dates")
-        let (data, response) = try await session.data(from: url)
-        
-        guard let httpResponse = response as? HTTPURLResponse,
-              (200...299).contains(httpResponse.statusCode) else {
-            throw Foli.APIError.invalidResponse
-        }
-        
-        do {
-            let calendarDatesList = try JSONDecoder().decode(FoliCalendarDatesList.self, from: data)
-            return calendarDatesList.calendarDates
-        } catch {
-            throw Foli.APIError.decodingError(error)
-        }
+        let calendarDatesList = try await requestGTFS("/calendar_dates", as: FoliCalendarDatesList.self)
+        return calendarDatesList.calendarDates
     }
     
     // MARK: - Calendar Dates with Caching

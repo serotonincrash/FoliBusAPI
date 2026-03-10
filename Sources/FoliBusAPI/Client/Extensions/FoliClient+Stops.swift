@@ -15,20 +15,8 @@ public extension FoliClient {
     /// Fetch the complete list of all known stops via GTFS API
     /// - Returns: An array of all stops
     func fetchStopsFromNetwork() async throws -> [Foli.Stop] {
-        let url = try makeGTFSEndpointURL(path: "/stops")
-        let (data, response) = try await session.data(from: url)
-        
-        guard let httpResponse = response as? HTTPURLResponse,
-              (200...299).contains(httpResponse.statusCode) else {
-            throw Foli.APIError.invalidResponse
-        }
-        
-        do {
-            let stopList = try JSONDecoder().decode(FoliStopList.self, from: data)
-            return stopList.stops
-        } catch {
-            throw Foli.APIError.decodingError(error)
-        }
+        let stopList = try await requestGTFS("/stops", as: FoliStopList.self)
+        return stopList.stops
     }
     
     /// Fetch a specific stop by its ID via GTFS API
