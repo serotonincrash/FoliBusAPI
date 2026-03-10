@@ -30,6 +30,17 @@ public extension FoliClient {
                 return cached
             }
             fallthrough
+
+        case .staleWhileRevalidate:
+            if let staleCached = try await cache?.loadStaleCalendarDates() {
+                refreshCacheInBackground(
+                    for: .calendarDates,
+                    fetch: { [self] in try await fetchCalendarDatesFromNetwork() },
+                    save: { [cache] calendarDates in try await cache?.saveCalendarDates(calendarDates) }
+                )
+                return staleCached
+            }
+            fallthrough
             
         case .forceRefresh:
             let calendarDates = try await fetchCalendarDatesFromNetwork()

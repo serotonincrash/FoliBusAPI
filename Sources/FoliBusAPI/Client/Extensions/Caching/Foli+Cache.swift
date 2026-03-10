@@ -9,7 +9,7 @@ import Foundation
 
 public extension Foli {
     /// Protocol for caching GTFS data locally
-    /// 
+    ///
     /// All methods are async to prevent blocking and support actor-isolated implementations.
     protocol Cache: Sendable {
         /// Load cached routes if available and not expired
@@ -82,5 +82,33 @@ public extension Foli {
         
         /// The most recently cached dataset ID across all resources
         var currentDatasetId: String? { get async throws }
+        
+        /// Load cached routes regardless of freshness.
+        func loadStaleRoutes() async throws -> [Foli.Route]?
+        
+        /// Load cached stops regardless of freshness.
+        func loadStaleStops() async throws -> [Foli.Stop]?
+        
+        /// Load cached trips regardless of freshness.
+        func loadStaleTrips() async throws -> [Foli.Trip]?
+        
+        /// Load cached trips for a specific route regardless of freshness.
+        func loadStaleTrips(forRoute routeId: String) async throws -> [Foli.Trip]?
+        
+        /// Load cached stop times regardless of freshness.
+        func loadStaleStopTimes() async throws -> [Foli.StopTime]?
+        
+        /// Load cached stop times for a specific trip regardless of freshness.
+        func loadStaleStopTimes(forTrip tripId: String) async throws -> [Foli.StopTime]?
+        
+        /// Load cached stop times for a specific stop regardless of freshness.
+        func loadStaleStopTimes(forStop stopId: String) async throws -> [Foli.StopTime]?
+        
+        /// Load cached calendar dates regardless of freshness.
+        func loadStaleCalendarDates() async throws -> [Foli.CalendarDate]?
+        
+        /// Revalidate cached data for a resource, returning true if the cache remained current.
+        @discardableResult
+        func revalidateCache(for type: Foli.CacheResource) async throws -> Bool
     }
 }

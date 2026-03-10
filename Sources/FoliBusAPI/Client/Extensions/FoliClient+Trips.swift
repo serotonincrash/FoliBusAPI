@@ -37,6 +37,17 @@ public extension FoliClient {
             }
             // fallthrough to fetch
             fallthrough
+
+        case .staleWhileRevalidate:
+            if let staleCached = try await cache?.loadStaleTrips() {
+                refreshCacheInBackground(
+                    for: .trips,
+                    fetch: { [self] in try await fetchTripsFromNetwork() },
+                    save: { [cache] trips in try await cache?.saveTrips(trips) }
+                )
+                return staleCached
+            }
+            fallthrough
             
         case .forceRefresh:
             let trips = try await fetchTripsFromNetwork()
@@ -64,6 +75,17 @@ public extension FoliClient {
                 return cached
             }
             // fallthrough to fetch
+            fallthrough
+
+        case .staleWhileRevalidate:
+            if let staleCached = try await cache?.loadStaleTrips(forRoute: routeId) {
+                refreshCacheInBackground(
+                    for: .tripsForRoute(routeId),
+                    fetch: { [self] in try await fetchTripsFromNetwork(forRoute: routeId) },
+                    save: { [cache] trips in try await cache?.saveTrips(trips, forRoute: routeId) }
+                )
+                return staleCached
+            }
             fallthrough
             
         case .forceRefresh:
