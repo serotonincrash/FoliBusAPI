@@ -15,7 +15,7 @@ public extension FoliClient {
     /// Fetch all GTFS trips
     /// - Returns: Array of Trip objects
     func fetchTripsFromNetwork() async throws -> [Foli.Trip] {
-        let url = try makeEndpointURL(path: "/gtfs/trips")
+        let url = try makeGTFSEndpointURL(path: "/trips")
         let (data, response) = try await session.data(from: url)
         
         guard let httpResponse = response as? HTTPURLResponse,
@@ -34,7 +34,7 @@ public extension FoliClient {
     /// - Parameter routeId: The ID of the route to fetch trips for
     /// - Returns: Array of Trip objects belonging to the specified route
     func fetchTripsFromNetwork(forRoute routeId: String) async throws -> [Foli.Trip] {
-        let url = try makeEndpointURL(path: "/gtfs/trips/route/\(routeId)")
+        let url = try makeGTFSEndpointURL(path: "/trips/route/\(routeId)")
         let (data, response) = try await session.data(from: url)
         
         guard let httpResponse = response as? HTTPURLResponse,

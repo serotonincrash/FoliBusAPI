@@ -16,7 +16,7 @@ public extension FoliClient {
     /// Not recommended for use, not data-efficient.
     /// - Returns: Array of StopTime objects
     func fetchStopTimesFromNetwork() async throws -> [Foli.StopTime] {
-        let url = try makeEndpointURL(path: "/gtfs/stop_times")
+        let url = try makeGTFSEndpointURL(path: "/stop_times")
         let (data, response) = try await session.data(from: url)
         
         guard let httpResponse = response as? HTTPURLResponse,
@@ -37,7 +37,7 @@ public extension FoliClient {
     /// - Returns: Array of StopTime objects associated with the trip
     func fetchStopTimesFromNetwork(forTrip tripId: String) async throws -> [Foli.StopTime] {
         // Assuming endpoint structure /gtfs/stop_times/{tripId} based on API documentation
-        let url = try makeEndpointURL(path: "/gtfs/stop_times/\(tripId)")
+        let url = try makeGTFSEndpointURL(path: "/stop_times/\(tripId)")
         let (data, response) = try await session.data(from: url)
         
         guard let httpResponse = response as? HTTPURLResponse,
@@ -57,7 +57,7 @@ public extension FoliClient {
     /// - Returns: Array of StopTime objects associated with the stop
     func fetchStopTimesFromNetwork(forStop stopId: String) async throws -> [Foli.StopTime] {
         // Assuming endpoint structure /gtfs/stop_times/{stopId} or similar dedicated endpoint
-        let url = try makeEndpointURL(path: "/gtfs/stop_times/\(stopId)")
+        let url = try makeGTFSEndpointURL(path: "/stop_times/\(stopId)")
         let (data, response) = try await session.data(from: url)
         
         guard let httpResponse = response as? HTTPURLResponse,
@@ -86,7 +86,7 @@ public extension FoliClient {
             fallthrough
             
         case .forceRefresh:
-            let stopTimes = try await fetchStopTimes()
+            let stopTimes = try await fetchStopTimesFromNetwork()
             try? await cache?.saveStopTimes(stopTimes)
             return stopTimes
             
@@ -97,7 +97,7 @@ public extension FoliClient {
             return cached
             
         case .noCache:
-            return try await fetchStopTimes()
+            return try await fetchStopTimesFromNetwork()
         }
     }
     
@@ -126,7 +126,7 @@ public extension FoliClient {
             return cached
             
         case .noCache:
-            return try await fetchStopTimes(forTrip: tripId)
+            return try await fetchStopTimesFromNetwork(forTrip: tripId)
         }
     }
     
