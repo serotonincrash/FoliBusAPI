@@ -26,16 +26,16 @@ public extension FoliClient {
     /// - Parameter routeId: The ID of route to fetch
     /// - Returns: The route if found
     func fetchRoute(forRoute routeId: String) async throws -> Foli.Route? {
-        let routes = try await fetchRoutes()
-        return routes.first { $0.id == routeId }
+        _ = try await fetchRoutes()
+        return indexedRoute(for: routeId)
     }
     
     /// Fetch routes that match a given line reference (e.g., "15")
     /// - Parameter lineRef: The line reference to search for
     /// - Returns: Array of matching routes
     func fetchRoutes(for lineRef: String) async throws -> [Foli.Route] {
-        let routes = try await fetchRoutes()
-        return routes.filter { $0.shortName == lineRef }
+        _ = try await fetchRoutes()
+        return indexedRoutes(forShortName: lineRef)
     }
     
     // MARK: - Routes with Caching
@@ -46,6 +46,7 @@ public extension FoliClient {
         switch self.cacheBehavior {
         case .cachedOrFetch:
             if let cached = try await cache?.loadRoutes() {
+                rebuildRouteIndexes(using: cached)
                 return cached
             }
             // fallthrough to fetch
@@ -53,6 +54,7 @@ public extension FoliClient {
 
         case .staleWhileRevalidate:
             if let staleCached = try await cache?.loadStaleRoutes() {
+                rebuildRouteIndexes(using: staleCached)
                 refreshCacheInBackground(
                     for: .routes,
                     fetch: { [self] in try await fetchRoutesFromNetwork() },
@@ -64,6 +66,7 @@ public extension FoliClient {
             
         case .forceRefresh:
             let routes = try await fetchRoutesFromNetwork()
+            rebuildRouteIndexes(using: routes)
             try? await cache?.saveRoutes(routes)
             return routes
             
@@ -71,10 +74,13 @@ public extension FoliClient {
             guard let cached = try await cache?.loadRoutes() else {
                 throw Foli.APIError.noData
             }
+            rebuildRouteIndexes(using: cached)
             return cached
             
         case .noCache:
-            return try await fetchRoutesFromNetwork()
+            let routes = try await fetchRoutesFromNetwork()
+            rebuildRouteIndexes(using: routes)
+            return routes
         }
     }
 }

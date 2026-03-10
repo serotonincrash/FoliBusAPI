@@ -121,6 +121,9 @@ public actor FoliClient {
     /// Shared decoder for API responses.
     private let decoder = JSONDecoder()
     private var inFlightRequests: [RequestKey: InFlightTaskValue] = [:]
+    private var stopsByID: [String: Foli.Stop] = [:]
+    private var routesByID: [String: Foli.Route] = [:]
+    private var routesByShortName: [String: [Foli.Route]] = [:]
 
     /// Custom initializer for dependency injection (useful for testing)
     public init(session: URLSession = .shared, cachedBy cacheBehavior: Foli.CacheBehavior = .cachedOrFetch, withTimeout timeout: Foli.CacheTimeout = .default) {
@@ -254,6 +257,27 @@ public actor FoliClient {
         inFlightRequests[key] = .calendarDates(task)
         defer { inFlightRequests[key] = nil }
         return try await task.value
+    }
+
+    internal func rebuildStopIndex(using stops: [Foli.Stop]) {
+        stopsByID = Dictionary(uniqueKeysWithValues: stops.map { ($0.id, $0) })
+    }
+
+    internal func rebuildRouteIndexes(using routes: [Foli.Route]) {
+        routesByID = Dictionary(uniqueKeysWithValues: routes.map { ($0.id, $0) })
+        routesByShortName = Dictionary(grouping: routes, by: \Foli.Route.shortName)
+    }
+
+    internal func indexedStop(for stopId: String) -> Foli.Stop? {
+        stopsByID[stopId]
+    }
+
+    internal func indexedRoute(for routeId: String) -> Foli.Route? {
+        routesByID[routeId]
+    }
+
+    internal func indexedRoutes(forShortName shortName: String) -> [Foli.Route] {
+        routesByShortName[shortName] ?? []
     }
 }
 
