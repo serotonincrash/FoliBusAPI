@@ -12,19 +12,24 @@ import SwiftUI
 /// A property wrapper that provides a service interface for fetching Foli transit data
 /// with async methods for manual state management.
 ///
-/// This property wrapper requires a `FoliClient` to be provided either explicitly
-/// or via the SwiftUI environment.
+/// This property wrapper resolves a `FoliClient` either from an explicit client override
+/// or from the SwiftUI environment's configured provider.
 ///
 /// ## Usage
 ///
-/// Set the client at your app's root:
+/// Set the provider at your app's root:
 /// ```swift
 /// @main
 /// struct MyApp: App {
-///     var body: any Scene {
+///     var body: some Scene {
 ///         WindowGroup {
 ///             ContentView()
-///                 .environment(\.foliClient, .configured(cacheBehavior: .forceRefresh))
+///                 .environment(
+///                     \.foliClientProvider,
+///                     DefaultFoliClientProvider(
+///                         configuration: FoliClientConfiguration(cacheBehavior: .forceRefresh)
+///                     )
+///                 )
 ///         }
 ///     }
 /// }
@@ -51,8 +56,8 @@ public struct FoliService: DynamicProperty, Sendable {
     /// The injected custom client, if provided directly
     internal let explicitClient: FoliClient?
     
-    /// The client from the SwiftUI environment, if set
-    @Environment(\.foliClient) private var environmentClient
+    /// The client provider from the SwiftUI environment
+    @Environment(\.foliClientProvider) private var clientProvider
     
     /// Initialize with a custom client
     /// - Parameter client: A custom FoliClient instance to use
@@ -60,41 +65,18 @@ public struct FoliService: DynamicProperty, Sendable {
         self.explicitClient = client
     }
     
-    /// Initialize using the environment client
-    ///
-    /// This initializer requires that `\.foliClient` be set in the SwiftUI environment.
-    /// Set it at your app's root:
-    /// ```swift
-    /// ContentView().environment(\.foliClient, .configured(cacheBehavior: .forceRefresh))
-    /// ```
+    /// Initialize using the environment provider.
     public init() {
         self.explicitClient = nil
     }
     
     /// The FoliClient to use for service operations
-    /// Returns the explicit client, then the environment client
+    /// Returns the explicit client, then the environment provider's client
     internal var client: FoliClient {
-        if let explicit = explicitClient {
-            return explicit
-        }
-        guard let environment = environmentClient else {
-            fatalError(
-                """
-                FoliService requires a FoliClient injected into it. Set it via the environment:
-                
-                .environment(\\.foliClient, .configured(cacheBehavior: .cachedOrFetch))
-                
-                Or pass it explicitly:
-                
-                @FoliService(client: myClient) var foliService
-                """
-            )
-        }
-        return environment
+        explicitClient ?? clientProvider.client()
     }
     
     public var wrappedValue: FoliService {
         self
     }
 }
-

@@ -1,19 +1,68 @@
 import Foundation
 import SwiftUI
 
+@available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
+public struct FoliClientConfiguration: Sendable {
+    public let cacheBehavior: Foli.CacheBehavior
+    public let cacheTimeout: Foli.CacheTimeout
+    public let session: URLSession
+
+    public init(
+        cacheBehavior: Foli.CacheBehavior = .cachedOrFetch,
+        cacheTimeout: Foli.CacheTimeout = .default,
+        session: URLSession = .shared
+    ) {
+        self.cacheBehavior = cacheBehavior
+        self.cacheTimeout = cacheTimeout
+        self.session = session
+    }
+
+    public static let `default` = FoliClientConfiguration()
+}
+
+@available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
+public protocol FoliClientProviding: Sendable {
+    func client() -> FoliClient
+}
+
+@available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
+public final class DefaultFoliClientProvider: FoliClientProviding, @unchecked Sendable {
+    private let configuration: FoliClientConfiguration
+    private lazy var sharedClient: FoliClient = {
+        FoliClient(
+            session: configuration.session,
+            cachedBy: configuration.cacheBehavior,
+            withTimeout: configuration.cacheTimeout
+        )
+    }()
+
+    public init(configuration: FoliClientConfiguration = .default) {
+        self.configuration = configuration
+    }
+
+    public func client() -> FoliClient {
+        sharedClient
+    }
+}
+
 /// Main client for interacting with the Foli public transport API
 ///
-/// To configure caching behavior, inject a configured client via SwiftUI environment
-/// at your app's root, or pass it explicitly to views that need it.
+/// To configure client behavior for SwiftUI, inject a configured provider via the environment
+/// at your app's root, or pass a client explicitly to views that need it.
 ///
 /// ## Environment Setup
 /// ```swift
 /// @main
 /// struct MyApp: App {
-///     var body: any Scene {
+///     var body: some Scene {
 ///         WindowGroup {
 ///             ContentView()
-///                 .environment(\.foliClient, .configured(cacheBehavior: .forceRefresh))
+///                 .environment(
+///                     \.foliClientProvider,
+///                     DefaultFoliClientProvider(
+///                         configuration: FoliClientConfiguration(cacheBehavior: .forceRefresh)
+///                     )
+///                 )
 ///         }
 ///     }
 /// }
@@ -108,19 +157,23 @@ extension FoliClient {
 
 @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
 extension EnvironmentValues {
-    
-    /// The FoliClient instance to use for FoliService
-    /// Set this at your app's root to configure caching behavior:
+
+    /// The provider used by `FoliService` to resolve a `FoliClient`.
+    /// Set this at your app's root to control caching behavior while preserving a reusable client instance:
     /// ```swift
-    /// RootView().environment(\.foliClient, .configured(cacheBehavior: .forceRefresh))
+    /// RootView().environment(
+    ///     \.foliClientProvider,
+    ///     DefaultFoliClientProvider(
+    ///         configuration: FoliClientConfiguration(cacheBehavior: .forceRefresh)
+    ///     )
+    /// )
     /// ```
-    public var foliClient: FoliClient? {
-        get { self[FoliClientKey.self] }
-        set { self[FoliClientKey.self] = newValue }
+    public var foliClientProvider: any FoliClientProviding {
+        get { self[FoliClientProviderKey.self] }
+        set { self[FoliClientProviderKey.self] = newValue }
     }
-    
-    private struct FoliClientKey: EnvironmentKey {
-        static let defaultValue: FoliClient? = nil
+
+    private struct FoliClientProviderKey: EnvironmentKey {
+        static let defaultValue: any FoliClientProviding = DefaultFoliClientProvider()
     }
 }
-
