@@ -82,7 +82,27 @@ extension DefaultFoliClientProvider {
 /// ```
 @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
 public actor FoliClient {
-    
+    internal enum RequestKey: Hashable, Sendable {
+        case stopMonitoring(String)
+        case stops
+        case routes
+        case trips
+        case tripsForRoute(String)
+        case stopTimes
+        case stopTimesForTrip(String)
+        case stopTimesForStop(String)
+        case calendarDates
+    }
+
+    private enum InFlightTaskValue {
+        case arrivalResponse(Task<FoliArrivalResponse, Error>)
+        case stops(Task<[Foli.Stop], Error>)
+        case routes(Task<[Foli.Route], Error>)
+        case trips(Task<[Foli.Trip], Error>)
+        case stopTimes(Task<[Foli.StopTime], Error>)
+        case calendarDates(Task<[Foli.CalendarDate], Error>)
+    }
+
     /// Base URL for the Foli API
     private let baseURL = "https://data.foli.fi/siri"
     
@@ -100,6 +120,7 @@ public actor FoliClient {
     
     /// Shared decoder for API responses.
     private let decoder = JSONDecoder()
+    private var inFlightRequests: [RequestKey: InFlightTaskValue] = [:]
 
     /// Custom initializer for dependency injection (useful for testing)
     public init(session: URLSession = .shared, cachedBy cacheBehavior: Foli.CacheBehavior = .cachedOrFetch, withTimeout timeout: Foli.CacheTimeout = .default) {
@@ -167,6 +188,72 @@ public actor FoliClient {
         } catch {
             throw Foli.APIError.networkError(error)
         }
+    }
+
+    internal func performDeduplicated(_ key: RequestKey, operation: @escaping @Sendable () async throws -> FoliArrivalResponse) async throws -> FoliArrivalResponse {
+        if case .arrivalResponse(let task)? = inFlightRequests[key] {
+            return try await task.value
+        }
+
+        let task = Task { try await operation() }
+        inFlightRequests[key] = .arrivalResponse(task)
+        defer { inFlightRequests[key] = nil }
+        return try await task.value
+    }
+
+    internal func performDeduplicated(_ key: RequestKey, operation: @escaping @Sendable () async throws -> [Foli.Stop]) async throws -> [Foli.Stop] {
+        if case .stops(let task)? = inFlightRequests[key] {
+            return try await task.value
+        }
+
+        let task = Task { try await operation() }
+        inFlightRequests[key] = .stops(task)
+        defer { inFlightRequests[key] = nil }
+        return try await task.value
+    }
+
+    internal func performDeduplicated(_ key: RequestKey, operation: @escaping @Sendable () async throws -> [Foli.Route]) async throws -> [Foli.Route] {
+        if case .routes(let task)? = inFlightRequests[key] {
+            return try await task.value
+        }
+
+        let task = Task { try await operation() }
+        inFlightRequests[key] = .routes(task)
+        defer { inFlightRequests[key] = nil }
+        return try await task.value
+    }
+
+    internal func performDeduplicated(_ key: RequestKey, operation: @escaping @Sendable () async throws -> [Foli.Trip]) async throws -> [Foli.Trip] {
+        if case .trips(let task)? = inFlightRequests[key] {
+            return try await task.value
+        }
+
+        let task = Task { try await operation() }
+        inFlightRequests[key] = .trips(task)
+        defer { inFlightRequests[key] = nil }
+        return try await task.value
+    }
+
+    internal func performDeduplicated(_ key: RequestKey, operation: @escaping @Sendable () async throws -> [Foli.StopTime]) async throws -> [Foli.StopTime] {
+        if case .stopTimes(let task)? = inFlightRequests[key] {
+            return try await task.value
+        }
+
+        let task = Task { try await operation() }
+        inFlightRequests[key] = .stopTimes(task)
+        defer { inFlightRequests[key] = nil }
+        return try await task.value
+    }
+
+    internal func performDeduplicated(_ key: RequestKey, operation: @escaping @Sendable () async throws -> [Foli.CalendarDate]) async throws -> [Foli.CalendarDate] {
+        if case .calendarDates(let task)? = inFlightRequests[key] {
+            return try await task.value
+        }
+
+        let task = Task { try await operation() }
+        inFlightRequests[key] = .calendarDates(task)
+        defer { inFlightRequests[key] = nil }
+        return try await task.value
     }
 }
 

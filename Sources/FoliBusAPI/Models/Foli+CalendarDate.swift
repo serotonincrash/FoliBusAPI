@@ -1,4 +1,4 @@
-//
+ //
 //  Foli+CalendarDate.swift
 //  FoliBusAPI
 //
@@ -60,7 +60,7 @@ public extension Foli {
 // MARK: - Calendar Dates List Response
 /// Response containing all calendar date exceptions (GTFS calendar_dates.txt)
 /// The API returns a dictionary where keys are service IDs and values are arrays of date exceptions
-public struct FoliCalendarDatesList: Codable {
+public struct FoliCalendarDatesList: Codable, Sendable {
     /// Array of all calendar date exceptions across all services
     public let calendarDates: [Foli.CalendarDate]
     
@@ -70,7 +70,7 @@ public struct FoliCalendarDatesList: Codable {
     
     // MARK: - API Decoding Helper
     /// Helper struct to decode individual calendar date entries from the API
-    struct APICalendarDateEntry: Codable {
+    struct APICalendarDateEntry: Codable, Sendable {
         let date: String
         let exception_type: Int
     }
