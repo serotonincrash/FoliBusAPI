@@ -15,7 +15,9 @@ public extension FoliClient {
     /// - Parameter stopId: The ID of the stop to query
     /// - Returns: Stop monitoring response with arrival/departure information
     func fetchStopMonitoring(for stopId: String) async throws -> FoliArrivalResponse {
-        try await requestSIRI("/sm/\(stopId)", as: FoliArrivalResponse.self)
+        try await performDeduplicated(.stopMonitoring(stopId)) { [self] in
+            try await requestSIRI("/sm/\(stopId)", as: FoliArrivalResponse.self)
+        }
     }
     
     /// Fetch real-time arrival monitoring data for a specific stop using numeric ID
