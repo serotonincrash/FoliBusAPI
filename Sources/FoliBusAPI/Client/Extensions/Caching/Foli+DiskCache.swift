@@ -10,7 +10,7 @@ import Foundation
 public extension Foli {
     
     /// File-based cache implementation for GTFS data
-    /// 
+    ///
     /// Uses actor isolation to ensure thread-safe file operations.
     /// All methods are async to perform file I/O without blocking.
     actor DiskCache: Foli.Cache {
@@ -87,6 +87,10 @@ public extension Foli {
         public func saveRoutes(_ routes: [Foli.Route]) async throws {
             try await save(routes, type: .routes)
         }
+
+        public func loadStaleRoutes() async throws -> [Foli.Route]? {
+            return try await loadIgnoringFreshness(type: .routes)
+        }
         
         public func loadStops() async throws -> [Foli.Stop]? {
             return try await load(type: .stops)
@@ -94,6 +98,10 @@ public extension Foli {
         
         public func saveStops(_ stops: [Foli.Stop]) async throws {
             try await save(stops, type: .stops)
+        }
+
+        public func loadStaleStops() async throws -> [Foli.Stop]? {
+            return try await loadIgnoringFreshness(type: .stops)
         }
         
         public func loadTrips() async throws -> [Foli.Trip]? {
@@ -103,6 +111,10 @@ public extension Foli {
         public func saveTrips(_ trips: [Foli.Trip]) async throws {
             try await save(trips, type: .trips)
         }
+
+        public func loadStaleTrips() async throws -> [Foli.Trip]? {
+            return try await loadIgnoringFreshness(type: .trips)
+        }
         
         public func loadTrips(forRoute routeId: String) async throws -> [Foli.Trip]? {
             return try await load(type: .tripsForRoute(routeId))
@@ -110,6 +122,10 @@ public extension Foli {
         
         public func saveTrips(_ trips: [Foli.Trip], forRoute routeId: String) async throws {
             try await save(trips, type: .tripsForRoute(routeId))
+        }
+
+        public func loadStaleTrips(forRoute routeId: String) async throws -> [Foli.Trip]? {
+            return try await loadIgnoringFreshness(type: .tripsForRoute(routeId))
         }
         
         public func loadStopTimes() async throws -> [Foli.StopTime]? {
@@ -119,6 +135,10 @@ public extension Foli {
         public func saveStopTimes(_ stopTimes: [Foli.StopTime]) async throws {
             try await save(stopTimes, type: .stopTimes)
         }
+
+        public func loadStaleStopTimes() async throws -> [Foli.StopTime]? {
+            return try await loadIgnoringFreshness(type: .stopTimes)
+        }
         
         public func loadStopTimes(forTrip tripId: String) async throws -> [Foli.StopTime]? {
             return try await load(type: .stopTimesForTrip(tripId))
@@ -126,6 +146,10 @@ public extension Foli {
         
         public func saveStopTimes(_ stopTimes: [Foli.StopTime], forTrip tripId: String) async throws {
             try await save(stopTimes, type: .stopTimesForTrip(tripId))
+        }
+
+        public func loadStaleStopTimes(forTrip tripId: String) async throws -> [Foli.StopTime]? {
+            return try await loadIgnoringFreshness(type: .stopTimesForTrip(tripId))
         }
         
         public func loadStopTimes(forStop stopId: String) async throws -> [Foli.StopTime]? {
@@ -135,6 +159,10 @@ public extension Foli {
         public func saveStopTimes(_ stopTimes: [Foli.StopTime], forStop stopId: String) async throws {
             try await save(stopTimes, type: .stopTimesForStop(stopId))
         }
+
+        public func loadStaleStopTimes(forStop stopId: String) async throws -> [Foli.StopTime]? {
+            return try await loadIgnoringFreshness(type: .stopTimesForStop(stopId))
+        }
         
         public func loadCalendarDates() async throws -> [Foli.CalendarDate]? {
             return try await load(type: .calendarDates)
@@ -142,6 +170,10 @@ public extension Foli {
         
         public func saveCalendarDates(_ calendarDates: [Foli.CalendarDate]) async throws {
             try await save(calendarDates, type: .calendarDates)
+        }
+
+        public func loadStaleCalendarDates() async throws -> [Foli.CalendarDate]? {
+            return try await loadIgnoringFreshness(type: .calendarDates)
         }
         
         public func clearAllCache() async throws {
@@ -163,36 +195,17 @@ public extension Foli {
         }
         
         public func hasValidCache(for type: Foli.CacheResource) async -> Bool {
-            
-            // Load metadata from the cached file
             guard let metadata = try? await loadMetadata(for: type) else {
                 return false
             }
-            
-            // Check time-based validity
-            let age = Date().timeIntervalSince(metadata.cachedAt)
-            let isTimeValid = age <= timeoutDuration.validityDuration
-            
-            if isTimeValid {
-                // Cache is still within time window
+
+            if isMetadataFresh(metadata) {
                 return true
             }
-            
-            // Time-based check failed - check if dataset has changed on server
+
             do {
-                let latestDatasetId = try await fetchLatestDatasetId()
-                
-                // If the dataset ID matches, refresh the timestamp and consider cache valid
-                if latestDatasetId == metadata.datasetId {
-                    // Reload the data to refresh the metadata timestamp
-                    try? await refreshMetadataTimestamp(for: type)
-                    return true
-                } else {
-                    // New dataset available - invalidate cache
-                    return false
-                }
+                return try await revalidateCache(for: type)
             } catch {
-                // Network error or other issue - treat cache as valid to avoid breaking the app
                 return true
             }
         }
@@ -219,21 +232,40 @@ public extension Foli {
                 return try await currentDatasetId(for: nil)
             }
         }
-        
+
+        @discardableResult
+        public func revalidateCache(for type: Foli.CacheResource) async throws -> Bool {
+            guard let metadata = try await loadMetadata(for: type) else {
+                return false
+            }
+
+            let latestDatasetId = try await fetchLatestDatasetId()
+
+            if latestDatasetId == metadata.datasetId {
+                try? await refreshMetadataTimestamp(for: type)
+                return true
+            }
+
+            return false
+        }
+         
         // MARK: - Private Methods
         
         private func load<T: Codable>(type: Foli.CacheResource) async throws -> T? {
-            
             guard await hasValidCache(for: type) else {
                 return nil
             }
-            
+
+            return try await loadIgnoringFreshness(type: type)
+        }
+
+        private func loadIgnoringFreshness<T: Codable>(type: Foli.CacheResource) async throws -> T? {
             let fileURL = fileURL(for: type)
-            
+
             guard fileManager.fileExists(atPath: fileURL.path) else {
                 return nil
             }
-            
+
             let data = try Data(contentsOf: fileURL)
             let cachedData = try JSONDecoder().decode(CachedData<T>.self, from: data)
             return cachedData.data
@@ -447,6 +479,11 @@ public extension Foli {
             
             let gtfsInfo = try JSONDecoder().decode(GTFSInfoResponse.self, from: data)
             return gtfsInfo.latest
+        }
+        
+        private func isMetadataFresh(_ metadata: DatasetMetadata) -> Bool {
+            let age = Date().timeIntervalSince(metadata.cachedAt)
+            return age <= timeoutDuration.validityDuration
         }
     }
 }

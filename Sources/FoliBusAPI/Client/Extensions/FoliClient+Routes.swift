@@ -48,6 +48,17 @@ public extension FoliClient {
             }
             // fallthrough to fetch
             fallthrough
+
+        case .staleWhileRevalidate:
+            if let staleCached = try await cache?.loadStaleRoutes() {
+                refreshCacheInBackground(
+                    for: .routes,
+                    fetch: { [self] in try await fetchRoutesFromNetwork() },
+                    save: { [cache] routes in try await cache?.saveRoutes(routes) }
+                )
+                return staleCached
+            }
+            fallthrough
             
         case .forceRefresh:
             let routes = try await fetchRoutesFromNetwork()

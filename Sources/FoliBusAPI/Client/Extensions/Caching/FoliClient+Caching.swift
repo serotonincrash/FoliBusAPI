@@ -42,4 +42,24 @@ public extension FoliClient {
         guard let cache = cache else { return nil }
         return try await cache.currentDatasetId(for: type)
     }
+    
+    /// Revalidate a cached GTFS resource against the latest dataset metadata.
+    @discardableResult
+    func revalidateCache(for type: Foli.CacheResource) async throws -> Bool {
+        guard let cache = cache else { return false }
+        return try await cache.revalidateCache(for: type)
+    }
+
+    internal func refreshCacheInBackground<T>(for type: Foli.CacheResource, fetch: @escaping @Sendable () async throws -> T, save: @escaping @Sendable (T) async throws -> Void) {
+        Task {
+            do {
+                let cacheStillCurrent = try await self.revalidateCache(for: type)
+                guard !cacheStillCurrent else { return }
+                let freshValue = try await fetch()
+                try await save(freshValue)
+            } catch {
+                // Best-effort background refresh for stale-while-revalidate mode.
+            }
+        }
+    }
 }

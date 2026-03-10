@@ -48,6 +48,17 @@ public extension FoliClient {
                 return cached
             }
             fallthrough
+
+        case .staleWhileRevalidate:
+            if let staleCached = try await cache?.loadStaleStopTimes() {
+                refreshCacheInBackground(
+                    for: .stopTimes,
+                    fetch: { [self] in try await fetchStopTimesFromNetwork() },
+                    save: { [cache] stopTimes in try await cache?.saveStopTimes(stopTimes) }
+                )
+                return staleCached
+            }
+            fallthrough
             
         case .forceRefresh:
             let stopTimes = try await fetchStopTimesFromNetwork()
@@ -77,6 +88,17 @@ public extension FoliClient {
             }
             // fallthrough to fetch
             fallthrough
+
+        case .staleWhileRevalidate:
+            if let staleCached = try await cache?.loadStaleStopTimes(forTrip: tripId) {
+                refreshCacheInBackground(
+                    for: .stopTimesForTrip(tripId),
+                    fetch: { [self] in try await fetchStopTimesFromNetwork(forTrip: tripId) },
+                    save: { [cache] stopTimes in try await cache?.saveStopTimes(stopTimes, forTrip: tripId) }
+                )
+                return staleCached
+            }
+            fallthrough
             
         case .forceRefresh:
             let stopTimes = try await fetchStopTimesFromNetwork(forTrip: tripId)
@@ -104,6 +126,17 @@ public extension FoliClient {
         case .cachedOrFetch:
             if let cached = try await cache?.loadStopTimes(forStop: stopId) {
                 return cached
+            }
+            fallthrough
+
+        case .staleWhileRevalidate:
+            if let staleCached = try await cache?.loadStaleStopTimes(forStop: stopId) {
+                refreshCacheInBackground(
+                    for: .stopTimesForStop(stopId),
+                    fetch: { [self] in try await fetchStopTimesFromNetwork(forStop: stopId) },
+                    save: { [cache] stopTimes in try await cache?.saveStopTimes(stopTimes, forStop: stopId) }
+                )
+                return staleCached
             }
             fallthrough
             

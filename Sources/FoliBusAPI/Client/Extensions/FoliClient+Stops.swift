@@ -40,6 +40,17 @@ public extension FoliClient {
             }
             // fallthrough to fetch
             fallthrough
+
+        case .staleWhileRevalidate:
+            if let staleCached = try await cache?.loadStaleStops() {
+                refreshCacheInBackground(
+                    for: .stops,
+                    fetch: { [self] in try await fetchStopsFromNetwork() },
+                    save: { [cache] stops in try await cache?.saveStops(stops) }
+                )
+                return staleCached
+            }
+            fallthrough
             
         case .forceRefresh:
             let stops = try await fetchStopsFromNetwork()
