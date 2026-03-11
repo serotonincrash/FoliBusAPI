@@ -1,10 +1,3 @@
-//
-//  FoliTrip.swift
-//  FoliBusAPI
-//
-//  Created by sero on 26/2/26.
-//
-
 import Foundation
 
 public extension Foli {
@@ -41,7 +34,7 @@ public extension Foli {
             self.wheelchairAccessible = wheelchairAccessible
             self.bikesAllowed = bikesAllowed
         }
-        
+
         public enum CodingKeys: String, CodingKey {
             case routeId = "route_id"
             case serviceId = "service_id"

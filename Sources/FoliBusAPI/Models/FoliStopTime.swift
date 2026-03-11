@@ -1,10 +1,3 @@
-//
-//  FoliStopTime.swift
-//  FoliBusAPI
-//
-//  Created by sero on 26/2/26.
-//
-
 import Foundation
 
 public extension Foli {
@@ -44,7 +37,7 @@ public extension Foli {
             self.shapeDistTraveled = shapeDistTraveled
             self.timepoint = timepoint
         }
-        
+
         public enum CodingKeys: String, CodingKey {
             case tripId = "trip_id"
             case arrivalTime = "arrival_time"

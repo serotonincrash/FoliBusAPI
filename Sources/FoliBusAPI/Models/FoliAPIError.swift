@@ -9,7 +9,7 @@ public extension Foli {
         case decodingError(Error)
         case serverError(String)
         case noData
-        
+
         public var errorDescription: String? {
             switch self {
             case .invalidURL:

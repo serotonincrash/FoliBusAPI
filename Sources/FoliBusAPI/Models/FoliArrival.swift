@@ -1,6 +1,5 @@
 import Foundation
 
-
 /// Information about a vehicle arrival or departure
 public extension Foli {
     struct Arrival: Codable, Sendable, Identifiable {
@@ -31,7 +30,7 @@ public extension Foli {
         public let expectedDepartureTime: TimeInterval
         /// Delay in seconds (optional, may not always be present)
         public let delay: Int?
-        
+
         public init(
             recordedAtTime: TimeInterval,
             lineRef: String,
@@ -61,7 +60,7 @@ public extension Foli {
             self.expectedDepartureTime = expectedDepartureTime
             self.delay = delay
         }
-        
+
         enum CodingKeys: String, CodingKey {
             case recordedAtTime = "recordedattime"
             case lineRef = "lineref"
@@ -77,64 +76,64 @@ public extension Foli {
             case expectedDepartureTime = "expecteddeparturetime"
             case delay
         }
-        
+
         // MARK: - Computed Properties
-        
+
         /// Convert recorded time to Date
         public var recordedDate: Date {
             return Date(timeIntervalSince1970: recordedAtTime)
         }
-        
+
         /// Convert aimed arrival time to Date
         public var aimedArrivalDate: Date {
             return Date(timeIntervalSince1970: aimedArrivalTime)
         }
-        
+
         /// Convert expected arrival time to Date
         public var expectedArrivalDate: Date {
             return Date(timeIntervalSince1970: expectedArrivalTime)
         }
-        
+
         /// Convert aimed departure time to Date
         public var aimedDepartureDate: Date {
             return Date(timeIntervalSince1970: aimedDepartureTime)
         }
-        
+
         /// Convert expected departure time to Date
         public var expectedDepartureDate: Date {
             return Date(timeIntervalSince1970: expectedDepartureTime)
         }
-        
+
         /// Arrival delay in seconds (calculated if not provided)
         public var arrivalDelay: TimeInterval {
             return expectedArrivalTime - aimedArrivalTime
         }
-        
+
         /// Whether the vehicle is late (positive delay)
         public var isLate: Bool {
             return arrivalDelay > 0
         }
-        
+
         /// Whether the vehicle is early (negative delay)
         public var isEarly: Bool {
             return arrivalDelay < 0
         }
-        
+
         /// Whether the vehicle is on time
         public var isOnTime: Bool {
             return arrivalDelay == 0
         }
-        
+
         /// Time until arrival from now
         public func timeUntilArrival(from date: Date = Date()) -> TimeInterval {
             return expectedArrivalTime - date.timeIntervalSince1970
         }
-        
+
         /// Formatted time until arrival (e.g., "5 min")
         public func formattedTimeUntilArrival(from date: Date = Date()) -> String {
             let seconds = timeUntilArrival(from: date)
             let minutes = Int(seconds / 60)
-            
+
             if minutes <= 0 {
                 return "Due"
             } else if minutes < 60 {
@@ -149,7 +148,7 @@ public extension Foli {
                 }
             }
         }
-        
+
         /// Location coordinates if available
         public var location: CLLocationCoordinate2D? {
             guard let lat = latitude, let lon = longitude else {

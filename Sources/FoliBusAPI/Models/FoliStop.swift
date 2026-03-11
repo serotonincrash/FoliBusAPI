@@ -3,7 +3,6 @@ import Foundation
 // MARK: - Foli.Stop Model
 /// Information about a single stop (GTFS-compliant)
 public extension Foli {
-    
     struct Stop: Codable, Sendable, Identifiable, Equatable {
         /// The unique identifier for the stop (GTFS `stop_id`)
         public let id: String
@@ -23,7 +22,7 @@ public extension Foli {
         public let parentStation: String?
         /// Wheelchair boarding information (GTFS wheelchair_boarding)
         public let wheelchairBoarding: Int?
-        
+
         public init(
             id: String,
             stopName: String,
@@ -45,7 +44,7 @@ public extension Foli {
             self.parentStation = parentStation
             self.wheelchairBoarding = wheelchairBoarding
         }
-        
+
         enum CodingKeys: String, CodingKey {
             case id
             case stopName = "stop_name"
@@ -57,14 +56,14 @@ public extension Foli {
             case parentStation = "parent_station"
             case wheelchairBoarding = "wheelchair_boarding"
         }
-        
+
         // MARK: - Computed Properties
-        
+
         /// Whether the stop has valid coordinates
         public var hasLocation: Bool {
             return stopLat != nil && stopLon != nil
         }
-        
+
         /// Location coordinates if available
         public var location: CLLocationCoordinate2D? {
             guard let lat = stopLat, let lon = stopLon else {
@@ -72,7 +71,7 @@ public extension Foli {
             }
             return CLLocationCoordinate2D(latitude: lat, longitude: lon)
         }
-        
+
         /// Display name including stop code if available
         public var displayName: String {
             if let code = stopCode, !code.isEmpty {

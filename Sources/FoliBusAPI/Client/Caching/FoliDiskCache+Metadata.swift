@@ -1,13 +1,11 @@
 import Foundation
 
 public extension Foli.DiskCache {
-    /// Metadata about a cached dataset
     internal struct DatasetMetadata: Codable {
         let datasetId: String
         let cachedAt: Date
     }
 
-    /// Response from the Föli GTFS API endpoint
     internal struct GTFSInfoResponse: Codable {
         let latest: String
         let datasets: [String]
@@ -18,13 +16,11 @@ public extension Foli.DiskCache {
         }
     }
 
-    /// Wrapper that combines metadata with cached data
     internal struct CachedData<T: Codable>: Codable {
         let metadata: DatasetMetadata
         let data: T
     }
 
-    /// Load only the metadata from a cached file (without loading the full data)
     internal func loadMetadata(for type: Foli.CacheResource) async throws -> DatasetMetadata? {
         let fileURL = fileURL(for: type)
 
@@ -43,7 +39,6 @@ public extension Foli.DiskCache {
         return nil
     }
 
-    /// Refresh the metadata timestamp for a cached resource (keeping the same data and dataset ID)
     internal func refreshMetadataTimestamp(for type: Foli.CacheResource) async throws {
         let fileURL = fileURL(for: type)
 
@@ -97,7 +92,6 @@ public extension Foli.DiskCache {
         try updatedData.write(to: fileURL, options: .atomic)
     }
 
-    /// Find the most recently cached dataset ID across all resources
     internal func loadMostRecentDatasetId() async throws -> String? {
         let contents = try fileManager.contentsOfDirectory(
             at: cacheDirectory,
@@ -125,7 +119,6 @@ public extension Foli.DiskCache {
         return mostRecentDatasetId
     }
 
-    /// Load metadata from a specific URL
     internal func loadMetadataFromURL(_ url: URL) async throws -> DatasetMetadata {
         let data = try Data(contentsOf: url)
 

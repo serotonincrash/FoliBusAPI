@@ -1,10 +1,3 @@
-//
-//  FoliDiskCache.swift
-//  FoliBusAPI
-//
-//  Created by sero on 27/2/26.
-//
-
 import Foundation
 
 public extension Foli {
