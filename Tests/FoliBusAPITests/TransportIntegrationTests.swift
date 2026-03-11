@@ -32,7 +32,7 @@ struct TransportIntegrationTests {
         #expect(routes.count == 1)
         #expect(routes.first?.id == "1")
         #expect(requests.count == 1)
-        #expect(requests.first?.httpMethod == nil)
+        #expect(requests.first?.httpMethod == "GET")
         #expect(requests.first?.url?.absoluteString == "https://data.foli.fi/gtfs/routes")
     }
 
@@ -44,9 +44,10 @@ struct TransportIntegrationTests {
         }
         let client = FoliClient(transport: transport, cachedBy: .noCache)
 
-        await #expect(throws: Foli.APIError.self) {
+        do {
             _ = try await client.fetchRoutes()
-        } performing: { error in
+            Issue.record("Expected fetchRoutes to throw invalidResponse")
+        } catch let error as Foli.APIError {
             guard case .invalidResponse = error else {
                 Issue.record("Expected invalidResponse, got \(error)")
                 return
@@ -61,9 +62,10 @@ struct TransportIntegrationTests {
         }
         let client = FoliClient(transport: transport, cachedBy: .noCache)
 
-        await #expect(throws: Foli.APIError.self) {
+        do {
             _ = try await client.fetchRoutes()
-        } performing: { error in
+            Issue.record("Expected fetchRoutes to throw networkError")
+        } catch let error as Foli.APIError {
             guard case .networkError(let wrappedError) = error,
                   let urlError = wrappedError as? URLError else {
                 Issue.record("Expected networkError wrapping URLError, got \(error)")
