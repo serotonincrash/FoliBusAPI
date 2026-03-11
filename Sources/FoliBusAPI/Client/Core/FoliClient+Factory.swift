@@ -16,7 +16,7 @@ extension FoliClient {
         session: URLSession = .shared
     ) -> FoliClient {
         FoliClient(
-            session: session,
+            transport: URLSessionTransport(session: session),
             cachedBy: cacheBehavior,
             withTimeout: cacheTimeout
         )

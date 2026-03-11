@@ -38,7 +38,8 @@ extension FoliClient {
 
     private func request<T: Decodable>(_ url: URL, as type: T.Type) async throws -> T {
         do {
-            let (data, response) = try await session.data(from: url)
+            let request = URLRequest(url: url)
+            let (data, response) = try await transport.data(for: request)
 
             guard let httpResponse = response as? HTTPURLResponse,
                   (200...299).contains(httpResponse.statusCode) else {

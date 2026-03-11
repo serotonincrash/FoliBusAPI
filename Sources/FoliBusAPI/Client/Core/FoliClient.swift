@@ -38,8 +38,8 @@ public actor FoliClient {
     /// Base URL for the Foli GTFS API
     internal let gtfsBaseURL = "https://data.foli.fi/gtfs"
 
-    /// URLSession for making network requests
-    internal let session: URLSession
+    /// Transport used for making network requests
+    internal let transport: any FoliTransport
 
     /// Cache for GTFS data (optional - set to enable caching)
     internal var cache: (any Foli.Cache)?
@@ -56,7 +56,20 @@ public actor FoliClient {
 
     /// Custom initializer for dependency injection (useful for testing)
     public init(session: URLSession = .shared, cachedBy cacheBehavior: Foli.CacheBehavior = .cachedOrFetch, withTimeout timeout: Foli.CacheTimeout = .default) {
-        self.session = session
+        self.transport = URLSessionTransport(session: session)
+        self.cacheBehavior = cacheBehavior
+
+        do {
+            self.cache = try Foli.DiskCache(timeout: timeout)
+        } catch {
+            print("An error occured initialising the cache for FoliAPI.")
+            self.cacheBehavior = .noCache
+        }
+    }
+
+    /// Custom initializer for injecting a transport directly.
+    public init(transport: any FoliTransport, cachedBy cacheBehavior: Foli.CacheBehavior = .cachedOrFetch, withTimeout timeout: Foli.CacheTimeout = .default) {
+        self.transport = transport
         self.cacheBehavior = cacheBehavior
 
         do {
