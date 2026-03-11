@@ -108,7 +108,7 @@ public extension Foli {
 
 // MARK: - Route List Response
 /// Response containing all known routes (GTFS routes.txt)
-public struct FoliRouteList: Codable {
+public struct FoliRouteList: Codable, Sendable {
     /// Array of all routes
     public let routes: [Foli.Route]
     
@@ -117,7 +117,7 @@ public struct FoliRouteList: Codable {
     }
     // MARK: - API Decoding Helper
     /// Helper struct to decode the API response format where route_type is a number
-    struct APIRouteData: Codable {
+    struct APIRouteData: Codable, Sendable {
         let route_id: String
         let route_short_name: String
         let route_long_name: String

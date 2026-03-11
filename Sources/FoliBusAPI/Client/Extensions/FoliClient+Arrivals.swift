@@ -15,18 +15,8 @@ public extension FoliClient {
     /// - Parameter stopId: The ID of the stop to query
     /// - Returns: Stop monitoring response with arrival/departure information
     func fetchStopMonitoring(for stopId: String) async throws -> FoliArrivalResponse {
-        let url = try makeEndpointURL(path: "/sm/\(stopId)")
-        let (data, response) = try await session.data(from: url)
-        
-        guard let httpResponse = response as? HTTPURLResponse,
-              (200...299).contains(httpResponse.statusCode) else {
-            throw Foli.APIError.invalidResponse
-        }
-        
-        do {
-            return try JSONDecoder().decode(FoliArrivalResponse.self, from: data)
-        } catch {
-            throw Foli.APIError.decodingError(error)
+        try await performDeduplicated(.stopMonitoring(stopId)) { [self] in
+            try await requestSIRI("/sm/\(stopId)", as: FoliArrivalResponse.self)
         }
     }
     
@@ -55,4 +45,3 @@ public extension FoliClient {
         return try await fetchArrivals(for: String(stopId))
     }
 }
-

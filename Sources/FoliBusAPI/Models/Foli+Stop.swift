@@ -85,10 +85,10 @@ public extension Foli {
 
 // MARK: - Stop List Response
 /// Response containing all known stops (GTFS stops.txt)
-public struct FoliStopList: Codable {
+public struct FoliStopList: Codable, Sendable {
     
     /// Private helper struct to decode the API response format where lat/lon are numbers
-    private struct APIStopData: Decodable {
+    private struct APIStopData: Decodable, Sendable {
         let stop_name: String
         let stop_code: String?
         let stop_lat: Double?
