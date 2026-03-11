@@ -60,7 +60,7 @@ struct FoliStopListTests {
     func decodeWithCoordinates() async throws {
         let json = """
         {
-            "1": {"stop_name": "Central Station", "stop_lat": "60.45", "stop_lon": "22.27"},
+            "1": {"stop_name": "Central Station", "stop_lat": 60.45, "stop_lon": 22.27},
             "2": {"stop_name": "Market Square", "stop_code": "002"}
         }
         """.data(using: .utf8)!
@@ -95,11 +95,13 @@ struct FoliStopListTests {
         let stopList = FoliStopList(stops: stops)
         
         let encodedData = try JSONEncoder().encode(stopList)
-        let decoded = try JSONSerialization.jsonObject(with: encodedData) as! [String: [String: String]]
-        
+        let decoded = try #require(JSONSerialization.jsonObject(with: encodedData) as? [String: [String: String]])
+        let firstStop = try #require(decoded["1"])
+        let secondStop = try #require(decoded["2"])
+
         #expect(decoded.count == 2)
-        #expect(decoded["1"]?["stop_name"] == "Central Station")
-        #expect(decoded["2"]?["stop_name"] == "Market Square")
+        #expect(firstStop["stop_name"] == "Central Station")
+        #expect(secondStop["stop_name"] == "Market Square")
     }
     
     @Test("Round-trip encode and decode FoliStopList")
@@ -220,11 +222,11 @@ struct FoliRouteListTests {
     @Test("Decode FoliRouteList from valid JSON")
     func decodeFromValidJSON() async throws {
         let json = """
-        {
-            "1001": {"route_short_name": "15", "route_long_name": "Harbor - University", "route_type": "3"},
-            "1002": {"route_short_name": "61", "route_long_name": "Airport Express", "route_type": "3"},
-            "1003": {"route_short_name": "1", "route_long_name": "City Center Loop", "route_type": "0", "route_color": "FF0000"}
-        }
+        [
+            {"route_id": "1001", "route_short_name": "15", "route_long_name": "Harbor - University", "route_type": 3},
+            {"route_id": "1002", "route_short_name": "61", "route_long_name": "Airport Express", "route_type": 3},
+            {"route_id": "1003", "route_short_name": "1", "route_long_name": "City Center Loop", "route_type": 0, "route_color": "FF0000"}
+        ]
         """.data(using: .utf8)!
         
         let routeList = try JSONDecoder().decode(FoliRouteList.self, from: json)
@@ -238,9 +240,9 @@ struct FoliRouteListTests {
     @Test("Decode FoliRouteList with colors")
     func decodeWithColors() async throws {
         let json = """
-        {
-            "1001": {"route_short_name": "15", "route_long_name": "Harbor - University", "route_type": "3", "route_color": "007AC3", "route_text_color": "FFFFFF"}
-        }
+        [
+            {"route_id": "1001", "route_short_name": "15", "route_long_name": "Harbor - University", "route_type": 3, "route_color": "007AC3", "route_text_color": "FFFFFF"}
+        ]
         """.data(using: .utf8)!
         
         let routeList = try JSONDecoder().decode(FoliRouteList.self, from: json)
@@ -293,7 +295,7 @@ struct FoliRouteListTests {
     
     @Test("Decode FoliRouteList from empty JSON object")
     func decodeFromEmptyJSON() async throws {
-        let json = "{}".data(using: .utf8)!
+        let json = "[]".data(using: .utf8)!
         
         let routeList = try JSONDecoder().decode(FoliRouteList.self, from: json)
         
@@ -309,12 +311,15 @@ struct FoliRouteListTests {
         let routeList = FoliRouteList(routes: routes)
         
         let encodedData = try JSONEncoder().encode(routeList)
-        let decoded = try JSONSerialization.jsonObject(with: encodedData) as! [String: [String: String]]
-        
+        let decoded = try #require(JSONSerialization.jsonObject(with: encodedData) as? [[String: Any]])
+        let firstRoute = try #require(decoded.first { ($0["route_id"] as? String) == "1001" })
+        let secondRoute = try #require(decoded.first { ($0["route_id"] as? String) == "1002" })
+
         #expect(decoded.count == 2)
-        #expect(decoded["1001"]?["route_short_name"] == "15")
-        #expect(decoded["1001"]?["route_long_name"] == "Harbor - University")
-        #expect(decoded["1002"]?["route_short_name"] == "61")
+        #expect(firstRoute["route_short_name"] as? String == "15")
+        #expect(firstRoute["route_long_name"] as? String == "Harbor - University")
+        #expect((firstRoute["route_type"] as? Int) == 3 || (firstRoute["route_type"] as? NSNumber)?.intValue == 3)
+        #expect(secondRoute["route_short_name"] as? String == "61")
     }
     
     @Test("Round-trip encode and decode FoliRouteList")
@@ -365,13 +370,11 @@ struct FoliRouteListTests {
     
     @Test("SwiftUI.Color hex parsing works correctly")
     func colorHexParsing() async throws {
-        let red = SwiftUI.Color(hex: "FF0000")
-        let green = SwiftUI.Color(hex: "00FF00")
-        let blue = SwiftUI.Color(hex: "0000FF")
-        let withHash = SwiftUI.Color(hex: "#007AC3")
-        
-        // Just verify these don't crash - actual color comparison is complex
-        #expect(true)
+        _ = SwiftUI.Color(hex: "FF0000")
+        _ = SwiftUI.Color(hex: "00FF00")
+        _ = SwiftUI.Color(hex: "0000FF")
+        _ = SwiftUI.Color(hex: "#007AC3")
+
+        #expect(Bool(true))
     }
 }
-
