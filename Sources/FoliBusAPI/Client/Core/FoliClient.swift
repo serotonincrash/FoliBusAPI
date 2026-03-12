@@ -77,7 +77,7 @@ public actor FoliClient {
         do {
             self.cache = try Foli.DiskCache(timeout: timeout)
         } catch {
-            print("An error occurred initialising the cache for FoliAPI. Defaulting to no cache implementation.")
+            print("An error occurred initialising the cache for FoliBusAPI. Defaulting to no cache implementation.")
             self.cacheBehavior = .noCache
         }
     }
