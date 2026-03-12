@@ -1,4 +1,6 @@
 # FoliBusAPI
+[![](https://img.shields.io/endpoint?url=https%3A%2F%2Fswiftpackageindex.com%2Fapi%2Fpackages%2Fserotonincrash%2FFoliBusAPI%2Fbadge%3Ftype%3Dswift-versions)](https://swiftpackageindex.com/serotonincrash/FoliBusAPI)
+[![](https://img.shields.io/endpoint?url=https%3A%2F%2Fswiftpackageindex.com%2Fapi%2Fpackages%2Fserotonincrash%2FFoliBusAPI%2Fbadge%3Ftype%3Dplatforms)](https://swiftpackageindex.com/serotonincrash/FoliBusAPI)
 
 A native Swift package for accessing the Föli (Turku Region Public Transport) real-time public transport API. It's quick, utilising modern Swift Concurrency and a modern `await`able API, and a built in caching layer.
 
