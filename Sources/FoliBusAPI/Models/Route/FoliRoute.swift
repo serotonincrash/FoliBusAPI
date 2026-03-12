@@ -24,6 +24,17 @@ public extension Foli {
         /// Agency that operates this route (GTFS agency_id)
         public let agencyId: String?
 
+        /// Creates a route value using GTFS route fields.
+        /// - Parameters:
+        ///   - id: The GTFS `route_id` value.
+        ///   - shortName: The GTFS `route_short_name`, often the line number.
+        ///   - longName: The GTFS `route_long_name`.
+        ///   - routeDesc: Optional GTFS `route_desc` value.
+        ///   - routeType: The GTFS `route_type` integer.
+        ///   - routeUrl: Optional GTFS `route_url` value.
+        ///   - routeColor: Optional GTFS `route_color` hex string.
+        ///   - routeTextColor: Optional GTFS `route_text_color` hex string.
+        ///   - agencyId: Optional GTFS `agency_id` value.
         public init(
             id: String,
             shortName: String,

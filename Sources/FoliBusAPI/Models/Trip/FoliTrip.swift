@@ -1,6 +1,7 @@
 import Foundation
 
 public extension Foli {
+    /// Planned GTFS trip metadata for a single service run.
     struct Trip: Codable, Sendable, Identifiable, Equatable {
         public let id = UUID()
         public let routeId: String?
@@ -13,6 +14,17 @@ public extension Foli {
         public let wheelchairAccessible: Int
         public let bikesAllowed: Int?
 
+        /// Creates a trip value using GTFS trip fields.
+        /// - Parameters:
+        ///   - routeId: Optional GTFS `route_id` value.
+        ///   - serviceId: The GTFS `service_id` value.
+        ///   - tripId: Optional GTFS `trip_id` value.
+        ///   - tripHeadsign: The GTFS `trip_headsign` value.
+        ///   - directionId: The GTFS `direction_id` value.
+        ///   - blockId: The GTFS `block_id` value.
+        ///   - shapeId: The GTFS `shape_id` value.
+        ///   - wheelchairAccessible: The GTFS `wheelchair_accessible` value.
+        ///   - bikesAllowed: Optional GTFS `bikes_allowed` value.
         public init(
             routeId: String? = nil,
             serviceId: String,

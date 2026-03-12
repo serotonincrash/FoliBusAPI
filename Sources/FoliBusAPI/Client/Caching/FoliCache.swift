@@ -1,9 +1,14 @@
 import Foundation
 
 public extension Foli {
-    /// Protocol for caching GTFS data locally
+    /// A cache interface for storing and retrieving GTFS-backed resources.
     ///
-    /// All methods are async to prevent blocking and support actor-isolated implementations.
+    /// The package ships with ``Foli/DiskCache`` as its default implementation,
+    /// but custom caches can conform to this protocol to provide alternate storage
+    /// or invalidation behavior.
+    ///
+    /// All methods are asynchronous to support actor-isolated implementations and
+    /// avoid blocking the caller.
     protocol Cache: Sendable {
         /// Load cached routes if available and not expired
         func loadRoutes() async throws -> [Foli.Route]?

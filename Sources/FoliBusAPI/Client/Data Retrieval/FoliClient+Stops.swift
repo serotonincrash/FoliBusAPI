@@ -31,9 +31,8 @@ public extension FoliClient {
     
     // MARK: - Stops with Caching
     
-    /// Fetch stops with optional caching control
-    /// - Parameter cacheBehavior: Cache behavior (default: .cachedOrFetch)
-    /// - Returns: Array of Stop objects
+    /// Fetch stops using the client's configured caching behavior.
+    /// - Returns: Array of Stop objects.
     func fetchStops() async throws -> [Foli.Stop] {
         switch self.cacheBehavior {
         case .cachedOrFetch:

@@ -2,12 +2,19 @@ import Foundation
 
 // MARK: - Errors
 public extension Foli {
+    /// Errors that can occur while constructing requests, executing them, or decoding responses.
     enum APIError: Error, LocalizedError, Sendable {
+        /// A request URL could not be constructed.
         case invalidURL
+        /// The server response was missing or had an unexpected status code.
         case invalidResponse
+        /// The transport layer failed before a valid response could be produced.
         case networkError(Error)
+        /// The response payload could not be decoded into the requested model.
         case decodingError(Error)
+        /// The server returned an application-level error payload.
         case serverError(String)
+        /// A requested cached value was unavailable.
         case noData
 
         public var errorDescription: String? {

@@ -31,6 +31,21 @@ public extension Foli {
         /// Delay in seconds (optional, may not always be present)
         public let delay: Int?
 
+        /// Creates an arrival or departure snapshot.
+        /// - Parameters:
+        ///   - recordedAtTime: Unix timestamp for the latest vehicle update.
+        ///   - lineRef: Public line reference, such as `15` or `61`.
+        ///   - monitored: Indicates whether the vehicle provides real-time updates.
+        ///   - latitude: Optional vehicle latitude.
+        ///   - longitude: Optional vehicle longitude.
+        ///   - originAimedDepartureTime: Planned departure time from the trip origin.
+        ///   - destinationAimedArrivalTime: Planned arrival time at the trip destination.
+        ///   - destinationDisplay: Display text shown for the destination.
+        ///   - aimedArrivalTime: Planned arrival time at this stop.
+        ///   - expectedArrivalTime: Estimated real arrival time at this stop.
+        ///   - aimedDepartureTime: Planned departure time from this stop.
+        ///   - expectedDepartureTime: Estimated real departure time from this stop.
+        ///   - delay: Optional delay in seconds.
         public init(
             recordedAtTime: TimeInterval,
             lineRef: String,

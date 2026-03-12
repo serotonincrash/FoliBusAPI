@@ -23,6 +23,17 @@ public extension Foli {
         /// Wheelchair boarding information (GTFS wheelchair_boarding)
         public let wheelchairBoarding: Int?
 
+        /// Creates a stop value using GTFS stop fields.
+        /// - Parameters:
+        ///   - id: The GTFS `stop_id` value.
+        ///   - stopName: The GTFS `stop_name` value.
+        ///   - stopCode: Optional GTFS `stop_code` value.
+        ///   - stopLat: Optional GTFS `stop_lat` value.
+        ///   - stopLon: Optional GTFS `stop_lon` value.
+        ///   - zoneId: Optional GTFS `zone_id` value.
+        ///   - locationType: Optional GTFS `location_type` value.
+        ///   - parentStation: Optional GTFS `parent_station` value.
+        ///   - wheelchairBoarding: Optional GTFS `wheelchair_boarding` value.
         public init(
             id: String,
             stopName: String,

@@ -39,8 +39,8 @@ public extension FoliClient {
     
     // MARK: - Trips with Caching
     
-    /// Fetch trips with optional caching control
-    /// - Returns: Array of Trip objects
+    /// Fetch all trips using the client's configured caching behavior.
+    /// - Returns: Array of Trip objects.
     func fetchTrips() async throws -> [Foli.Trip] {
         switch self.cacheBehavior {
         case .cachedOrFetch:
@@ -77,9 +77,9 @@ public extension FoliClient {
         }
     }
     
-    /// Fetch trips for a specific route with optional caching control
-    /// - Parameter routeId: The ID of the route to fetch trips for
-    /// - Returns: Array of Trip objects belonging to the specified route
+    /// Fetch trips for a specific route using the client's configured caching behavior.
+    /// - Parameter routeId: The ID of the route to fetch trips for.
+    /// - Returns: Array of Trip objects belonging to the specified route.
     func fetchTrips(forRoute routeId: String) async throws -> [Foli.Trip] {
         switch self.cacheBehavior {
         case .cachedOrFetch:

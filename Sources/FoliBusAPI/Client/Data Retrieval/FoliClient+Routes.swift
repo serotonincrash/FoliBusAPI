@@ -40,8 +40,8 @@ public extension FoliClient {
     
     // MARK: - Routes with Caching
     
-    /// Fetch routes with optional caching control
-    /// - Returns: Array of Route objects
+    /// Fetch routes using the client's configured caching behavior.
+    /// - Returns: Array of Route objects.
     func fetchRoutes() async throws -> [Foli.Route] {
         switch self.cacheBehavior {
         case .cachedOrFetch:

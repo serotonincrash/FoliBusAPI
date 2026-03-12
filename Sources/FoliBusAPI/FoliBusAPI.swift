@@ -1,6 +1,10 @@
 import Foundation
 
-/// Main module entry point for the FoliBusAPI package
+/// Convenience facade for common Föli API operations.
+///
+/// Use ``FoliBusAPI`` when you want simple static entry points backed by the shared
+/// default client provider. For more control over transport, caching, or environment
+/// integration, use ``FoliClient`` directly.
 @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
 public final class FoliBusAPI {
     private static let defaultProvider = DefaultFoliClientProvider.shared
@@ -11,25 +15,25 @@ public final class FoliBusAPI {
     
     // MARK: - Convenience Methods - Stops
     
-    /// Fetch stop monitoring data for a stop
-    /// - Parameter stopId: The stop ID to monitor
-    /// - Returns: Array of vehicle arrivals
+    /// Fetch real-time arrival data for a stop identified by string ID.
+    /// - Parameter stopId: The stop ID to monitor.
+    /// - Returns: Array of vehicle arrivals.
     public static func fetchArrivals(for stopId: String) async throws -> [Foli.Arrival] {
         let client = defaultClient()
         return try await client.fetchArrivals(for: stopId)
     }
     
-    /// Fetch stop monitoring data for a stop
-    /// - Parameter stopId: The stop ID to monitor
-    /// - Returns: Array of vehicle arrivals
+    /// Fetch real-time arrival data for a stop identified by numeric ID.
+    /// - Parameter stopId: The numeric stop ID to monitor.
+    /// - Returns: Array of vehicle arrivals.
     public static func fetchArrivals(for stopId: Int) async throws -> [Foli.Arrival] {
         let client = defaultClient()
         return try await client.fetchArrivals(for: stopId)
     }
     
-    /// Fetch stop monitoring data for a stop
-    /// - Parameter stop: The stop to monitor
-    /// - Returns: Array of vehicle arrivals
+    /// Fetch real-time arrival data for a specific stop model.
+    /// - Parameter stop: The stop to monitor.
+    /// - Returns: Array of vehicle arrivals.
     public static func fetchArrivals(for stop: Foli.Stop) async throws -> [Foli.Arrival] {
         let client = defaultClient()
         return try await client.fetchArrivals(for: stop.id)

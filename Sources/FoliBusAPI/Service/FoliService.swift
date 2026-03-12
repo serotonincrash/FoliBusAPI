@@ -59,13 +59,13 @@ public struct FoliService: DynamicProperty, Sendable {
     /// The client provider from the SwiftUI environment
     @Environment(\.foliClientProvider) private var clientProvider
     
-    /// Initialize with a custom client
-    /// - Parameter client: A custom FoliClient instance to use
+    /// Creates a service wrapper backed by an explicit client instance.
+    /// - Parameter client: The client to use for service operations.
     public init(client: FoliClient) {
         self.explicitClient = client
     }
     
-    /// Initialize using the environment provider.
+    /// Creates a service wrapper that resolves its client from the SwiftUI environment.
     public init() {
         self.explicitClient = nil
     }
@@ -76,6 +76,7 @@ public struct FoliService: DynamicProperty, Sendable {
         explicitClient ?? clientProvider.client()
     }
     
+    /// The property-wrapper value exposed to the enclosing view.
     public var wrappedValue: FoliService {
         self
     }

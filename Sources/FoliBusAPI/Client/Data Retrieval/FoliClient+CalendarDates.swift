@@ -23,8 +23,8 @@ public extension FoliClient {
     
     // MARK: - Calendar Dates with Caching
     
-    /// Fetch calendar dates with optional caching control
-    /// - Returns: Array of CalendarDate objects
+    /// Fetch calendar dates using the client's configured caching behavior.
+    /// - Returns: Array of CalendarDate objects.
     func fetchCalendarDates() async throws -> [Foli.CalendarDate] {
         switch self.cacheBehavior {
         case .cachedOrFetch:

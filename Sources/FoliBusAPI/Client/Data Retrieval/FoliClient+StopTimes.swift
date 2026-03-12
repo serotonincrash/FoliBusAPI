@@ -44,9 +44,8 @@ public extension FoliClient {
     
     // MARK: - Stop Times with Caching
     
-    /// Fetch all stop times with optional caching control
-    /// - Parameter cacheBehavior: Cache behavior (default: .cachedOrFetch)
-    /// - Returns: Array of StopTime objects
+    /// Fetch all stop times using the client's configured caching behavior.
+    /// - Returns: Array of StopTime objects.
     func fetchStopTimes() async throws -> [Foli.StopTime] {
         switch self.cacheBehavior {
         case .cachedOrFetch:
@@ -122,11 +121,9 @@ public extension FoliClient {
         }
     }
     
-    /// Fetch stop times for a stop with optional caching control
-    /// - Parameters:
-    ///   - stopId: The ID of the stop
-    ///   - cacheBehavior: Cache behavior (default: .cachedOrFetch)
-    /// - Returns: Array of StopTime objects associated with the stop
+    /// Fetch stop times for a stop using the client's configured caching behavior.
+    /// - Parameter stopId: The ID of the stop.
+    /// - Returns: Array of StopTime objects associated with the stop.
     func fetchStopTimes(forStopId stopId: String) async throws -> [Foli.StopTime] {
         switch self.cacheBehavior {
         case .cachedOrFetch:

@@ -11,25 +11,25 @@ import Foundation
 @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
 public extension FoliClient {
     
-    /// Fetch real-time arrival data for a specific stop
-    /// - Parameter stopId: The ID of the stop to query
-    /// - Returns: Stop monitoring response with arrival/departure information
+    /// Fetch stop-monitoring data for a stop identified by string ID.
+    /// - Parameter stopId: The stop ID to query.
+    /// - Returns: A stop-monitoring response containing arrivals and departures.
     func fetchStopMonitoring(for stopId: String) async throws -> FoliArrivalResponse {
         try await performDeduplicated(.stopMonitoring(stopId)) { [self] in
             try await requestSIRI("/sm/\(stopId)", as: FoliArrivalResponse.self)
         }
     }
     
-    /// Fetch real-time arrival monitoring data for a specific stop using numeric ID
-    /// - Parameter stopId: The numeric ID of the stop to query
-    /// - Returns: Stop monitoring response with arrival/departure information
+    /// Fetch stop-monitoring data for a stop identified by numeric ID.
+    /// - Parameter stopId: The numeric stop ID to query.
+    /// - Returns: A stop-monitoring response containing arrivals and departures.
     func fetchStopMonitoring(for stopId: Int) async throws -> FoliArrivalResponse {
         return try await fetchStopMonitoring(for: String(stopId))
     }
     
-    /// Fetch arrivals only for a specific stop
-    /// - Parameter stopId: The ID of the stop to monitor
-    /// - Returns: Array of vehicle arrivals
+    /// Fetch arrivals for a stop identified by string ID.
+    /// - Parameter stopId: The stop ID to monitor.
+    /// - Returns: Array of vehicle arrivals.
     func fetchArrivals(for stopId: String) async throws -> [Foli.Arrival] {
         let response = try await fetchStopMonitoring(for: stopId)
         guard response.isValid else {
@@ -38,9 +38,9 @@ public extension FoliClient {
         return response.result
     }
     
-    /// Fetch arrivals only for a specific stop using numeric ID
-    /// - Parameter stopId: The numeric ID of the stop to monitor
-    /// - Returns: Array of vehicle arrivals
+    /// Fetch arrivals for a stop identified by numeric ID.
+    /// - Parameter stopId: The numeric stop ID to monitor.
+    /// - Returns: Array of vehicle arrivals.
     func fetchArrivals(for stopId: Int) async throws -> [Foli.Arrival] {
         return try await fetchArrivals(for: String(stopId))
     }

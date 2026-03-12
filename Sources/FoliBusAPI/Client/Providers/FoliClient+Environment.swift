@@ -2,6 +2,7 @@ import SwiftUI
 
 // MARK: - SwiftUI Environment Support
 
+/// SwiftUI environment integration for resolving configured ``FoliClient`` providers.
 @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
 extension EnvironmentValues {
 

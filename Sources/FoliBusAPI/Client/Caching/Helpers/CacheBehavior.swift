@@ -6,21 +6,21 @@
 //
 
 public extension Foli {
-    /// Controls caching behavior for API requests
+    /// Controls how ``FoliClient`` uses cached GTFS resources.
     enum CacheBehavior: Sendable {
-        /// Use cached data if available and still validated as current, otherwise fetch from network
+        /// Use cached data if available and still validated as current; otherwise fetch from the network.
         case cachedOrFetch
 
-        /// Use cached data immediately, even if stale, and refresh it in the background
+        /// Return stale cached data immediately and refresh it in the background.
         case staleWhileRevalidate
         
-        /// Force fetch from network, ignoring cache (but update cache after)
+        /// Always fetch from the network and refresh the cache with the new value.
         case forceRefresh
         
-        /// Use only cached data, fail if not available or expired
+        /// Use only cached data and fail if no valid cached value exists.
         case cachedOnly
         
-        /// Fetch from network without caching
+        /// Fetch from the network without reading or writing cache entries.
         case noCache
     }
 

@@ -1,6 +1,7 @@
 import Foundation
 
 public extension Foli {
+    /// Planned timetable entry for a trip stop or stop-specific departure listing.
     struct StopTime: Codable, Sendable, Identifiable, Equatable {
         public let id = UUID()
         public let tripId: String?
@@ -14,6 +15,18 @@ public extension Foli {
         public let shapeDistTraveled: Double?
         public let timepoint: Int?
 
+        /// Creates a stop-time value using GTFS stop_times fields.
+        /// - Parameters:
+        ///   - tripId: Optional GTFS `trip_id` value.
+        ///   - arrivalTime: The GTFS `arrival_time` value.
+        ///   - departureTime: The GTFS `departure_time` value.
+        ///   - stopId: Optional GTFS `stop_id` value.
+        ///   - stopSequence: The GTFS `stop_sequence` value.
+        ///   - stopHeadsign: Optional GTFS `stop_headsign` value.
+        ///   - pickupType: Optional GTFS `pickup_type` value.
+        ///   - dropOffType: Optional GTFS `drop_off_type` value.
+        ///   - shapeDistTraveled: Optional GTFS `shape_dist_traveled` value.
+        ///   - timepoint: Optional GTFS `timepoint` value.
         public init(
             tripId: String? = nil,
             arrivalTime: String,

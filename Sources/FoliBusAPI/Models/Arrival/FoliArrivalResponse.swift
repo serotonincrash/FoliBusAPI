@@ -12,6 +12,12 @@ public struct FoliArrivalResponse: Codable, Sendable {
     /// Array of vehicle arrivals/departures in order of arrival
     public let result: [Foli.Arrival]
 
+    /// Creates a stop-monitoring response value.
+    /// - Parameters:
+    ///   - sys: The system identifier, typically `SM`.
+    ///   - status: The backend status string.
+    ///   - serverTime: Unix timestamp for when the response was generated.
+    ///   - result: The ordered arrival list returned by the backend.
     public init(sys: String, status: String, serverTime: TimeInterval, result: [Foli.Arrival]) {
         self.sys = sys
         self.status = status
