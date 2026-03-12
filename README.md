@@ -111,7 +111,7 @@ struct ContentView: View {
             do {
                 arrivals = try await foliService.fetchArrivals(for: stopId)
             } catch {
-                print("Failed to fetch arrivals: \(error.localisedDescription)")
+                print("Failed to fetch arrivals: \(error.localizedDescription)")
             }
         }
     }
