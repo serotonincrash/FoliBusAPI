@@ -61,6 +61,14 @@ public extension Foli.DiskCache {
             cachedData = try decoder.decode(CachedData<[Foli.StopTime]>.self, from: data)
         case .calendarDates:
             cachedData = try decoder.decode(CachedData<[Foli.CalendarDate]>.self, from: data)
+        case .agencies:
+            cachedData = try decoder.decode(CachedData<[Foli.Agency]>.self, from: data)
+        case .calendars:
+            cachedData = try decoder.decode(CachedData<[Foli.Calendar]>.self, from: data)
+        case .shapeRouteIds:
+            cachedData = try decoder.decode(CachedData<[String]>.self, from: data)
+        case .shapePointsForShape:
+            cachedData = try decoder.decode(CachedData<[Foli.ShapePoint]>.self, from: data)
         }
 
         let oldMetadata: DatasetMetadata
@@ -80,6 +88,18 @@ public extension Foli.DiskCache {
             oldMetadata = cached.metadata
             newData = CachedData(metadata: DatasetMetadata(datasetId: oldMetadata.datasetId, cachedAt: Date()), data: cached.data)
         case let cached as CachedData<[Foli.CalendarDate]>:
+            oldMetadata = cached.metadata
+            newData = CachedData(metadata: DatasetMetadata(datasetId: oldMetadata.datasetId, cachedAt: Date()), data: cached.data)
+        case let cached as CachedData<[Foli.Agency]>:
+            oldMetadata = cached.metadata
+            newData = CachedData(metadata: DatasetMetadata(datasetId: oldMetadata.datasetId, cachedAt: Date()), data: cached.data)
+        case let cached as CachedData<[Foli.Calendar]>:
+            oldMetadata = cached.metadata
+            newData = CachedData(metadata: DatasetMetadata(datasetId: oldMetadata.datasetId, cachedAt: Date()), data: cached.data)
+        case let cached as CachedData<[String]>:
+            oldMetadata = cached.metadata
+            newData = CachedData(metadata: DatasetMetadata(datasetId: oldMetadata.datasetId, cachedAt: Date()), data: cached.data)
+        case let cached as CachedData<[Foli.ShapePoint]>:
             oldMetadata = cached.metadata
             newData = CachedData(metadata: DatasetMetadata(datasetId: oldMetadata.datasetId, cachedAt: Date()), data: cached.data)
         default:

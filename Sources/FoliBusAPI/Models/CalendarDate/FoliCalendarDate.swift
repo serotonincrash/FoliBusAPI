@@ -33,7 +33,7 @@ public extension Foli {
         public var date: Date? {
             let formatter = DateFormatter()
             formatter.dateFormat = "yyyyMMdd"
-            formatter.calendar = Calendar(identifier: .gregorian)
+            formatter.calendar = Foundation.Calendar(identifier: .gregorian)
             return formatter.date(from: dateString)
         }
 

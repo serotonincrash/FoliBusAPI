@@ -11,6 +11,14 @@ extension FoliClient {
         routesByShortName = Dictionary(grouping: routes, by: \Foli.Route.shortName)
     }
 
+    internal func rebuildAgencyIndex(using agencies: [Foli.Agency]) {
+        agenciesByID = Dictionary(uniqueKeysWithValues: agencies.map { ($0.id, $0) })
+    }
+
+    internal func rebuildCalendarIndex(using calendars: [Foli.Calendar]) {
+        calendarsByID = Dictionary(uniqueKeysWithValues: calendars.map { ($0.id, $0) })
+    }
+
     internal func indexedStop(for stopId: String) -> Foli.Stop? {
         stopsByID[stopId]
     }
@@ -21,5 +29,13 @@ extension FoliClient {
 
     internal func indexedRoutes(forShortName shortName: String) -> [Foli.Route] {
         routesByShortName[shortName] ?? []
+    }
+
+    internal func indexedAgency(for agencyId: String) -> Foli.Agency? {
+        agenciesByID[agencyId]
+    }
+
+    internal func indexedCalendar(for serviceId: String) -> Foli.Calendar? {
+        calendarsByID[serviceId]
     }
 }

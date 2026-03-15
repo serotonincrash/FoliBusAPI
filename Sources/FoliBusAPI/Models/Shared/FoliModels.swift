@@ -6,6 +6,13 @@ import SwiftUI
 /// Namespace containing the package's data models, cache types, and shared helper types.
 public enum Foli {}
 
+public extension Foli {
+    /// A callback used to emit non-fatal diagnostics from the client layer.
+    ///
+    /// Use this to observe cache write failures, background refresh issues, and setup fallbacks.
+    typealias LogHandler = @Sendable (_ message: String) -> Void
+}
+
 // MARK: - CoreLocation Compatibility
 /// A lightweight, Sendable coordinate type used by the package's models.
 ///

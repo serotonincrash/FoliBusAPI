@@ -46,7 +46,9 @@ public extension FoliClient {
             
         case .forceRefresh:
             let calendarDates = try await fetchCalendarDatesFromNetwork()
-            try? await cache?.saveCalendarDates(calendarDates)
+            await persistToCache(resource: .calendarDates) { [cache] in
+                try await cache?.saveCalendarDates(calendarDates)
+            }
             return calendarDates
             
         case .cachedOnly:

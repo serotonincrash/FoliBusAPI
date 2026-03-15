@@ -63,7 +63,9 @@ public extension FoliClient {
             
         case .forceRefresh:
             let trips = try await fetchTripsFromNetwork()
-            try? await cache?.saveTrips(trips)
+            await persistToCache(resource: .trips) { [cache] in
+                try await cache?.saveTrips(trips)
+            }
             return trips
             
         case .cachedOnly:
@@ -102,7 +104,9 @@ public extension FoliClient {
             
         case .forceRefresh:
             let trips = try await fetchTripsFromNetwork(forRoute: routeId)
-            try? await cache?.saveTrips(trips, forRoute: routeId)
+            await persistToCache(resource: .tripsForRoute(routeId)) { [cache] in
+                try await cache?.saveTrips(trips, forRoute: routeId)
+            }
             return trips
             
         case .cachedOnly:

@@ -60,7 +60,7 @@ public final class FoliBusAPI {
     /// - Returns: The route if found
     public static func fetchRoute(byId routeId: String) async throws -> Foli.Route? {
         let client = defaultClient()
-        return try await client.fetchRoute(forRoute: routeId)
+        return try await client.fetchRoute(id: routeId)
     }
     
     /// Fetch routes that match a given line reference (e.g., "15")

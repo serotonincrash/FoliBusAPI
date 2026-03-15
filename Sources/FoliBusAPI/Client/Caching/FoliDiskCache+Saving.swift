@@ -33,6 +33,22 @@ public extension Foli.DiskCache {
         try await save(calendarDates, type: .calendarDates)
     }
 
+    func saveAgencies(_ agencies: [Foli.Agency]) async throws {
+        try await save(agencies, type: .agencies)
+    }
+
+    func saveCalendars(_ calendars: [Foli.Calendar]) async throws {
+        try await save(calendars, type: .calendars)
+    }
+
+    func saveShapeRouteIds(_ routeIds: [String]) async throws {
+        try await save(routeIds, type: .shapeRouteIds)
+    }
+
+    func saveShapePoints(_ shapePoints: [Foli.ShapePoint], forShape shapeId: String) async throws {
+        try await save(shapePoints, type: .shapePointsForShape(shapeId))
+    }
+
     internal func save<T: Codable>(_ value: T, type: Foli.CacheResource) async throws {
         let datasetId = try await fetchLatestDatasetId()
 

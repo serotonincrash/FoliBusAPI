@@ -65,6 +65,38 @@ public extension Foli.DiskCache {
         try await loadIgnoringFreshness(type: .calendarDates)
     }
 
+    func loadAgencies() async throws -> [Foli.Agency]? {
+        try await load(type: .agencies)
+    }
+
+    func loadStaleAgencies() async throws -> [Foli.Agency]? {
+        try await loadIgnoringFreshness(type: .agencies)
+    }
+
+    func loadCalendars() async throws -> [Foli.Calendar]? {
+        try await load(type: .calendars)
+    }
+
+    func loadStaleCalendars() async throws -> [Foli.Calendar]? {
+        try await loadIgnoringFreshness(type: .calendars)
+    }
+
+    func loadShapeRouteIds() async throws -> [String]? {
+        try await load(type: .shapeRouteIds)
+    }
+
+    func loadStaleShapeRouteIds() async throws -> [String]? {
+        try await loadIgnoringFreshness(type: .shapeRouteIds)
+    }
+
+    func loadShapePoints(forShape shapeId: String) async throws -> [Foli.ShapePoint]? {
+        try await load(type: .shapePointsForShape(shapeId))
+    }
+
+    func loadStaleShapePoints(forShape shapeId: String) async throws -> [Foli.ShapePoint]? {
+        try await loadIgnoringFreshness(type: .shapePointsForShape(shapeId))
+    }
+
     func cacheAge(for type: Foli.CacheResource) async -> TimeInterval? {
         guard let metadata = try? await loadMetadata(for: type) else {
             return nil

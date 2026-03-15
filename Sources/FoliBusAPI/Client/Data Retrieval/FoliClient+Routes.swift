@@ -23,11 +23,19 @@ public extension FoliClient {
     }
     
     /// Fetch a specific route by its ID
-    /// - Parameter routeId: The ID of route to fetch
+    /// - Parameter routeID: The ID of route to fetch.
     /// - Returns: The route if found
-    func fetchRoute(forRoute routeId: String) async throws -> Foli.Route? {
+    func fetchRoute(id routeID: String) async throws -> Foli.Route? {
         _ = try await fetchRoutes()
-        return indexedRoute(for: routeId)
+        return indexedRoute(for: routeID)
+    }
+
+    /// Fetch a specific route by its ID.
+    /// - Parameter routeId: The ID of route to fetch.
+    /// - Returns: The route if found.
+    @available(*, deprecated, renamed: "fetchRoute(id:)")
+    func fetchRoute(forRoute routeId: String) async throws -> Foli.Route? {
+        try await fetchRoute(id: routeId)
     }
     
     /// Fetch routes that match a given line reference (e.g., "15")
@@ -67,7 +75,9 @@ public extension FoliClient {
         case .forceRefresh:
             let routes = try await fetchRoutesFromNetwork()
             rebuildRouteIndexes(using: routes)
-            try? await cache?.saveRoutes(routes)
+            await persistToCache(resource: .routes) { [cache] in
+                try await cache?.saveRoutes(routes)
+            }
             return routes
             
         case .cachedOnly:

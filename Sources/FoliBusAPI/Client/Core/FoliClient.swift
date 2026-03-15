@@ -51,6 +51,7 @@ public actor FoliClient {
 
     /// Transport used for making network requests
     internal let transport: any FoliTransport
+    internal let logHandler: Foli.LogHandler?
 
     /// Cache for GTFS data (optional - set to enable caching)
     internal var cache: (any Foli.Cache)?
@@ -64,20 +65,29 @@ public actor FoliClient {
     internal var stopsByID: [String: Foli.Stop] = [:]
     internal var routesByID: [String: Foli.Route] = [:]
     internal var routesByShortName: [String: [Foli.Route]] = [:]
+    internal var agenciesByID: [String: Foli.Agency] = [:]
+    internal var calendarsByID: [String: Foli.Calendar] = [:]
 
     /// Creates a client that executes requests through a `URLSession`.
     /// - Parameters:
     ///   - session: The session used for network requests.
     ///   - cacheBehavior: The cache behavior to apply to cacheable GTFS resources.
     ///   - timeout: The disk-cache freshness policy.
-    public init(session: URLSession = .shared, cachedBy cacheBehavior: Foli.CacheBehavior = .cachedOrFetch, withTimeout timeout: Foli.CacheTimeout = .default) {
+    ///   - logHandler: Optional callback for non-fatal client diagnostics.
+    public init(
+        session: URLSession = .shared,
+        cachedBy cacheBehavior: Foli.CacheBehavior = .cachedOrFetch,
+        withTimeout timeout: Foli.CacheTimeout = .default,
+        logHandler: Foli.LogHandler? = nil
+    ) {
         self.transport = URLSessionTransport(session: session)
         self.cacheBehavior = cacheBehavior
+        self.logHandler = logHandler
 
         do {
             self.cache = try Foli.DiskCache(timeout: timeout)
         } catch {
-            print("An error occurred initialising the cache for FoliBusAPI. Defaulting to no cache implementation.")
+            self.logHandler?("FoliBusAPI cache initialization failed. Falling back to no-cache mode. Error: \(error.localizedDescription)")
             self.cacheBehavior = .noCache
         }
     }
@@ -91,14 +101,21 @@ public actor FoliClient {
     ///   - transport: The transport used to execute requests.
     ///   - cacheBehavior: The cache behavior to apply to cacheable GTFS resources.
     ///   - timeout: The disk-cache freshness policy.
-    public init(transport: any FoliTransport, cachedBy cacheBehavior: Foli.CacheBehavior = .cachedOrFetch, withTimeout timeout: Foli.CacheTimeout = .default) {
+    ///   - logHandler: Optional callback for non-fatal client diagnostics.
+    public init(
+        transport: any FoliTransport,
+        cachedBy cacheBehavior: Foli.CacheBehavior = .cachedOrFetch,
+        withTimeout timeout: Foli.CacheTimeout = .default,
+        logHandler: Foli.LogHandler? = nil
+    ) {
         self.transport = transport
         self.cacheBehavior = cacheBehavior
+        self.logHandler = logHandler
 
         do {
             self.cache = try Foli.DiskCache(timeout: timeout)
         } catch {
-            print("An error occurred initialising the cache for FoliBusAPI. Defaulting to no cache implementation.")
+            self.logHandler?("FoliBusAPI cache initialization failed. Falling back to no-cache mode. Error: \(error.localizedDescription)")
             self.cacheBehavior = .noCache
         }
     }

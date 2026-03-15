@@ -50,6 +50,24 @@ public extension FoliClient {
         return try await cache.revalidateCache(for: type)
     }
 
+    internal func persistToCache(
+        resource: Foli.CacheResource,
+        saveOperation: @escaping @Sendable () async throws -> Void
+    ) async {
+        do {
+            try await saveOperation()
+        } catch {
+            reportNonFatalCacheError(
+                "Failed to persist cached resource \(String(describing: resource))",
+                error: error
+            )
+        }
+    }
+
+    internal func reportNonFatalCacheError(_ message: String, error: Error) {
+        logHandler?("\(message): \(error.localizedDescription)")
+    }
+
     internal func refreshCacheInBackground<T>(for type: Foli.CacheResource, fetch: @escaping @Sendable () async throws -> T, save: @escaping @Sendable (T) async throws -> Void) {
         Task {
             do {
@@ -58,7 +76,10 @@ public extension FoliClient {
                 let freshValue = try await fetch()
                 try await save(freshValue)
             } catch {
-                // Best-effort background refresh for stale-while-revalidate mode.
+                self.reportNonFatalCacheError(
+                    "Background cache refresh failed for \(String(describing: type))",
+                    error: error
+                )
             }
         }
     }

@@ -19,17 +19,17 @@ public extension FoliService {
     }
     
     /// Fetch a specific route by ID
-    /// - Parameter routeId: The route ID to fetch
+    /// - Parameter routeID: The route ID to fetch.
     /// - Returns: The route if found
-    func fetchRoute(id routeId: String) async throws -> Foli.Route {
-        guard let route = try await client.fetchRoute(forRoute: routeId) else {
+    func fetchRoute(id routeID: String) async throws -> Foli.Route {
+        guard let route = try await client.fetchRoute(id: routeID) else {
             throw Foli.APIError.noData
         }
         return route
     }
     
-    func fetchRoute(id routeId: Int) async throws -> Foli.Route {
-        return try await fetchRoute(id: String(routeId))
+    func fetchRoute(id routeID: Int) async throws -> Foli.Route {
+        return try await fetchRoute(id: String(routeID))
     }
     
     /// Fetch routes matching a specific line reference

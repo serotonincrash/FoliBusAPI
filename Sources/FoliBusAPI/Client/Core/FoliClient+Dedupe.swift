@@ -12,6 +12,10 @@ extension FoliClient {
         case stopTimesForTrip(String)
         case stopTimesForStop(String)
         case calendarDates
+        case agencies
+        case calendars
+        case shapeRouteIds
+        case shapePointsForShape(String)
     }
 
     final class AnyInFlightTask: @unchecked Sendable {

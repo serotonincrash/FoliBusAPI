@@ -58,7 +58,9 @@ public extension FoliClient {
         case .forceRefresh:
             let stops = try await fetchStopsFromNetwork()
             rebuildStopIndex(using: stops)
-            try? await cache?.saveStops(stops)
+            await persistToCache(resource: .stops) { [cache] in
+                try await cache?.saveStops(stops)
+            }
             return stops
             
         case .cachedOnly:
