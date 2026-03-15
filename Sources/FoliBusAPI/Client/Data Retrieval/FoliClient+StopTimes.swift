@@ -67,9 +67,7 @@ public extension FoliClient {
             
         case .forceRefresh:
             let stopTimes = try await fetchStopTimesFromNetwork()
-            await persistToCache(resource: .stopTimes) { [cache] in
-                try await cache?.saveStopTimes(stopTimes)
-            }
+            try? await cache?.saveStopTimes(stopTimes)
             return stopTimes
             
         case .cachedOnly:
@@ -109,9 +107,7 @@ public extension FoliClient {
             
         case .forceRefresh:
             let stopTimes = try await fetchStopTimesFromNetwork(forTrip: tripId)
-            await persistToCache(resource: .stopTimesForTrip(tripId)) { [cache] in
-                try await cache?.saveStopTimes(stopTimes, forTrip: tripId)
-            }
+            try? await cache?.saveStopTimes(stopTimes, forTrip: tripId)
             return stopTimes
             
         case .cachedOnly:
@@ -149,9 +145,7 @@ public extension FoliClient {
             
         case .forceRefresh:
             let stopTimes = try await fetchStopTimesFromNetwork(forStop: stopID)
-            await persistToCache(resource: .stopTimesForStop(stopID)) { [cache] in
-                try await cache?.saveStopTimes(stopTimes, forStop: stopID)
-            }
+            try? await cache?.saveStopTimes(stopTimes, forStop: stopID)
             return stopTimes
             
         case .cachedOnly:

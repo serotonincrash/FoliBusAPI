@@ -12,25 +12,20 @@ public struct FoliClientConfiguration: Sendable {
     public let cacheTimeout: Foli.CacheTimeout
     /// The session used by the default transport when constructing clients from this configuration.
     public let session: URLSession
-    /// Optional callback used to receive non-fatal diagnostics from the client.
-    public let logHandler: Foli.LogHandler?
 
     /// Creates a client configuration.
     /// - Parameters:
     ///   - cacheBehavior: The cache strategy used for GTFS-backed resources.
     ///   - cacheTimeout: The freshness policy used by the disk cache.
     ///   - session: The session used for request execution.
-    ///   - logHandler: Optional callback for non-fatal client diagnostics.
     public init(
         cacheBehavior: Foli.CacheBehavior = .cachedOrFetch,
         cacheTimeout: Foli.CacheTimeout = .default,
-        session: URLSession = .shared,
-        logHandler: Foli.LogHandler? = nil
+        session: URLSession = .shared
     ) {
         self.cacheBehavior = cacheBehavior
         self.cacheTimeout = cacheTimeout
         self.session = session
-        self.logHandler = logHandler
     }
 
     /// The default client configuration.
@@ -52,8 +47,7 @@ public final class DefaultFoliClientProvider: FoliClientProviding, @unchecked Se
         FoliClient(
             session: configuration.session,
             cachedBy: configuration.cacheBehavior,
-            withTimeout: configuration.cacheTimeout,
-            logHandler: configuration.logHandler
+            withTimeout: configuration.cacheTimeout
         )
     }()
 

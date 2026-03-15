@@ -75,9 +75,7 @@ public extension FoliClient {
         case .forceRefresh:
             let routes = try await fetchRoutesFromNetwork()
             rebuildRouteIndexes(using: routes)
-            await persistToCache(resource: .routes) { [cache] in
-                try await cache?.saveRoutes(routes)
-            }
+            try? await cache?.saveRoutes(routes)
             return routes
             
         case .cachedOnly:

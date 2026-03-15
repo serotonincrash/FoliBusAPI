@@ -9,19 +9,16 @@ extension FoliClient {
     ///   - cacheBehavior: The cache behavior to use for cacheable GTFS resources.
     ///   - cacheTimeout: The freshness policy applied by the disk cache.
     ///   - session: The session whose configuration should be used for request execution.
-    ///   - logHandler: Optional callback for non-fatal client diagnostics.
     /// - Returns: A configured ``FoliClient`` instance.
     public static func configured(
         cacheBehavior: Foli.CacheBehavior = .cachedOrFetch,
         cacheTimeout: Foli.CacheTimeout = .default,
-        session: URLSession = .shared,
-        logHandler: Foli.LogHandler? = nil
+        session: URLSession = .shared
     ) -> FoliClient {
         FoliClient(
             transport: URLSessionTransport(session: session),
             cachedBy: cacheBehavior,
-            withTimeout: cacheTimeout,
-            logHandler: logHandler
+            withTimeout: cacheTimeout
         )
     }
 }

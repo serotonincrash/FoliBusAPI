@@ -39,9 +39,7 @@ public extension FoliClient {
         case .forceRefresh:
             let agencies = try await fetchAgenciesFromNetwork()
             rebuildAgencyIndex(using: agencies)
-            await persistToCache(resource: .agencies) { [cache] in
-                try await cache?.saveAgencies(agencies)
-            }
+            try? await cache?.saveAgencies(agencies)
             return agencies
 
         case .cachedOnly:
