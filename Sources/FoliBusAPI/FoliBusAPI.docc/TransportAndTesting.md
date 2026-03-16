@@ -15,14 +15,14 @@
 ```swift
 let client = FoliClient(
     transport: URLSessionTransport(session: .shared),
-    cachedBy: .cachedOrFetch
+    cacheBehavior: .cachedOrFetch
 )
 ```
 
 You can also keep using the convenience initializer when a plain `URLSession` is enough:
 
 ```swift
-let client = FoliClient(session: .shared, cachedBy: .cachedOrFetch)
+let client = FoliClient(session: .shared, cacheBehavior: .cachedOrFetch)
 ```
 
 ## When to inject a custom transport
@@ -76,7 +76,7 @@ let transport = MockTransport { request in
     return (response, payload)
 }
 
-let client = FoliClient(transport: transport, cachedBy: .noCache)
+let client = FoliClient(transport: transport, cacheBehavior: .noCache)
 let routes = try await client.fetchRoutes()
 ```
 

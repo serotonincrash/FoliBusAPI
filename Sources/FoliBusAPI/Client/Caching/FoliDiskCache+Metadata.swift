@@ -51,6 +51,8 @@ public extension Foli.DiskCache {
 
         let cachedData: any Codable
         switch type {
+        case .stopMonitoring:
+            preconditionFailure("Stop monitoring responses are deduped but never persisted to disk cache.")
         case .routes:
             cachedData = try decoder.decode(CachedData<[Foli.Route]>.self, from: data)
         case .stops:
@@ -148,7 +150,7 @@ public extension Foli.DiskCache {
             return try JSONDecoder().decode(DatasetMetadata.self, from: metadataData)
         }
 
-        throw Foli.APIError.decodingError(CodingError.invalidMetadata)
+        throw Foli.APIError.decodingError(.init(CodingError.invalidMetadata))
     }
 
     internal enum CodingError: Error {

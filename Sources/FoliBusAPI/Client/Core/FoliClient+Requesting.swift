@@ -49,12 +49,12 @@ extension FoliClient {
             do {
                 return try decoder.decode(T.self, from: data)
             } catch {
-                throw Foli.APIError.decodingError(error)
+                throw Foli.APIError.decodingError(.init(error))
             }
         } catch let error as Foli.APIError {
             throw error
         } catch {
-            throw Foli.APIError.networkError(error)
+            throw Foli.APIError.networkError(.init(error))
         }
     }
 }

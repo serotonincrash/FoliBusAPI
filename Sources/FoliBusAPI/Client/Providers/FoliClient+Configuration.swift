@@ -49,8 +49,8 @@ public final class DefaultFoliClientProvider: FoliClientProviding {
     public init(configuration: FoliClientConfiguration = .default) {
         self.sharedClient = FoliClient(
             session: configuration.session,
-            cachedBy: configuration.cacheBehavior,
-            withTimeout: configuration.cacheTimeout
+            cacheBehavior: configuration.cacheBehavior,
+            cacheTimeout: configuration.cacheTimeout
         )
     }
 

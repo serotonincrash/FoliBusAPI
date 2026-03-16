@@ -59,8 +59,8 @@ Then add the product to your target:
 import FoliBusAPI
 
 let client = FoliClient(
-    cachedBy: .forceRefresh,
-    withTimeout: .default
+    cacheBehavior: .forceRefresh,
+    cacheTimeout: .default
 )
 
 let routes = try await client.fetchRoutes()
@@ -128,7 +128,7 @@ import FoliBusAPI
 
 let client = FoliClient(
     transport: URLSessionTransport(session: .shared),
-    cachedBy: .cachedOrFetch
+    cacheBehavior: .cachedOrFetch
 )
 ```
 
@@ -142,7 +142,9 @@ GTFS-backed resources support the following cache strategies:
 - `cachedOnly`
 - `noCache`
 
-Use `staleWhileRevalidate` when you want fast UI reads backed by a background refresh, and `forceRefresh` when you need the freshest known data.
+Use `staleWhileRevalidate` when you want fast UI reads backed by a best-effort background refresh. If metadata revalidation fails transiently, the existing cached value remains usable until a later refresh succeeds.
+
+Use `forceRefresh` when you need the freshest known data.
 
 ## Documentation
 

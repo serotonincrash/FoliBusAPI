@@ -5,6 +5,8 @@ public extension Foli.DiskCache {
         let filename: String
 
         switch type {
+        case .stopMonitoring:
+            preconditionFailure("Stop monitoring responses are deduped but never persisted to disk cache.")
         case .routes:
             filename = "routes.json"
         case .stops:
