@@ -271,7 +271,7 @@ struct EndpointCompatibilityTests {
         }
 
         let client = FoliClient(transport: transport, cachedBy: .noCache)
-        _ = try await client.fetchShapePoints(forShapeID: "SHAPE-1")
+        _ = try await client.fetchShapePoints(forRouteId: "SHAPE-1")
         let requests = await transport.requests()
 
         #expect(requests.count == 1)

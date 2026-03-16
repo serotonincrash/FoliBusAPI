@@ -39,25 +39,22 @@ public protocol FoliClientProviding: Sendable {
     func client() -> FoliClient
 }
 
-/// Default provider that lazily constructs and reuses a single configured client instance.
+/// Default provider that constructs and reuses a single configured client instance.
 @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
-public final class DefaultFoliClientProvider: FoliClientProviding, @unchecked Sendable {
-    private let configuration: FoliClientConfiguration
-    private lazy var sharedClient: FoliClient = {
-        FoliClient(
-            session: configuration.session,
-            cachedBy: configuration.cacheBehavior,
-            withTimeout: configuration.cacheTimeout
-        )
-    }()
+public final class DefaultFoliClientProvider: FoliClientProviding {
+    private let sharedClient: FoliClient
 
     /// Creates a provider backed by the supplied configuration.
     /// - Parameter configuration: The configuration used when the shared client is created.
     public init(configuration: FoliClientConfiguration = .default) {
-        self.configuration = configuration
+        self.sharedClient = FoliClient(
+            session: configuration.session,
+            cachedBy: configuration.cacheBehavior,
+            withTimeout: configuration.cacheTimeout
+        )
     }
 
-    /// Returns the lazily created shared client instance.
+    /// Returns the shared client instance.
     public func client() -> FoliClient {
         sharedClient
     }

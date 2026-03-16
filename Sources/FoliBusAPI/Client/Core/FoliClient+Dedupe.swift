@@ -18,14 +18,14 @@ extension FoliClient {
         case shapePointsForShape(String)
     }
 
-    final class AnyInFlightTask: @unchecked Sendable {
-        private let awaitValueClosure: @Sendable () async throws -> Any
+    struct AnyInFlightTask: Sendable {
+        private let awaitValueClosure: @Sendable () async throws -> any Sendable
 
         init<T: Sendable>(_ task: Task<T, Error>) {
             self.awaitValueClosure = { try await task.value }
         }
 
-        func value<T>(as type: T.Type) async throws -> T {
+        func value<T: Sendable>(as type: T.Type) async throws -> T {
             let value = try await awaitValueClosure()
             guard let typedValue = value as? T else {
                 throw Foli.APIError.invalidResponse

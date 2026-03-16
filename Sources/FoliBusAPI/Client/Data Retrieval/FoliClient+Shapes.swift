@@ -13,7 +13,7 @@ public extension FoliClient {
     }
 
     /// Fetch shape points for one shape ID directly from GTFS.
-    /// - Parameter shapeID: The shape identifier.
+    /// - Parameter routeId: The route identifier to fetch shapes for.
     /// - Returns: Shape points ordered by sequence.
     func fetchShapePointsFromNetwork(forRouteId routeId: String) async throws -> [Foli.ShapePoint] {
         try await performDeduplicated(.shapePointsForShape(routeId)) { [self] in
