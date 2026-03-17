@@ -4,9 +4,19 @@ import Foundation
 public extension Foli {
     /// Response from the stop monitoring endpoint
     struct ArrivalResponse: Codable, Sendable {
+        // MARK: - Known Status Values
+
+        /// Named constants for the well-known status strings returned by the stop monitoring endpoint.
+        public enum Status {
+            /// The request succeeded and `result` contains arrivals.
+            public static let ok = "OK"
+            /// The backend has no SIRI data for this stop at the time of the request.
+            public static let noData = "NO_SIRI_DATA"
+        }
+
         /// System identifier ("SM" for stop monitoring)
         public let sys: String
-        /// Status of the response ("OK" or "NO_SIRI_DATA")
+        /// Status of the response (see ``Status`` for known values)
         public let status: String
         /// Unix timestamp when the response was generated
         public let serverTime: TimeInterval
@@ -35,7 +45,7 @@ public extension Foli {
 
         /// Computed property to check if the response is valid
         public var isValid: Bool {
-            status == "OK"
+            status == Foli.ArrivalResponse.Status.ok
         }
 
         /// Convert server time to Date

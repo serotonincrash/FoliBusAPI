@@ -24,7 +24,7 @@ public extension Foli {
             if let array = try? container.decode([Foli.ShapePoint].self) {
                 self.shapePoints = array.sorted {
                     if $0.shapeId == $1.shapeId {
-                        return $0.shapePtSequence < $1.shapePtSequence
+                        return $0.sequence < $1.sequence
                     }
                     return $0.shapeId < $1.shapeId
                 }
@@ -35,9 +35,9 @@ public extension Foli {
             self.shapePoints = documentedArray.enumerated().map { index, point in
                 Foli.ShapePoint(
                     shapeId: "",
-                    shapePtLat: point.lat,
-                    shapePtLon: point.lon,
-                    shapePtSequence: index + 1,
+                    latitude: point.lat,
+                    longitude: point.lon,
+                    sequence: index + 1,
                     shapeDistTraveled: point.traveled
                 )
             }

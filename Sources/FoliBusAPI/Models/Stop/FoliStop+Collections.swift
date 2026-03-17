@@ -5,7 +5,7 @@ import Foundation
 public extension Collection where Element == Foli.Stop {
     /// Returns the stops sorted by name, ascending.
     func sortedByName() -> [Foli.Stop] {
-        sorted { $0.stopName < $1.stopName }
+        sorted { $0.name < $1.name }
     }
 
     /// Returns the stops sorted by ID, ascending.
@@ -18,7 +18,7 @@ public extension Collection where Element == Foli.Stop {
     /// - Returns: Matching stops sorted by name.
     func search(_ query: String) -> [Foli.Stop] {
         filter { stop in
-            stop.stopName.localizedCaseInsensitiveContains(query) || stop.id.contains(query)
+            stop.name.localizedCaseInsensitiveContains(query) || stop.id.contains(query)
         }.sortedByName()
     }
 }

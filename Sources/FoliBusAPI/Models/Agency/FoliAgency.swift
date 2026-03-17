@@ -7,9 +7,9 @@ public extension Foli {
         /// The GTFS agency_id value.
         public let id: String
         /// The GTFS agency_name value.
-        public let agencyName: String
+        public let name: String
         /// The GTFS agency_url value.
-        public let agencyUrl: String?
+        public let url: String?
         /// The GTFS agency_timezone value.
         public let agencyTimezone: String?
         /// The GTFS agency_lang value.
@@ -21,16 +21,16 @@ public extension Foli {
 
         public init(
             id: String,
-            agencyName: String,
-            agencyUrl: String? = nil,
+            name: String,
+            url: String? = nil,
             agencyTimezone: String? = nil,
             agencyLang: String? = nil,
             agencyPhone: String? = nil,
             agencyFareUrl: String? = nil
         ) {
             self.id = id
-            self.agencyName = agencyName
-            self.agencyUrl = agencyUrl
+            self.name = name
+            self.url = url
             self.agencyTimezone = agencyTimezone
             self.agencyLang = agencyLang
             self.agencyPhone = agencyPhone
@@ -39,8 +39,8 @@ public extension Foli {
 
         enum CodingKeys: String, CodingKey {
             case id = "agency_id"
-            case agencyName = "agency_name"
-            case agencyUrl = "agency_url"
+            case name = "agency_name"
+            case url = "agency_url"
             case agencyTimezone = "agency_timezone"
             case agencyLang = "agency_lang"
             case agencyPhone = "agency_phone"

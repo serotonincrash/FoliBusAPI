@@ -7,13 +7,13 @@ public extension Foli {
         /// The unique identifier for the stop (GTFS `stop_id`)
         public let id: String
         /// The human-readable name of the stop (GTFS `stop_name`)
-        public let stopName: String
+        public let name: String
         /// The stop code (GTFS `stop_code`) - often empty for Föli bus API. Use `id` instead.
-        public let stopCode: String?
+        public let code: String?
         /// Latitude of the stop location (WGS-84) (GTFS stop_lat)
-        public let stopLat: Double?
+        public let latitude: Double?
         /// Longitude of the stop location (WGS-84) (GTFS stop_lon)
-        public let stopLon: Double?
+        public let longitude: Double?
         /// Zone identifier for the stop (GTFS zone_id)
         public let zoneId: String?
         /// Type of location (GTFS location_type) - 0=Stop, 1=Station, etc.
@@ -26,30 +26,30 @@ public extension Foli {
         /// Creates a stop value using GTFS stop fields.
         /// - Parameters:
         ///   - id: The GTFS `stop_id` value.
-        ///   - stopName: The GTFS `stop_name` value.
-        ///   - stopCode: Optional GTFS `stop_code` value.
-        ///   - stopLat: Optional GTFS `stop_lat` value.
-        ///   - stopLon: Optional GTFS `stop_lon` value.
+        ///   - name: The GTFS `stop_name` value.
+        ///   - code: Optional GTFS `stop_code` value.
+        ///   - latitude: Optional GTFS `stop_lat` value.
+        ///   - longitude: Optional GTFS `stop_lon` value.
         ///   - zoneId: Optional GTFS `zone_id` value.
         ///   - locationType: Optional GTFS `location_type` value.
         ///   - parentStation: Optional GTFS `parent_station` value.
         ///   - wheelchairBoarding: Optional GTFS `wheelchair_boarding` value.
         public init(
             id: String,
-            stopName: String,
-            stopCode: String? = nil,
-            stopLat: Double? = nil,
-            stopLon: Double? = nil,
+            name: String,
+            code: String? = nil,
+            latitude: Double? = nil,
+            longitude: Double? = nil,
             zoneId: String? = nil,
             locationType: Int? = nil,
             parentStation: String? = nil,
             wheelchairBoarding: Int? = nil
         ) {
             self.id = id
-            self.stopName = stopName
-            self.stopCode = stopCode
-            self.stopLat = stopLat
-            self.stopLon = stopLon
+            self.name = name
+            self.code = code
+            self.latitude = latitude
+            self.longitude = longitude
             self.zoneId = zoneId
             self.locationType = locationType
             self.parentStation = parentStation
@@ -58,10 +58,10 @@ public extension Foli {
 
         enum CodingKeys: String, CodingKey {
             case id
-            case stopName = "stop_name"
-            case stopCode = "stop_code"
-            case stopLat = "stop_lat"
-            case stopLon = "stop_lon"
+            case name = "stop_name"
+            case code = "stop_code"
+            case latitude = "stop_lat"
+            case longitude = "stop_lon"
             case zoneId = "zone_id"
             case locationType = "location_type"
             case parentStation = "parent_station"
@@ -72,23 +72,23 @@ public extension Foli {
 
         /// Whether the stop has valid coordinates
         public var hasLocation: Bool {
-            return stopLat != nil && stopLon != nil
+            return latitude != nil && longitude != nil
         }
 
         /// Location coordinates if available
-        public var location: CLLocationCoordinate2D? {
-            guard let lat = stopLat, let lon = stopLon else {
+        public var location: Foli.Coordinate? {
+            guard let lat = latitude, let lon = longitude else {
                 return nil
             }
-            return CLLocationCoordinate2D(latitude: lat, longitude: lon)
+            return Foli.Coordinate(latitude: lat, longitude: lon)
         }
 
         /// Display name including stop code if available
         public var displayName: String {
-            if let code = stopCode, !code.isEmpty {
-                return "\(code) \(stopName)"
+            if let code = code, !code.isEmpty {
+                return "\(code) \(name)"
             }
-            return stopName
+            return name
         }
     }
 }

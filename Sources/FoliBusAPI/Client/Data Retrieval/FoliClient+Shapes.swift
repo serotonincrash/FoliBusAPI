@@ -23,13 +23,13 @@ public extension FoliClient {
                 .map { index, shapePoint in
                     Foli.ShapePoint(
                         shapeId: shapePoint.shapeId.isEmpty ? routeId : shapePoint.shapeId,
-                        shapePtLat: shapePoint.shapePtLat,
-                        shapePtLon: shapePoint.shapePtLon,
-                        shapePtSequence: shapePoint.shapePtSequence > 0 ? shapePoint.shapePtSequence : index + 1,
+                        latitude: shapePoint.latitude,
+                        longitude: shapePoint.longitude,
+                        sequence: shapePoint.sequence > 0 ? shapePoint.sequence : index + 1,
                         shapeDistTraveled: shapePoint.shapeDistTraveled
                     )
                 }
-                .sorted { $0.shapePtSequence < $1.shapePtSequence }
+                .sorted { $0.sequence < $1.sequence }
         }
     }
 

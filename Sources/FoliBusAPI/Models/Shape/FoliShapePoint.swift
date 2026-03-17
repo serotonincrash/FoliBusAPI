@@ -7,38 +7,38 @@ public extension Foli {
         /// GTFS `shape_id` for the polyline this point belongs to.
         public let shapeId: String
         /// Latitude in WGS-84.
-        public let shapePtLat: Double
+        public let latitude: Double
         /// Longitude in WGS-84.
-        public let shapePtLon: Double
+        public let longitude: Double
         /// Sequence index for ordered rendering.
-        public let shapePtSequence: Int
+        public let sequence: Int
         /// Cumulative distance traveled from route start, if present.
         public let shapeDistTraveled: Double?
 
         /// Creates a shape point.
         public init(
             shapeId: String,
-            shapePtLat: Double,
-            shapePtLon: Double,
-            shapePtSequence: Int,
+            latitude: Double,
+            longitude: Double,
+            sequence: Int,
             shapeDistTraveled: Double? = nil
         ) {
             self.shapeId = shapeId
-            self.shapePtLat = shapePtLat
-            self.shapePtLon = shapePtLon
-            self.shapePtSequence = shapePtSequence
+            self.latitude = latitude
+            self.longitude = longitude
+            self.sequence = sequence
             self.shapeDistTraveled = shapeDistTraveled
         }
 
         public var id: String {
-            "\(shapeId)-\(shapePtSequence)"
+            "\(shapeId)-\(sequence)"
         }
 
         enum CodingKeys: String, CodingKey {
             case shapeId = "shape_id"
-            case shapePtLat = "shape_pt_lat"
-            case shapePtLon = "shape_pt_lon"
-            case shapePtSequence = "shape_pt_sequence"
+            case latitude = "shape_pt_lat"
+            case longitude = "shape_pt_lon"
+            case sequence = "shape_pt_sequence"
             case shapeDistTraveled = "shape_dist_traveled"
         }
     }

@@ -29,10 +29,10 @@ public extension Foli {
             self.stops = dictionary.map { (id, stopData) in
                 Foli.Stop(
                     id: id,
-                    stopName: stopData.stop_name,
-                    stopCode: stopData.stop_code,
-                    stopLat: stopData.stop_lat,
-                    stopLon: stopData.stop_lon,
+                    name: stopData.stop_name,
+                    code: stopData.stop_code,
+                    latitude: stopData.stop_lat,
+                    longitude: stopData.stop_lon,
                     zoneId: stopData.zone_id
                 )
             }.sorted { $0.id < $1.id }
@@ -41,10 +41,10 @@ public extension Foli {
         public func encode(to encoder: Encoder) throws {
             var container = encoder.singleValueContainer()
             let dictionary = Dictionary(uniqueKeysWithValues: stops.map { stop -> (String, [String: String]) in
-                var data: [String: String] = ["stop_name": stop.stopName]
-                if let code = stop.stopCode { data["stop_code"] = code }
-                if let lat = stop.stopLat { data["stop_lat"] = String(lat) }
-                if let lon = stop.stopLon { data["stop_lon"] = String(lon) }
+                var data: [String: String] = ["stop_name": stop.name]
+                if let code = stop.code { data["stop_code"] = code }
+                if let lat = stop.latitude { data["stop_lat"] = String(lat) }
+                if let lon = stop.longitude { data["stop_lon"] = String(lon) }
                 if let zone = stop.zoneId { data["zone_id"] = zone }
                 return (stop.id, data)
             })

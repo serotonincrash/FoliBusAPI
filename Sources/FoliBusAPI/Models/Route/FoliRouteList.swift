@@ -41,11 +41,11 @@ public extension Foli {
                     route_id: route.id,
                     route_short_name: route.shortName,
                     route_long_name: route.longName,
-                    route_desc: route.routeDesc,
-                    route_type: route.routeType,
-                    route_url: route.routeUrl,
-                    route_color: route.routeColor,
-                    route_text_color: route.routeTextColor,
+                    route_desc: route.description,
+                    route_type: route.type,
+                    route_url: route.url,
+                    route_color: route.colorHex,
+                    route_text_color: route.textColorHex,
                     agency_id: route.agencyId
                 )
             }

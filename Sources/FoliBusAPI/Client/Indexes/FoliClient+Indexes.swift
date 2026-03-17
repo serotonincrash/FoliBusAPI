@@ -38,4 +38,12 @@ extension FoliClient {
     internal func indexedCalendar(for serviceId: String) -> Foli.Calendar? {
         calendarsByID[serviceId]
     }
+
+    internal func rebuildTripIndex(using trips: [Foli.Trip]) {
+        tripsByID = Dictionary(uniqueKeysWithValues: trips.map { ($0.id, $0) })
+    }
+
+    internal func indexedTrip(for tripId: String) -> Foli.Trip? {
+        tripsByID[tripId]
+    }
 }

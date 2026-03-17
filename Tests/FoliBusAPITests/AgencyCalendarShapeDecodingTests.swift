@@ -19,10 +19,10 @@ struct AgencyCalendarShapeDecodingTests {
         ]
         """#.data(using: .utf8)!
 
-        let list = try JSONDecoder().decode(FoliAgencyList.self, from: payload)
+        let list = try JSONDecoder().decode(Foli.AgencyList.self, from: payload)
         #expect(list.agencies.count == 1)
         #expect(list.agencies[0].id == "FOLI")
-        #expect(list.agencies[0].agencyName == "Foli")
+        #expect(list.agencies[0].name == "Foli")
     }
 
     @Test("decodes calendar list payload")
@@ -43,7 +43,7 @@ struct AgencyCalendarShapeDecodingTests {
         }
         """#.data(using: .utf8)!
 
-        let list = try JSONDecoder().decode(FoliCalendarList.self, from: payload)
+        let list = try JSONDecoder().decode(Foli.CalendarList.self, from: payload)
         #expect(list.calendars.count == 1)
         #expect(list.calendars[0].id == "WKD")
         #expect(list.calendars[0].monday == true)
@@ -66,10 +66,10 @@ struct AgencyCalendarShapeDecodingTests {
         ]
         """#.data(using: .utf8)!
 
-        let list = try JSONDecoder().decode(FoliShapePointList.self, from: payload)
+        let list = try JSONDecoder().decode(Foli.ShapePointList.self, from: payload)
         #expect(list.shapePoints.count == 2)
-        #expect(list.shapePoints[0].shapePtSequence == 1)
+        #expect(list.shapePoints[0].sequence == 1)
         #expect(list.shapePoints[0].shapeDistTraveled == 2.4)
-        #expect(list.shapePoints[1].shapePtSequence == 2)
+        #expect(list.shapePoints[1].sequence == 2)
     }
 }

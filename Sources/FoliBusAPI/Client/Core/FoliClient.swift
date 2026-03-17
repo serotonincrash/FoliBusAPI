@@ -60,12 +60,13 @@ public actor FoliClient {
 
     /// Shared decoder for API responses.
     internal let decoder = JSONDecoder()
-    internal var inFlightRequests: [RequestKey: AnyInFlightTask] = [:]
+    internal var inFlightRequests: [Foli.CacheResource: AnyInFlightTask] = [:]
     internal var stopsByID: [String: Foli.Stop] = [:]
     internal var routesByID: [String: Foli.Route] = [:]
     internal var routesByShortName: [String: [Foli.Route]] = [:]
     internal var agenciesByID: [String: Foli.Agency] = [:]
     internal var calendarsByID: [String: Foli.Calendar] = [:]
+    internal var tripsByID: [String: Foli.Trip] = [:]
 
     /// Tracks background revalidation tasks so they can be cancelled when the client
     /// is asked to refresh the same resource again before the previous refresh completes.
