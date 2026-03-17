@@ -44,7 +44,3 @@ public extension Foli {
         }
     }
 }
-
-/// Backward-compatible typealias for ``Foli/ArrivalResponse``.
-@available(*, deprecated, renamed: "Foli.ArrivalResponse")
-public typealias FoliArrivalResponse = Foli.ArrivalResponse

@@ -53,7 +53,3 @@ public extension Foli {
         }
     }
 }
-
-/// Backward-compatible typealias for ``Foli/RouteList``.
-@available(*, deprecated, renamed: "Foli.RouteList")
-public typealias FoliRouteList = Foli.RouteList

@@ -60,7 +60,3 @@ public extension Foli {
         }
     }
 }
-
-/// Backward-compatible typealias for ``Foli/CalendarDatesList``.
-@available(*, deprecated, renamed: "Foli.CalendarDatesList")
-public typealias FoliCalendarDatesList = Foli.CalendarDatesList

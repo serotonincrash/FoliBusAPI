@@ -20,15 +20,6 @@ public extension FoliClient {
         }
     }
     
-    /// Fetch stop-monitoring data for a stop identified by numeric ID.
-    /// - Parameter stopId: The numeric stop ID to query.
-    /// - Returns: A stop-monitoring response containing arrivals and departures.
-    /// - Note: All GTFS stop IDs are strings. Prefer ``fetchStopMonitoring(for:)-7dqfh`` with a `String` argument.
-    @available(*, deprecated, message: "GTFS stop IDs are strings. Use fetchStopMonitoring(for:) with a String argument instead.")
-    func fetchStopMonitoring(for stopId: Int) async throws -> Foli.ArrivalResponse {
-        return try await fetchStopMonitoring(for: String(stopId))
-    }
-    
     /// Fetch arrivals for a stop identified by string ID.
     /// - Parameter stopId: The stop ID to monitor.
     /// - Returns: Array of vehicle arrivals.
@@ -38,14 +29,5 @@ public extension FoliClient {
             throw Foli.APIError.serverError(response.status)
         }
         return response.result
-    }
-    
-    /// Fetch arrivals for a stop identified by numeric ID.
-    /// - Parameter stopId: The numeric stop ID to monitor.
-    /// - Returns: Array of vehicle arrivals.
-    /// - Note: All GTFS stop IDs are strings. Prefer ``fetchArrivals(for:)-7rwkx`` with a `String` argument.
-    @available(*, deprecated, message: "GTFS stop IDs are strings. Use fetchArrivals(for:) with a String argument instead.")
-    func fetchArrivals(for stopId: Int) async throws -> [Foli.Arrival] {
-        return try await fetchArrivals(for: String(stopId))
     }
 }

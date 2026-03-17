@@ -28,15 +28,6 @@ public extension FoliService {
         return route
     }
     
-    /// Fetch a specific route by numeric ID.
-    /// - Parameter routeID: The route ID to fetch.
-    /// - Returns: The route if found.
-    /// - Note: All GTFS route IDs are strings. Prefer ``fetchRoute(id:)-7wujp`` with a `String` argument.
-    @available(*, deprecated, message: "GTFS route IDs are strings. Use fetchRoute(id:) with a String argument instead.")
-    func fetchRoute(id routeID: Int) async throws -> Foli.Route {
-        return try await fetchRoute(id: String(routeID))
-    }
-    
     /// Fetch routes matching a specific line reference
     /// - Parameter lineRef: The line reference (e.g., "15")
     /// - Returns: Array of matching routes

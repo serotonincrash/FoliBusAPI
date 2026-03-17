@@ -29,14 +29,6 @@ public extension FoliClient {
         _ = try await fetchRoutes()
         return indexedRoute(for: routeID)
     }
-
-    /// Fetch a specific route by its ID.
-    /// - Parameter routeId: The ID of route to fetch.
-    /// - Returns: The route if found.
-    @available(*, deprecated, renamed: "fetchRoute(id:)")
-    func fetchRoute(forRoute routeId: String) async throws -> Foli.Route? {
-        try await fetchRoute(id: routeId)
-    }
     
     /// Fetch routes that match a given line reference (e.g., "15")
     /// - Parameter lineRef: The line reference to search for

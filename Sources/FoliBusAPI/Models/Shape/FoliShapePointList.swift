@@ -49,7 +49,3 @@ public extension Foli {
         }
     }
 }
-
-/// Backward-compatible typealias for ``Foli/ShapePointList``.
-@available(*, deprecated, renamed: "Foli.ShapePointList")
-public typealias FoliShapePointList = Foli.ShapePointList

@@ -23,7 +23,3 @@ public extension Foli {
         }
     }
 }
-
-/// Backward-compatible typealias for ``Foli/AgencyList``.
-@available(*, deprecated, renamed: "Foli.AgencyList")
-public typealias FoliAgencyList = Foli.AgencyList

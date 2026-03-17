@@ -63,12 +63,4 @@ public extension FoliClient {
         _ = try await fetchCalendars()
         return indexedCalendar(for: serviceID)
     }
-
-    /// Fetch a specific calendar by service ID.
-    /// - Parameter serviceId: The service ID to fetch.
-    /// - Returns: The calendar if found.
-    @available(*, deprecated, renamed: "fetchCalendar(serviceID:)")
-    func fetchCalendar(forServiceId serviceId: String) async throws -> Foli.Calendar? {
-        try await fetchCalendar(serviceID: serviceId)
-    }
 }

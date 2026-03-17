@@ -63,12 +63,4 @@ public extension FoliClient {
         _ = try await fetchAgencies()
         return indexedAgency(for: agencyID)
     }
-
-    /// Fetch a specific agency by its ID.
-    /// - Parameter agencyId: The ID of the agency.
-    /// - Returns: The agency if found.
-    @available(*, deprecated, renamed: "fetchAgency(id:)")
-    func fetchAgency(forAgency agencyId: String) async throws -> Foli.Agency? {
-        try await fetchAgency(id: agencyId)
-    }
 }

@@ -52,7 +52,3 @@ public extension Foli {
         }
     }
 }
-
-/// Backward-compatible typealias for ``Foli/StopList``.
-@available(*, deprecated, renamed: "Foli.StopList")
-public typealias FoliStopList = Foli.StopList

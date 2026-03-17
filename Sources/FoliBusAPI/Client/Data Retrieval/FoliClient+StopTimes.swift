@@ -159,12 +159,4 @@ public extension FoliClient {
         }
     }
 
-    /// Fetch stop times for a stop using the client's configured caching behavior.
-    /// - Parameter stopId: The ID of the stop.
-    /// - Returns: Array of StopTime objects associated with the stop.
-    @available(*, deprecated, renamed: "fetchStopTimes(stopID:)")
-    func fetchStopTimes(forStopId stopId: String) async throws -> [Foli.StopTime] {
-        try await fetchStopTimes(stopID: stopId)
-    }
-
 }
