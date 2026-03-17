@@ -53,7 +53,7 @@ public extension Foli {
             self.timepoint = timepoint
         }
 
-        public enum CodingKeys: String, CodingKey {
+        private enum CodingKeys: String, CodingKey {
             case tripId = "trip_id"
             case arrivalTime = "arrival_time"
             case departureTime = "departure_time"

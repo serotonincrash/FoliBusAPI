@@ -1,7 +1,7 @@
 import Foundation
 
 // MARK: - Stop List Response
-public extension Foli {
+extension Foli {
     /// Response containing all known stops (GTFS stops.txt)
     struct StopList: Codable, Sendable {
         /// Private helper struct to decode the API response format where lat/lon are numbers
@@ -14,15 +14,15 @@ public extension Foli {
         }
 
         /// Array of all stops
-        public let stops: [Foli.Stop]
+        let stops: [Foli.Stop]
 
-        public init(stops: [Foli.Stop]) {
+        init(stops: [Foli.Stop]) {
             self.stops = stops
         }
 
         /// Helper to decode the top-level dictionary as an array of stops with IDs
         /// Handles numeric values for stop_lat and stop_lon from the API
-        public init(from decoder: Decoder) throws {
+        init(from decoder: Decoder) throws {
             let container = try decoder.singleValueContainer()
             let dictionary = try container.decode([String: APIStopData].self)
 
@@ -38,7 +38,7 @@ public extension Foli {
             }.sorted { $0.id < $1.id }
         }
 
-        public func encode(to encoder: Encoder) throws {
+        func encode(to encoder: Encoder) throws {
             var container = encoder.singleValueContainer()
             let dictionary = Dictionary(uniqueKeysWithValues: stops.map { stop -> (String, [String: String]) in
                 var data: [String: String] = ["stop_name": stop.name]

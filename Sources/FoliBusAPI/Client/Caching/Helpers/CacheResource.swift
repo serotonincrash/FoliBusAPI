@@ -4,7 +4,7 @@ public extension Foli {
     /// Identifies a cacheable (or deduplication-keyed) GTFS resource.
     ///
     /// This type serves a dual purpose:
-    /// - As keys for ``Foli/Cache`` operations (load, save, clear).
+    /// - As keys for cache operations (load, save, clear).
     /// - As deduplication keys in ``FoliClient`` to coalesce concurrent in-flight requests.
     ///
     /// The ``stopMonitoring(_:)`` case is deduplication-only and has no corresponding

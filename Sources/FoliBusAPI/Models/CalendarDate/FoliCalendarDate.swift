@@ -16,7 +16,7 @@ public extension Foli {
         /// A deterministic stable identifier derived from `serviceId` and `dateString`.
         public var id: String { "\(serviceId):\(dateString)" }
 
-        public enum CodingKeys: String, CodingKey {
+        private enum CodingKeys: String, CodingKey {
             case serviceId = "service_id"
             case dateString = "date"
             case exceptionType = "exception_type"

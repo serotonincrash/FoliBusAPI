@@ -50,7 +50,7 @@ public extension Foli {
             self.bikesAllowed = bikesAllowed
         }
 
-        public enum CodingKeys: String, CodingKey {
+        private enum CodingKeys: String, CodingKey {
             case tripId = "trip_id"
             case routeId = "route_id"
             case serviceId = "service_id"

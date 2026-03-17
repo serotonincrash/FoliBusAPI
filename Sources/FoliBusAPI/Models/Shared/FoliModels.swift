@@ -37,7 +37,7 @@ public extension Foli {
 extension SwiftUI.Color {
     /// Initialize a Color from a hex string
     /// - Parameter hex: Hex string (e.g., "FF0000" or "#FF0000")
-    public init(hex: String) {
+    internal init(hex: String) {
         var hexSanitized = hex.trimmingCharacters(in: .whitespacesAndNewlines)
         hexSanitized = hexSanitized.replacingOccurrences(of: "#", with: "")
 

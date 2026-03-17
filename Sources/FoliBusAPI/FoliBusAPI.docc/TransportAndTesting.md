@@ -4,22 +4,11 @@
 
 `FoliClient` depends on ``FoliTransport`` rather than calling `URLSession` directly. This keeps request execution behind a small abstraction boundary:
 
-- production code can use ``URLSessionTransport``
-- tests can inject a lightweight mock transport
+- production code can use the `FoliClient(session:cacheBehavior:cacheTimeout:)` convenience initializer that injects a `URLSession` for regular networking
+- tests inject a lightweight mock transport
 - request construction, response validation, and decoding stay inside ``FoliClient``
 
-## Production transport
-
-`URLSessionTransport` adapts a `URLSession` to the ``FoliTransport`` protocol.
-
-```swift
-let client = FoliClient(
-    transport: URLSessionTransport(session: .shared),
-    cacheBehavior: .cachedOrFetch
-)
-```
-
-You can also keep using the convenience initializer when a plain `URLSession` is enough:
+## Production usage
 
 ```swift
 let client = FoliClient(session: .shared, cacheBehavior: .cachedOrFetch)

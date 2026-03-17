@@ -6,7 +6,7 @@ import Foundation
 public extension FoliClient {
     /// Fetch route IDs that expose shapes from GTFS.
     /// - Returns: Array of route IDs that have at least one available shape.
-    func fetchShapeRouteIDsFromNetwork() async throws -> [String] {
+    internal func fetchShapeRouteIDsFromNetwork() async throws -> [String] {
         try await performDeduplicated(.shapeRouteIds) { [self] in
             try await requestGTFS("/shapes", as: [String].self)
         }
@@ -15,7 +15,7 @@ public extension FoliClient {
     /// Fetch shape points for one shape ID directly from GTFS.
     /// - Parameter routeId: The route identifier to fetch shapes for.
     /// - Returns: Shape points ordered by sequence.
-    func fetchShapePointsFromNetwork(forRouteId routeId: String) async throws -> [Foli.ShapePoint] {
+    internal func fetchShapePointsFromNetwork(forRouteId routeId: String) async throws -> [Foli.ShapePoint] {
         try await performDeduplicated(.shapePointsForShape(routeId)) { [self] in
             let shapePointList = try await requestGTFS("/shapes/\(routeId)", as: Foli.ShapePointList.self)
             return shapePointList.shapePoints

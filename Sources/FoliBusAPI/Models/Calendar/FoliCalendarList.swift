@@ -1,11 +1,11 @@
 import Foundation
 
 // MARK: - Calendar List Response
-public extension Foli {
+extension Foli {
     /// Response containing weekly calendars (GTFS calendar.txt)
     struct CalendarList: Codable, Sendable {
         /// Array of decoded weekly service calendars.
-        public let calendars: [Foli.Calendar]
+        let calendars: [Foli.Calendar]
         
         /// Calendar payload entry in the documented dictionary response format.
         struct APICalendarEntry: Codable, Sendable {
@@ -44,12 +44,12 @@ public extension Foli {
             }
         }
         
-        public init(calendars: [Foli.Calendar]) {
+        init(calendars: [Foli.Calendar]) {
             self.calendars = calendars
         }
         
         /// Decodes both documented dictionary payloads and legacy array payloads.
-        public init(from decoder: Decoder) throws {
+        init(from decoder: Decoder) throws {
             let container = try decoder.singleValueContainer()
             
             if let dictionary = try? container.decode([String: APICalendarEntry].self) {
@@ -76,7 +76,7 @@ public extension Foli {
             self.calendars = array.sorted { $0.id < $1.id }
         }
         
-        public func encode(to encoder: Encoder) throws {
+        func encode(to encoder: Encoder) throws {
             var container = encoder.singleValueContainer()
             var dictionary: [String: APICalendarEntry] = [:]
             for calendar in calendars {

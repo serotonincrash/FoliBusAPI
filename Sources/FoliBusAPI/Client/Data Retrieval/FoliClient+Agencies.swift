@@ -6,7 +6,7 @@ import Foundation
 public extension FoliClient {
     /// Fetch the complete list of agencies from GTFS.
     /// - Returns: An array of all agencies.
-    func fetchAgenciesFromNetwork() async throws -> [Foli.Agency] {
+    internal func fetchAgenciesFromNetwork() async throws -> [Foli.Agency] {
         try await performDeduplicated(.agencies) { [self] in
             let agencyList = try await requestGTFS("/agency", as: Foli.AgencyList.self)
             return agencyList.agencies

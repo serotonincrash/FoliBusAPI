@@ -1,6 +1,6 @@
 import Foundation
 
-public extension Foli.DiskCache {
+extension Foli.DiskCache {
     func saveRoutes(_ routes: [Foli.Route]) async throws {
         try await save(routes, type: .routes)
     }

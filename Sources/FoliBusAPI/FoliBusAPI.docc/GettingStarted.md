@@ -21,11 +21,10 @@ let client = FoliClient(
 let routes = try await client.fetchRoutes()
 ```
 
-## Fetch stop monitoring
+## Fetch arrivals (stop monitoring)
 
 ```swift
-let response = try await client.fetchStopMonitoring(for: "1000")
-let arrivals = response.result
+let arrivals = try await client.fetchArrivals(for: "1000")
 ```
 
 ## Use the convenience facade

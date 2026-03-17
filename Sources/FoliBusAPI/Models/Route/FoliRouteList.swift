@@ -1,13 +1,13 @@
 import Foundation
 
 // MARK: - Route List Response
-public extension Foli {
+extension Foli {
     /// Response containing all known routes (GTFS routes.txt)
     struct RouteList: Codable, Sendable {
         /// Array of all routes
-        public let routes: [Foli.Route]
+        let routes: [Foli.Route]
 
-        public init(routes: [Foli.Route]) {
+        init(routes: [Foli.Route]) {
             self.routes = routes
         }
 
@@ -27,14 +27,14 @@ public extension Foli {
 
         /// Helper to decode an array of route dictionaries from the API
         /// The API returns an array of routes with route_id as a field, not as dictionary keys
-        public init(from decoder: Decoder) throws {
+        init(from decoder: Decoder) throws {
             let container = try decoder.singleValueContainer()
             let array = try container.decode([Foli.Route].self)
 
             self.routes = array.sorted { $0.id < $1.id }
         }
 
-        public func encode(to encoder: Encoder) throws {
+        func encode(to encoder: Encoder) throws {
             var container = encoder.singleValueContainer()
             let array = routes.map { route -> APIRouteData in
                 APIRouteData(

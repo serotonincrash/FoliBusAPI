@@ -1,6 +1,6 @@
 import Foundation
 
-public extension Foli.DiskCache {
+extension Foli.DiskCache {
     func clearAllCache() async throws {
         let contents = try fileManager.contentsOfDirectory(
             at: cacheDirectory,

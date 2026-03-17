@@ -1,6 +1,6 @@
 import Foundation
 
-public extension Foli.DiskCache {
+extension Foli.DiskCache {
     internal struct DatasetMetadata: Codable {
         let datasetId: String
         let cachedAt: Date

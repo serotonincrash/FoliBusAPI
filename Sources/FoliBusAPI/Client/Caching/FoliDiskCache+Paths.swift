@@ -1,6 +1,6 @@
 import Foundation
 
-public extension Foli.DiskCache {
+extension Foli.DiskCache {
     internal func fileURL(for type: Foli.CacheResource) -> URL {
         let filename: String
 

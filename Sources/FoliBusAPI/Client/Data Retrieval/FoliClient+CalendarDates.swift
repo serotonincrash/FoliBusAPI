@@ -14,7 +14,7 @@ public extension FoliClient {
     
     /// Fetch all GTFS calendar date exceptions
     /// - Returns: Array of CalendarDate objects
-    func fetchCalendarDatesFromNetwork() async throws -> [Foli.CalendarDate] {
+    internal func fetchCalendarDatesFromNetwork() async throws -> [Foli.CalendarDate] {
         try await performDeduplicated(.calendarDates) { [self] in
             let calendarDatesList = try await requestGTFS("/calendar_dates", as: Foli.CalendarDatesList.self)
             return calendarDatesList.calendarDates

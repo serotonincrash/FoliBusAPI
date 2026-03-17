@@ -15,7 +15,7 @@ public extension FoliClient {
     
     /// Fetch the complete list of all known routes from GTFS
     /// - Returns: An array of all routes
-    func fetchRoutesFromNetwork() async throws -> [Foli.Route] {
+    internal func fetchRoutesFromNetwork() async throws -> [Foli.Route] {
         try await performDeduplicated(.routes) { [self] in
             let routeList = try await requestGTFS("/routes", as: Foli.RouteList.self)
             return routeList.routes

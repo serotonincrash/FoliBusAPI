@@ -1,11 +1,11 @@
 import Foundation
 
 // MARK: - Shape Point List Response
-public extension Foli {
+extension Foli {
     /// Response containing shape geometry points (GTFS shapes.txt)
     struct ShapePointList: Codable, Sendable {
         /// Ordered shape points for a specific shape.
-        public let shapePoints: [Foli.ShapePoint]
+        let shapePoints: [Foli.ShapePoint]
 
         /// Payload format documented by Föli (`lat`, `lon`, `traveled`).
         struct APIDocumentedShapePoint: Codable, Sendable {
@@ -14,12 +14,12 @@ public extension Foli {
             let traveled: Double?
         }
 
-        public init(shapePoints: [Foli.ShapePoint]) {
+        init(shapePoints: [Foli.ShapePoint]) {
             self.shapePoints = shapePoints
         }
 
         /// Decodes both canonical GTFS shape-point payloads and documented Föli payloads.
-        public init(from decoder: Decoder) throws {
+        init(from decoder: Decoder) throws {
             let container = try decoder.singleValueContainer()
             if let array = try? container.decode([Foli.ShapePoint].self) {
                 self.shapePoints = array.sorted {
@@ -43,7 +43,7 @@ public extension Foli {
             }
         }
 
-        public func encode(to encoder: Encoder) throws {
+        func encode(to encoder: Encoder) throws {
             var container = encoder.singleValueContainer()
             try container.encode(shapePoints)
         }

@@ -1,11 +1,10 @@
 import Foundation
 
-public extension Foli {
-    /// A cache interface for storing and retrieving GTFS-backed resources.
+extension Foli {
+    /// Internal cache interface for storing and retrieving GTFS-backed resources.
     ///
-    /// The package ships with ``Foli/DiskCache`` as its default implementation,
-    /// but custom caches can conform to this protocol to provide alternate storage
-    /// or invalidation behavior.
+    /// The package currently ships with an internal disk-backed implementation and does not
+    /// expose cache injection as part of the public API surface.
     ///
     /// All methods are asynchronous to support actor-isolated implementations and
     /// avoid blocking the caller.
