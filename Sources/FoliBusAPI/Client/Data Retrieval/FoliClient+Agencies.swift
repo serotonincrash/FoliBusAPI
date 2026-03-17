@@ -8,7 +8,7 @@ public extension FoliClient {
     /// - Returns: An array of all agencies.
     func fetchAgenciesFromNetwork() async throws -> [Foli.Agency] {
         try await performDeduplicated(.agencies) { [self] in
-            let agencyList = try await requestGTFS("/agency", as: FoliAgencyList.self)
+            let agencyList = try await requestGTFS("/agency", as: Foli.AgencyList.self)
             return agencyList.agencies
         }
     }

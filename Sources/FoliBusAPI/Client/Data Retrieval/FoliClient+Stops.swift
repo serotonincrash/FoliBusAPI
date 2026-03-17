@@ -16,7 +16,7 @@ public extension FoliClient {
     /// - Returns: An array of all stops
     func fetchStopsFromNetwork() async throws -> [Foli.Stop] {
         try await performDeduplicated(.stops) { [self] in
-            let stopList = try await requestGTFS("/stops", as: FoliStopList.self)
+            let stopList = try await requestGTFS("/stops", as: Foli.StopList.self)
             return stopList.stops
         }
     }

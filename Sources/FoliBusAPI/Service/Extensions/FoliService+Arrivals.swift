@@ -18,6 +18,11 @@ public extension FoliService {
         return try await client.fetchArrivals(for: stopId)
     }
     
+    /// Fetch arrivals for a specific stop by numeric ID.
+    /// - Parameter stopId: The numeric stop ID.
+    /// - Returns: Array of arrivals for the stop.
+    /// - Note: All GTFS stop IDs are strings. Prefer ``fetchArrivals(for:)-9p5gt`` with a `String` argument.
+    @available(*, deprecated, message: "GTFS stop IDs are strings. Use fetchArrivals(for:) with a String argument instead.")
     func fetchArrivals(for stopId: Int) async throws -> [Foli.Arrival] {
         return try await fetchArrivals(for: String(stopId))
     }

@@ -33,7 +33,7 @@ The package is built around ``FoliClient``, which is an actor responsible for re
 
 - ``Foli``
 - ``Foli/APIError``
-- ``FoliArrivalResponse``
+- ``Foli/ArrivalResponse``
 
 ### Articles
 

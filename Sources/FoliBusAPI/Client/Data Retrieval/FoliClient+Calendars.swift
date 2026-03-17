@@ -8,7 +8,7 @@ public extension FoliClient {
     /// - Returns: An array of all calendar records.
     func fetchCalendarsFromNetwork() async throws -> [Foli.Calendar] {
         try await performDeduplicated(.calendars) { [self] in
-            let calendarList = try await requestGTFS("/calendar", as: FoliCalendarList.self)
+            let calendarList = try await requestGTFS("/calendar", as: Foli.CalendarList.self)
             return calendarList.calendars
         }
     }

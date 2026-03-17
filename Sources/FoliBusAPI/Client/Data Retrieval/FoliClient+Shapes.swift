@@ -17,7 +17,7 @@ public extension FoliClient {
     /// - Returns: Shape points ordered by sequence.
     func fetchShapePointsFromNetwork(forRouteId routeId: String) async throws -> [Foli.ShapePoint] {
         try await performDeduplicated(.shapePointsForShape(routeId)) { [self] in
-            let shapePointList = try await requestGTFS("/shapes/\(routeId)", as: FoliShapePointList.self)
+            let shapePointList = try await requestGTFS("/shapes/\(routeId)", as: Foli.ShapePointList.self)
             return shapePointList.shapePoints
                 .enumerated()
                 .map { index, shapePoint in

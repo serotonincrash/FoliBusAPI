@@ -1,13 +1,14 @@
 import Foundation
 
 // MARK: - Calendar List Response
-/// Response containing weekly calendars (GTFS calendar.txt)
-public struct FoliCalendarList: Codable, Sendable {
-    /// Array of decoded weekly service calendars.
-    public let calendars: [Foli.Calendar]
+public extension Foli {
+    /// Response containing weekly calendars (GTFS calendar.txt)
+    struct CalendarList: Codable, Sendable {
+        /// Array of decoded weekly service calendars.
+        public let calendars: [Foli.Calendar]
 
-    /// Calendar payload entry in the documented dictionary response format.
-    struct APICalendarEntry: Codable, Sendable {
+        /// Calendar payload entry in the documented dictionary response format.
+        struct APICalendarEntry: Codable, Sendable {
         let monday: Bool
         let tuesday: Bool
         let wednesday: Bool
@@ -84,3 +85,8 @@ public struct FoliCalendarList: Codable, Sendable {
         try container.encode(dictionary)
     }
 }
+}
+
+/// Backward-compatible typealias for ``Foli/CalendarList``.
+@available(*, deprecated, renamed: "Foli.CalendarList")
+public typealias FoliCalendarList = Foli.CalendarList

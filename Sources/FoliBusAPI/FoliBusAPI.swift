@@ -26,6 +26,8 @@ public final class FoliBusAPI {
     /// Fetch real-time arrival data for a stop identified by numeric ID.
     /// - Parameter stopId: The numeric stop ID to monitor.
     /// - Returns: Array of vehicle arrivals.
+    /// - Note: All GTFS stop IDs are strings. Prefer ``fetchArrivals(for:)-4hnud`` with a `String` argument.
+    @available(*, deprecated, message: "GTFS stop IDs are strings. Use fetchArrivals(for:) with a String argument instead.")
     public static func fetchArrivals(for stopId: Int) async throws -> [Foli.Arrival] {
         let client = defaultClient()
         return try await client.fetchArrivals(for: stopId)
