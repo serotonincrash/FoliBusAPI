@@ -7,6 +7,8 @@ extension Foli.DiskCache {
         switch type {
         case .stopMonitoring:
             preconditionFailure("Stop monitoring responses are deduped but never persisted to disk cache.")
+        case .vehicleMonitoring:
+            preconditionFailure("Vehicle monitoring responses are deduped but never persisted to disk cache.")
         case .routes:
             filename = "routes.json"
         case .stops:

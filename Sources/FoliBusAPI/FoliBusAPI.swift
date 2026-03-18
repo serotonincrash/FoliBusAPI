@@ -13,7 +13,38 @@ public final class FoliBusAPI {
         defaultProvider.client()
     }
     
-    // MARK: - Convenience Methods - Stops
+    // MARK: - Convenience Methods - Real-Time Data
+    
+    /// Fetch all current vehicle locations from the SIRI Vehicle Monitoring (VM) endpoint.
+    ///
+    /// - Returns: Array of vehicle locations.
+    /// - Throws: `Foli.APIError` if the request fails or the server returns an error status.
+    ///
+    /// - Note: The VM endpoint returns a large response. Minimum polling interval: 3 seconds.
+    public static func fetchVehicleLocations() async throws -> [Foli.VehicleLocation] {
+        let client = defaultClient()
+        return try await client.fetchVehicleLocations()
+    }
+    
+    /// Fetch vehicle locations filtered by line reference.
+    ///
+    /// - Parameter lineRef: The line reference to filter by (e.g., "14", "2A").
+    /// - Returns: Array of vehicle locations for the specified line.
+    /// - Throws: `Foli.APIError` if the request fails or the server returns an error status.
+    public static func fetchVehicleLocations(for lineRef: String) async throws -> [Foli.VehicleLocation] {
+        let client = defaultClient()
+        return try await client.fetchVehicleLocations(for: lineRef)
+    }
+    
+    /// Fetch vehicle locations for multiple line references.
+    ///
+    /// - Parameter lineRefs: Array of line references to filter by.
+    /// - Returns: Array of vehicle locations matching any of the specified lines.
+    /// - Throws: `Foli.APIError` if the request fails or the server returns an error status.
+    public static func fetchVehicleLocations(for lineRefs: [String]) async throws -> [Foli.VehicleLocation] {
+        let client = defaultClient()
+        return try await client.fetchVehicleLocations(for: lineRefs)
+    }
     
     /// Fetch real-time arrival data for a stop identified by string ID.
     /// - Parameter stopId: The stop ID to monitor.
@@ -30,6 +61,8 @@ public final class FoliBusAPI {
         let client = defaultClient()
         return try await client.fetchArrivals(for: stop.id)
     }
+    
+    // MARK: - Convenience Methods - Stops
     
     /// Fetch the complete list of stops
     /// - Returns: Array of all stops

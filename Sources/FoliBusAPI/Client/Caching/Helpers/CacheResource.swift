@@ -12,6 +12,8 @@ public extension Foli {
     enum CacheResource: Hashable, Sendable {
         /// Real-time stop monitoring for a given stop ID (deduplication only, not cached).
         case stopMonitoring(String)
+        /// Real-time vehicle monitoring (deduplication only, not cached).
+        case vehicleMonitoring
         case routes
         case stops
         case trips
