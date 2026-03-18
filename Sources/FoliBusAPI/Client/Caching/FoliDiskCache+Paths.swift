@@ -9,6 +9,8 @@ extension Foli.DiskCache {
             preconditionFailure("Stop monitoring responses are deduped but never persisted to disk cache.")
         case .vehicleMonitoring:
             preconditionFailure("Vehicle monitoring responses are deduped but never persisted to disk cache.")
+        case .alerts, .alertMessages, .alertCancellations:
+            preconditionFailure("Alert responses are deduped but never persisted to disk cache.")
         case .routes:
             filename = "routes.json"
         case .stops:
@@ -33,6 +35,12 @@ extension Foli.DiskCache {
             filename = "shape_route_ids.json"
         case .shapePointsForShape(let shapeId):
             filename = "shape_points_\(shapeId).json"
+        case .geoJSONLayers:
+            filename = "geojson_layers.json"
+        case .geoJSONPOI:
+            filename = "geojson_poi.json"
+        case .geoJSONPOICategory(let category):
+            filename = "geojson_poi_\(category).json"
         }
 
         return cacheDirectory.appendingPathComponent(filename)

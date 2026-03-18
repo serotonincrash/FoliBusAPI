@@ -15,6 +15,42 @@ public final class FoliBusAPI {
     
     // MARK: - Convenience Methods - Real-Time Data
     
+    /// Fetch all active alerts (messages and cancellations).
+    ///
+    /// - Returns: Alerts response containing messages, cancellations, and special alerts.
+    /// - Throws: `Foli.APIError` if the request fails.
+    public static func fetchAlerts() async throws -> Foli.AlertsResponse {
+        let client = defaultClient()
+        return try await client.fetchAlerts()
+    }
+    
+    /// Fetch only informational alert messages.
+    ///
+    /// - Returns: Array of alert messages.
+    /// - Throws: `Foli.APIError` if the request fails.
+    public static func fetchAlertMessages() async throws -> [Foli.Alert] {
+        let client = defaultClient()
+        return try await client.fetchAlertMessages()
+    }
+    
+    /// Fetch only trip cancellations.
+    ///
+    /// - Returns: Array of trip cancellations.
+    /// - Throws: `Foli.APIError` if the request fails.
+    public static func fetchCancellations() async throws -> [Foli.TripCancellation] {
+        let client = defaultClient()
+        return try await client.fetchCancellations()
+    }
+    
+    /// Fetch alert category descriptions.
+    ///
+    /// - Returns: Array of alert categories.
+    /// - Throws: `Foli.APIError` if the request fails.
+    public static func fetchAlertCategories() async throws -> [Foli.AlertCategory] {
+        let client = defaultClient()
+        return try await client.fetchAlertCategories()
+    }
+    
     /// Fetch all current vehicle locations from the SIRI Vehicle Monitoring (VM) endpoint.
     ///
     /// - Returns: Array of vehicle locations.
@@ -226,5 +262,47 @@ public final class FoliBusAPI {
     public static func fetchShapePoints(forRouteId routeId: String) async throws -> [Foli.ShapePoint] {
         let client = defaultClient()
         return try await client.fetchShapePoints(forRouteId: routeId)
+    }
+    
+    // MARK: - Convenience Methods - GeoJSON
+    
+    /// Fetch available GeoJSON map layers.
+    ///
+    /// - Returns: Array of available map layers.
+    /// - Throws: `Foli.APIError` if the request fails.
+    public static func fetchGeoJSONLayers() async throws -> [Foli.GeoJSONLayer] {
+        let client = defaultClient()
+        return try await client.fetchGeoJSONLayers()
+    }
+    
+    /// Fetch all points of interest.
+    ///
+    /// - Returns: GeoJSON feature collection of all POIs.
+    /// - Throws: `Foli.APIError` if the request fails.
+    public static func fetchPointsOfInterest() async throws -> Foli.FeatureCollection {
+        let client = defaultClient()
+        return try await client.fetchPointsOfInterest()
+    }
+    
+    /// Fetch points of interest by category.
+    ///
+    /// - Parameter category: Category name.
+    /// - Returns: GeoJSON feature collection.
+    /// - Throws: `Foli.APIError` if the request fails.
+    public static func fetchPointsOfInterest(category: String) async throws -> Foli.FeatureCollection {
+        let client = defaultClient()
+        return try await client.fetchPointsOfInterest(category: category)
+    }
+    
+    /// Fetch Föli service area boundaries.
+    ///
+    /// - Parameters:
+    ///   - resolution: Boundary resolution (default: normal).
+    ///   - format: Output format (default: multiPolygon).
+    /// - Returns: GeoJSON feature collection with boundary geometry.
+    /// - Throws: `Foli.APIError` if the request fails.
+    public static func fetchServiceBounds(resolution: FoliClient.BoundsResolution = .normal, format: FoliClient.BoundsFormat = .multiPolygon) async throws -> Foli.FeatureCollection {
+        let client = defaultClient()
+        return try await client.fetchServiceBounds(resolution: resolution, format: format)
     }
 }

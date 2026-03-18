@@ -14,6 +14,12 @@ public extension Foli {
         case stopMonitoring(String)
         /// Real-time vehicle monitoring (deduplication only, not cached).
         case vehicleMonitoring
+        /// Real-time alerts (deduplication only, not cached).
+        case alerts
+        /// Real-time alert messages only (deduplication only, not cached).
+        case alertMessages
+        /// Real-time cancellations only (deduplication only, not cached).
+        case alertCancellations
         case routes
         case stops
         case trips
@@ -26,5 +32,11 @@ public extension Foli {
         case calendars
         case shapeRouteIds
         case shapePointsForShape(String)
+        /// GeoJSON layers (cacheable)
+        case geoJSONLayers
+        /// All points of interest (cacheable)
+        case geoJSONPOI
+        /// Points of interest by category (cacheable)
+        case geoJSONPOICategory(String)
     }
 }
