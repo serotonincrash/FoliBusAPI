@@ -66,8 +66,14 @@ public extension FoliClient {
     }
 
     private func runBackgroundRefresh<T>(for type: Foli.CacheResource, fetch: @escaping @Sendable () async throws -> T, save: @escaping @Sendable (T) async throws -> Void) async {
+        // Get the current task reference for proper cleanup
+        let currentTask = backgroundRefreshTasks[type]
+        
         defer {
-            backgroundRefreshTasks[type] = nil
+            // Only clear if this is still the registered task (prevents clearing a newer task)
+            if let currentTask {
+                clearBackgroundRefreshTask(for: type, matching: currentTask)
+            }
         }
 
         do {
@@ -75,6 +81,8 @@ public extension FoliClient {
             guard !cacheStillCurrent else { return }
             let freshValue = try await fetch()
             try await save(freshValue)
+        } catch is CancellationError {
+            // Task was cancelled - this is expected lifecycle behavior, not an error
         } catch {
             notifyBackgroundRefreshError(type, error: error)
         }

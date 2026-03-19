@@ -19,13 +19,22 @@ extension FoliClient {
     }
 
     internal func performDeduplicated<T: Sendable>(_ key: Foli.CacheResource, operation: @escaping @Sendable () async throws -> T) async throws -> T {
-        if let task = inFlightRequests[key] {
-            return try await task.value(as: T.self)
+        // Check for existing in-flight request first
+        if let existingTask = inFlightRequests[key] {
+            return try await existingTask.value(as: T.self)
         }
 
+        // Create and register task before awaiting to prevent reentrancy races
         let task = Task { try await operation() }
         inFlightRequests[key] = AnyInFlightTask(task)
-        defer { inFlightRequests[key] = nil }
-        return try await task.value
+        
+        do {
+            let result = try await task.value
+            inFlightRequests[key] = nil
+            return result
+        } catch {
+            inFlightRequests[key] = nil
+            throw error
+        }
     }
 }
