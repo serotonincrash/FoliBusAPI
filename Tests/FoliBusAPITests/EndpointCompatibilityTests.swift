@@ -25,7 +25,7 @@ struct EndpointCompatibilityTests {
             try makeDataResponse(for: request, data: payload)
         }
 
-        let client = FoliClient(transport: transport, cachedBy: .noCache)
+        let client = FoliClient(transport: transport, cacheBehavior: .noCache)
         _ = try await client.fetchRoutes()
         let requests = await transport.requests()
 
@@ -53,7 +53,7 @@ struct EndpointCompatibilityTests {
             try makeDataResponse(for: request, data: payload)
         }
 
-        let client = FoliClient(transport: transport, cachedBy: .noCache)
+        let client = FoliClient(transport: transport, cacheBehavior: .noCache)
         _ = try await client.fetchTrips()
         let requests = await transport.requests()
 
@@ -80,7 +80,7 @@ struct EndpointCompatibilityTests {
             try makeDataResponse(for: request, data: payload)
         }
 
-        let client = FoliClient(transport: transport, cachedBy: .noCache)
+        let client = FoliClient(transport: transport, cacheBehavior: .noCache)
         _ = try await client.fetchTrips(forRoute: "15")
         let requests = await transport.requests()
 
@@ -108,7 +108,7 @@ struct EndpointCompatibilityTests {
             try makeDataResponse(for: request, data: payload)
         }
 
-        let client = FoliClient(transport: transport, cachedBy: .noCache)
+        let client = FoliClient(transport: transport, cacheBehavior: .noCache)
         _ = try await client.fetchStopTimes(forTrip: "TRIP-1")
         let requests = await transport.requests()
 
@@ -136,8 +136,8 @@ struct EndpointCompatibilityTests {
             try makeDataResponse(for: request, data: payload)
         }
 
-        let client = FoliClient(transport: transport, cachedBy: .noCache)
-        _ = try await client.fetchStopTimes(forStopId: "1000")
+        let client = FoliClient(transport: transport, cacheBehavior: .noCache)
+        _ = try await client.fetchStopTimes(stopID: "1000")
         let requests = await transport.requests()
 
         #expect(requests.count == 1)
@@ -174,11 +174,107 @@ struct EndpointCompatibilityTests {
             try makeDataResponse(for: request, data: payload)
         }
 
-        let client = FoliClient(transport: transport, cachedBy: .noCache)
+        let client = FoliClient(transport: transport, cacheBehavior: .noCache)
         _ = try await client.fetchStopMonitoring(for: "1000")
         let requests = await transport.requests()
 
         #expect(requests.count == 1)
         #expect(requests.first?.url?.absoluteString == "https://data.foli.fi/siri/sm/1000")
+    }
+
+    @Test("fetchAgencies requests GTFS agency path")
+    func fetchAgenciesUsesAgencyPath() async throws {
+        let payload = #"""
+        [
+          {
+            "agency_id": "FOLI",
+            "agency_name": "Foli",
+            "agency_url": "https://www.foli.fi",
+            "agency_timezone": "Europe/Helsinki"
+          }
+        ]
+        """#.data(using: .utf8)!
+        let transport = MockTransport { request in
+            try makeDataResponse(for: request, data: payload)
+        }
+
+        let client = FoliClient(transport: transport, cacheBehavior: .noCache)
+        _ = try await client.fetchAgencies()
+        let requests = await transport.requests()
+
+        #expect(requests.count == 1)
+        #expect(requests.first?.url?.absoluteString == "https://data.foli.fi/gtfs/agency")
+    }
+
+    @Test("fetchCalendars requests GTFS calendar path")
+    func fetchCalendarsUsesCalendarPath() async throws {
+        let payload = #"""
+        {
+          "WKD": {
+            "monday": true,
+            "tuesday": true,
+            "wednesday": true,
+            "thursday": true,
+            "friday": true,
+            "saturday": false,
+            "sunday": false,
+            "start_date": "20260101",
+            "end_date": "20261231"
+          }
+        }
+        """#.data(using: .utf8)!
+        let transport = MockTransport { request in
+            try makeDataResponse(for: request, data: payload)
+        }
+
+        let client = FoliClient(transport: transport, cacheBehavior: .noCache)
+        _ = try await client.fetchCalendars()
+        let requests = await transport.requests()
+
+        #expect(requests.count == 1)
+        #expect(requests.first?.url?.absoluteString == "https://data.foli.fi/gtfs/calendar")
+    }
+
+    @Test("fetchShapePoints requests GTFS shapes path")
+    func fetchShapePointsUsesShapesPath() async throws {
+        let payload = #"""
+        [
+          "1",
+          "10"
+        ]
+        """#.data(using: .utf8)!
+        let transport = MockTransport { request in
+            try makeDataResponse(for: request, data: payload)
+        }
+
+        let client = FoliClient(transport: transport, cacheBehavior: .noCache)
+        _ = try await client.fetchShapeRouteIDs()
+        let requests = await transport.requests()
+
+        #expect(requests.count == 1)
+        #expect(requests.first?.url?.absoluteString == "https://data.foli.fi/gtfs/shapes")
+    }
+
+    @Test("fetchShapePoints for shape requests GTFS shape-specific path")
+    func fetchShapePointsForShapeUsesShapePath() async throws {
+        let payload = #"""
+        [
+          {
+            "lat": 60.4518,
+            "lon": 22.2666,
+            "traveled": 12.5
+          }
+        ]
+        """#.data(using: .utf8)!
+        let transport = MockTransport { request in
+            try makeDataResponse(for: request, data: payload)
+        }
+
+        let client = FoliClient(transport: transport, cacheBehavior: .noCache)
+        _ = try await client.fetchShapePoints(forRouteId: "SHAPE-1")
+        let requests = await transport.requests()
+
+        #expect(requests.count == 1)
+        #expect(requests.first?.url?.absoluteString == "https://data.foli.fi/gtfs/shapes/SHAPE-1")
     }
 }

@@ -1,10 +1,12 @@
 import Foundation
 
-public extension Foli.DiskCache {
+extension Foli.DiskCache {
     internal func fileURL(for type: Foli.CacheResource) -> URL {
         let filename: String
 
         switch type {
+        case .stopMonitoring:
+            preconditionFailure("Stop monitoring responses are deduped but never persisted to disk cache.")
         case .routes:
             filename = "routes.json"
         case .stops:
@@ -21,6 +23,14 @@ public extension Foli.DiskCache {
             filename = "stop_times_stop_\(stopId).json"
         case .calendarDates:
             filename = "calendar_dates.json"
+        case .agencies:
+            filename = "agencies.json"
+        case .calendars:
+            filename = "calendars.json"
+        case .shapeRouteIds:
+            filename = "shape_route_ids.json"
+        case .shapePointsForShape(let shapeId):
+            filename = "shape_points_\(shapeId).json"
         }
 
         return cacheDirectory.appendingPathComponent(filename)

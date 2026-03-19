@@ -2,8 +2,7 @@ import Foundation
 
 /// Information about a vehicle arrival or departure
 public extension Foli {
-    struct Arrival: Codable, Sendable, Identifiable {
-        public let id = UUID()
+    struct Arrival: Codable, Sendable, Identifiable, Equatable {
         /// Unix timestamp representing the last update from the vehicle
         public let recordedAtTime: TimeInterval
         /// Line reference (e.g., "15", "61")
@@ -30,6 +29,9 @@ public extension Foli {
         public let expectedDepartureTime: TimeInterval
         /// Delay in seconds (optional, may not always be present)
         public let delay: Int?
+
+        /// A deterministic stable identifier derived from `lineRef` and `aimedArrivalTime`.
+        public var id: String { "\(lineRef):\(aimedArrivalTime)" }
 
         /// Creates an arrival or departure snapshot.
         /// - Parameters:
@@ -165,11 +167,11 @@ public extension Foli {
         }
 
         /// Location coordinates if available
-        public var location: CLLocationCoordinate2D? {
+        public var location: Foli.Coordinate? {
             guard let lat = latitude, let lon = longitude else {
                 return nil
             }
-            return CLLocationCoordinate2D(latitude: lat, longitude: lon)
+            return Foli.Coordinate(latitude: lat, longitude: lon)
         }
     }
 }

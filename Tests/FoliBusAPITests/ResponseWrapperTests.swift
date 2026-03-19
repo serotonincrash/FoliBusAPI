@@ -18,7 +18,7 @@ struct ResponseWrapperTests {
         }
         """.data(using: .utf8)!
 
-        let decoded = try JSONDecoder().decode(FoliCalendarDatesList.self, from: json)
+        let decoded = try JSONDecoder().decode(Foli.CalendarDatesList.self, from: json)
         let serviceIds = decoded.calendarDates.map(\.serviceId)
         let dateStrings = decoded.calendarDates.map(\.dateString)
         let exceptionTypes = decoded.calendarDates.map(\.exceptionType)
@@ -58,7 +58,7 @@ struct ResponseWrapperTests {
         }
         """.data(using: .utf8)!
 
-        let decoded = try JSONDecoder().decode(FoliArrivalResponse.self, from: json)
+        let decoded = try JSONDecoder().decode(Foli.ArrivalResponse.self, from: json)
         let firstArrival = try #require(decoded.result.first)
 
         #expect(decoded.isValid)

@@ -4,8 +4,6 @@ import Foundation
 /// Information about service exceptions for a specific date (GTFS calendar\_dates.txt)
 public extension Foli {
     struct CalendarDate: Codable, Sendable, Identifiable, Equatable {
-        public let id = UUID()
-
         /// The service ID that this exception applies to
         public let serviceId: String
 
@@ -15,7 +13,10 @@ public extension Foli {
         /// Exception type: 0 = service removed, 1 = service added
         public let exceptionType: Int
 
-        public enum CodingKeys: String, CodingKey {
+        /// A deterministic stable identifier derived from `serviceId` and `dateString`.
+        public var id: String { "\(serviceId):\(dateString)" }
+
+        private enum CodingKeys: String, CodingKey {
             case serviceId = "service_id"
             case dateString = "date"
             case exceptionType = "exception_type"
@@ -33,7 +34,7 @@ public extension Foli {
         public var date: Date? {
             let formatter = DateFormatter()
             formatter.dateFormat = "yyyyMMdd"
-            formatter.calendar = Calendar(identifier: .gregorian)
+            formatter.calendar = Foundation.Calendar(identifier: .gregorian)
             return formatter.date(from: dateString)
         }
 

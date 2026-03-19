@@ -17,8 +17,8 @@ extension FoliClient {
     ) -> FoliClient {
         FoliClient(
             transport: URLSessionTransport(session: session),
-            cachedBy: cacheBehavior,
-            withTimeout: cacheTimeout
+            cacheBehavior: cacheBehavior,
+            cacheTimeout: cacheTimeout
         )
     }
 }

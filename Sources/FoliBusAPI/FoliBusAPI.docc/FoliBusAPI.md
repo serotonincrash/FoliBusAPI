@@ -26,14 +26,12 @@ The package is built around ``FoliClient``, which is an actor responsible for re
 ### Transport and requests
 
 - ``FoliTransport``
-- ``URLSessionTransport``
 - <doc:TransportAndTesting>
 
 ### Models and errors
 
 - ``Foli``
 - ``Foli/APIError``
-- ``FoliArrivalResponse``
 
 ### Articles
 

@@ -10,8 +10,8 @@ Use ``FoliClient`` when you want direct control over caching and transport behav
 import FoliBusAPI
 
 let client = FoliClient(
-    cachedBy: .forceRefresh,
-    withTimeout: .default
+    cacheBehavior: .forceRefresh,
+    cacheTimeout: .default
 )
 ```
 
@@ -21,11 +21,10 @@ let client = FoliClient(
 let routes = try await client.fetchRoutes()
 ```
 
-## Fetch stop monitoring
+## Fetch arrivals (stop monitoring)
 
 ```swift
-let response = try await client.fetchStopMonitoring(for: "1000")
-let arrivals = response.result
+let arrivals = try await client.fetchArrivals(for: "1000")
 ```
 
 ## Use the convenience facade
@@ -42,7 +41,7 @@ let arrivals = try await FoliBusAPI.fetchArrivals(for: "1000")
 For GTFS-backed resources, cache behavior is configured when creating the client.
 
 ```swift
-let client = FoliClient(cachedBy: .staleWhileRevalidate)
+let client = FoliClient(cacheBehavior: .staleWhileRevalidate)
 ```
 
 Common choices:
@@ -51,6 +50,8 @@ Common choices:
 - ``Foli/CacheBehavior/staleWhileRevalidate`` for fast UI reads plus background refresh
 - ``Foli/CacheBehavior/forceRefresh`` when freshness matters most
 - ``Foli/CacheBehavior/noCache`` for deterministic tests or one-off reads
+
+When using ``Foli/CacheBehavior/staleWhileRevalidate``, the client serves the currently cached value immediately and kicks off a best-effort background refresh. If metadata revalidation fails transiently, the stale cached value remains usable until a later refresh succeeds.
 
 ## SwiftUI integration
 
@@ -80,7 +81,7 @@ struct DemoApp: App {
 
 ```swift
 struct ContentView: View {
-    let client = FoliClient(cachedBy: .cachedOrFetch)
+    let client = FoliClient(cacheBehavior: .cachedOrFetch)
     @FoliService(client: client) var foliService
 
     var body: some View {
