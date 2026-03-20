@@ -324,8 +324,20 @@ struct GeoJSONDecodingTests {
                         "category": "LOADING_POINT",
                         "name": "Stockmann",
                         "name_fi": "Stockmann",
+                        "name_sv": "Stockmann",
+                        "name_en": "Stockmann",
+                        "popup": "<div class=\\"card-header-wrapper\\">\\n <span class=\\"h4\\">Stockmann</span>\\n <div class=\\"card-sub-header\\">Yliopistonkatu 22</div>\\n</div>\\n",
+                        "text": "Stockmann\\nYliopistonkatu 22, 20100",
                         "city": "Turku",
-                        "address": "Yliopistonkatu 22"
+                        "city_fi": "Turku",
+                        "city_sv": "Åbo",
+                        "address": "Yliopistonkatu 22",
+                        "address_fi": "Yliopistonkatu 22",
+                        "address_sv": "Yliopistonkatu 22",
+                        "icon": {
+                            "id": "icon_loading_point",
+                            "svg": "<svg xmlns=\\"http://www.w3.org/2000/svg\\"\\n     width=\\"256\\" height=\\"256\\"></svg>"
+                        }
                     }
                 }
             ]
@@ -339,6 +351,9 @@ struct GeoJSONDecodingTests {
         #expect(feature.id == "poi_1008")
         #expect(feature.properties.name == "Stockmann")
         #expect(feature.properties.category == "LOADING_POINT")
+        #expect(feature.properties.city == "Turku")
+        #expect(feature.properties.address == "Yliopistonkatu 22")
+        #expect(feature.properties.icon?.id == "icon_loading_point")
 
         guard case .point(let coords) = feature.geometry else {
             Issue.record("Expected Point geometry")
@@ -362,10 +377,10 @@ struct GeoJSONDecodingTests {
             "features": [
                 {
                     "type": "Feature",
-                    "id": "bounds-1",
                     "properties": {
                         "name": "Föli-alue",
                         "name_fi": "Föli-alue",
+                        "name_sv": "Föli-region",
                         "name_en": "Föli region"
                     },
                     "geometry": {
@@ -381,6 +396,7 @@ struct GeoJSONDecodingTests {
 
         #expect(collection.features.count == 1)
         let feature = collection.features[0]
+        #expect(feature.id == nil) // Bounds features don't have IDs
 
         guard case .multiPolygon(let coords) = feature.geometry else {
             Issue.record("Expected MultiPolygon geometry")
@@ -398,8 +414,12 @@ struct GeoJSONDecodingTests {
             "features": [
                 {
                     "type": "Feature",
-                    "id": "boundary-line",
-                    "properties": {"name": "Boundary"},
+                    "properties": {
+                        "name": "Föli-alue",
+                        "name_fi": "Föli-alue",
+                        "name_sv": "Föli-region",
+                        "name_en": "Föli region"
+                    },
                     "geometry": {
                         "type": "MultiLineString",
                         "coordinates": [[[21.55, 60.35], [21.56, 60.36], [21.57, 60.37]]]

@@ -6,13 +6,14 @@ import Testing
 struct TransportIntegrationTests {
     @Test("request transport records GTFS URL and decodes success payload")
     func requestRecordsURLAndDecodesPayload() async throws {
+        // Based on actual API response from https://data.foli.fi/gtfs/routes
         let payload = #"""
         [
           {
-            "route_id": "1",
+            "route_id": "25",
             "agency_id": "2",
-            "route_short_name": "1",
-            "route_long_name": "Center",
+            "route_short_name": "L14",
+            "route_long_name": "Loukinainen-Avanti",
             "route_desc": "",
             "route_type": 3,
             "route_url": "",
@@ -30,7 +31,7 @@ struct TransportIntegrationTests {
         let requests = await transport.requests()
 
         #expect(routes.count == 1)
-        #expect(routes.first?.id == "1")
+        #expect(routes.first?.id == "25")
         #expect(requests.count == 1)
         #expect(requests.first?.httpMethod == "GET")
         #expect(requests.first?.url?.absoluteString == "https://data.foli.fi/gtfs/routes")
