@@ -36,6 +36,31 @@ public extension Foli {
             self.messages = messages
         }
         
+        public init(from decoder: Decoder) throws {
+            let container = try decoder.container(keyedBy: CodingKeys.self)
+            
+            serverTime = try container.decode(TimeInterval.self, forKey: .serverTime)
+            cancellations = try container.decode([TripCancellation].self, forKey: .cancellations)
+            messages = try container.decode([Alert].self, forKey: .messages)
+            
+            // Handle empty objects being returned as {} instead of null
+            globalMessage = Self.decodeOptionalAlert(from: container, forKey: .globalMessage)
+            emergencyMessage = Self.decodeOptionalAlert(from: container, forKey: .emergencyMessage)
+        }
+        
+        /// Decode an optional Alert, treating empty objects as nil
+        private static func decodeOptionalAlert(
+            from container: KeyedDecodingContainer<CodingKeys>,
+            forKey key: CodingKeys
+        ) -> Alert? {
+            // Try to decode as Alert; if it fails (e.g. empty object {}), return nil
+            do {
+                return try container.decodeIfPresent(Alert.self, forKey: key)
+            } catch {
+                return nil
+            }
+        }
+        
         // MARK: - Computed Properties
         
         /// Server time as Date
