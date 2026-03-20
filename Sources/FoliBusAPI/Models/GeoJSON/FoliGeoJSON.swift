@@ -16,13 +16,13 @@ public extension Foli {
     }
     
     /// A GeoJSON Feature
-    struct Feature: Codable, Sendable, Identifiable {
+    struct Feature: Codable, Sendable {
         public let type: String
-        public let id: String
+        public let id: String?
         public let geometry: Geometry
         public let properties: FeatureProperties
         
-        public init(type: String = "Feature", id: String, geometry: Geometry, properties: FeatureProperties) {
+        public init(type: String = "Feature", id: String? = nil, geometry: Geometry, properties: FeatureProperties) {
             self.type = type
             self.id = id
             self.geometry = geometry
