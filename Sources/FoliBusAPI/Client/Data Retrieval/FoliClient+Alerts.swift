@@ -57,35 +57,3 @@ public extension FoliClient {
         try await requestAlerts("/alerts/categories", as: [Foli.AlertCategory].self)
     }
 }
-
-@available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
-extension FoliClient {
-    /// Fetch and decode a response from an alerts endpoint.
-    internal func requestAlerts<T: Decodable>(_ path: String, as type: T.Type = T.self) async throws -> T {
-        let urlString = baseURL.replacingOccurrences(of: "/siri", with: "") + path
-        guard let url = URL(string: urlString) else {
-            throw Foli.APIError.invalidURL
-        }
-        
-        var request = URLRequest(url: url)
-        // Alerts endpoint supports gzip compression
-        request.setValue("gzip", forHTTPHeaderField: "Accept-Encoding")
-        
-        do {
-            let (data, response) = try await transport.data(for: request)
-            
-            guard let httpResponse = response as? HTTPURLResponse,
-                  (200...299).contains(httpResponse.statusCode) else {
-                throw Foli.APIError.invalidResponse
-            }
-            
-            return try decoder.decode(T.self, from: data)
-        } catch let decodingError as DecodingError {
-            throw Foli.APIError.decodingError(Foli.APIError.WrappedError(decodingError))
-        } catch let apiError as Foli.APIError {
-            throw apiError
-        } catch {
-            throw Foli.APIError.networkError(Foli.APIError.WrappedError(error))
-        }
-    }
-}

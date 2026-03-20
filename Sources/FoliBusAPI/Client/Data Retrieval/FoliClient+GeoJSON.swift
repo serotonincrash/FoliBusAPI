@@ -17,8 +17,10 @@ public extension FoliClient {
     /// - Returns: Array of available map layers with metadata.
     /// - Throws: `Foli.APIError` if the request fails.
     func fetchGeoJSONLayers() async throws -> [Foli.GeoJSONLayer] {
-        let response = try await requestGeoJSON("/geojson/layers", as: Foli.GeoJSONLayersResponse.self)
-        return response.geojson.layers
+        try await performDeduplicated(.geoJSONLayers) { [self] in
+            let response = try await requestGeoJSON("/geojson/layers", as: Foli.GeoJSONLayersResponse.self)
+            return response.geojson.layers
+        }
     }
     
     /// Fetch all points of interest.
@@ -26,7 +28,9 @@ public extension FoliClient {
     /// - Returns: GeoJSON feature collection of all POIs.
     /// - Throws: `Foli.APIError` if the request fails.
     func fetchPointsOfInterest() async throws -> Foli.FeatureCollection {
-        try await requestGeoJSON("/geojson/poi", as: Foli.FeatureCollection.self)
+        try await performDeduplicated(.geoJSONPOI) { [self] in
+            try await requestGeoJSON("/geojson/poi", as: Foli.FeatureCollection.self)
+        }
     }
     
     /// Fetch points of interest by category.
@@ -35,7 +39,9 @@ public extension FoliClient {
     /// - Returns: GeoJSON feature collection of POIs in the category.
     /// - Throws: `Foli.APIError` if the request fails.
     func fetchPointsOfInterest(category: String) async throws -> Foli.FeatureCollection {
-        try await requestGeoJSON("/geojson/poi/\(category)", as: Foli.FeatureCollection.self)
+        try await performDeduplicated(.geoJSONPOICategory(category)) { [self] in
+            try await requestGeoJSON("/geojson/poi/\(category)", as: Foli.FeatureCollection.self)
+        }
     }
     
     /// Fetch Föli service area boundaries.
@@ -46,22 +52,31 @@ public extension FoliClient {
     /// - Returns: GeoJSON feature collection with boundary geometry.
     /// - Throws: `Foli.APIError` if the request fails.
     func fetchServiceBounds(resolution: BoundsResolution = .normal, format: BoundsFormat = .multiPolygon) async throws -> Foli.FeatureCollection {
-        var path = "/geojson/bounds"
-        
-        switch resolution {
-        case .strict:
-            path += "/strict"
-        case .compact:
-            path += "/compact"
-        case .normal:
-            break
+        let resolutionKey = switch resolution {
+        case .strict: "strict"
+        case .compact: "compact"
+        case .normal: "normal"
         }
+        let formatKey = format == .multiLineString ? "ml" : "mp"
         
-        if format == .multiLineString {
-            path += "/ml"
+        return try await performDeduplicated(.geoJSONBounds(resolution: resolutionKey, format: formatKey)) { [self] in
+            var path = "/geojson/bounds"
+            
+            switch resolution {
+            case .strict:
+                path += "/strict"
+            case .compact:
+                path += "/compact"
+            case .normal:
+                break
+            }
+            
+            if format == .multiLineString {
+                path += "/ml"
+            }
+            
+            return try await requestGeoJSON(path, as: Foli.FeatureCollection.self)
         }
-        
-        return try await requestGeoJSON(path, as: Foli.FeatureCollection.self)
     }
     
     /// Boundary resolution options
@@ -80,34 +95,5 @@ public extension FoliClient {
         case multiPolygon
         /// Line geometry
         case multiLineString
-    }
-}
-
-@available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
-extension FoliClient {
-    /// Fetch and decode a response from a GeoJSON endpoint.
-    internal func requestGeoJSON<T: Decodable>(_ path: String, as type: T.Type = T.self) async throws -> T {
-        let urlString = baseURL.replacingOccurrences(of: "/siri", with: "") + path
-        guard let url = URL(string: urlString) else {
-            throw Foli.APIError.invalidURL
-        }
-        
-        do {
-            let request = URLRequest(url: url)
-            let (data, response) = try await transport.data(for: request)
-            
-            guard let httpResponse = response as? HTTPURLResponse,
-                  (200...299).contains(httpResponse.statusCode) else {
-                throw Foli.APIError.invalidResponse
-            }
-            
-            return try decoder.decode(T.self, from: data)
-        } catch let decodingError as DecodingError {
-            throw Foli.APIError.decodingError(Foli.APIError.WrappedError(decodingError))
-        } catch let apiError as Foli.APIError {
-            throw apiError
-        } catch {
-            throw Foli.APIError.networkError(Foli.APIError.WrappedError(error))
-        }
     }
 }

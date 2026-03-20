@@ -49,6 +49,12 @@ public actor FoliClient {
     /// Base URL for the Foli GTFS API
     internal let gtfsBaseURL = "https://data.foli.fi/gtfs"
 
+    /// Base URL for the Foli Alerts API
+    internal let alertsBaseURL = "https://data.foli.fi"
+
+    /// Base URL for the Foli GeoJSON API
+    internal let geoJSONBaseURL = "https://data.foli.fi"
+
     /// Transport used for making network requests
     internal let transport: any FoliTransport
 
@@ -97,7 +103,8 @@ public actor FoliClient {
         do {
             self.cache = try Foli.DiskCache(timeout: cacheTimeout)
         } catch {
-            print("An error occurred initialising the cache for FoliBusAPI. Defaulting to no cache implementation.")
+            // Cache initialization failed - fall back to no-cache mode
+            // This is expected when disk access is unavailable
             self.cacheBehavior = .noCache
         }
     }
@@ -118,7 +125,8 @@ public actor FoliClient {
         do {
             self.cache = try Foli.DiskCache(timeout: cacheTimeout)
         } catch {
-            print("An error occurred initialising the cache for FoliBusAPI. Defaulting to no cache implementation.")
+            // Cache initialization failed - fall back to no-cache mode
+            // This is expected when disk access is unavailable
             self.cacheBehavior = .noCache
         }
     }

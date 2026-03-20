@@ -77,7 +77,7 @@ extension Foli.DiskCache {
             cachedData = try decoder.decode(CachedData<[Foli.ShapePoint]>.self, from: data)
         case .geoJSONLayers:
             cachedData = try decoder.decode(CachedData<[Foli.GeoJSONLayer]>.self, from: data)
-        case .geoJSONPOI, .geoJSONPOICategory:
+        case .geoJSONPOI, .geoJSONPOICategory, .geoJSONBounds:
             cachedData = try decoder.decode(CachedData<Foli.FeatureCollection>.self, from: data)
         }
 

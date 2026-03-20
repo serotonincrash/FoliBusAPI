@@ -32,11 +32,13 @@ public extension Foli {
         case calendars
         case shapeRouteIds
         case shapePointsForShape(String)
-        /// GeoJSON layers (cacheable)
+        /// GeoJSON layers (deduplication only, not cached).
         case geoJSONLayers
-        /// All points of interest (cacheable)
+        /// All points of interest (deduplication only, not cached).
         case geoJSONPOI
-        /// Points of interest by category (cacheable)
+        /// Points of interest by category (deduplication only, not cached).
         case geoJSONPOICategory(String)
+        /// Service boundaries with resolution and format (deduplication only, not cached).
+        case geoJSONBounds(resolution: String, format: String)
     }
 }
