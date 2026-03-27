@@ -1,13 +1,28 @@
 import Foundation
 
-/// GeoJSON data structures for geographic information
+// MARK: - GeoJSON Data Structures
+/// GeoJSON data structures for geographic information.
+///
+/// These types conform to the GeoJSON specification (RFC 7946) and are used
+/// to represent points of interest, service boundaries, and other geographic features.
 public extension Foli {
-    /// A GeoJSON Feature Collection
+    // MARK: - FeatureCollection
+    /// A GeoJSON Feature Collection containing multiple features.
+    ///
+    /// Feature collections are the top-level response type for all geographic data endpoints.
     struct FeatureCollection: Codable, Sendable {
+        /// GeoJSON type identifier (always "FeatureCollection").
         public let type: String
+        /// Optional collection name.
         public let name: String?
+        /// Array of geographic features in this collection.
         public let features: [Feature]
         
+        /// Creates a feature collection.
+        /// - Parameters:
+        ///   - type: GeoJSON type identifier (defaults to "FeatureCollection").
+        ///   - name: Optional collection name.
+        ///   - features: Array of features.
         public init(type: String = "FeatureCollection", name: String? = nil, features: [Feature]) {
             self.type = type
             self.name = name
@@ -15,13 +30,26 @@ public extension Foli {
         }
     }
     
-    /// A GeoJSON feature
+    // MARK: - Feature
+    /// A GeoJSON feature representing a single geographic entity.
+    ///
+    /// Features combine geometry (location/shape) with properties (metadata).
     struct Feature: Codable, Sendable {
+        /// GeoJSON type identifier (always "Feature").
         public let type: String
+        /// Optional unique identifier for this feature.
         public let id: String?
+        /// The feature's geographic shape (point, polygon, etc.).
         public let geometry: Geometry
+        /// Metadata properties associated with this feature.
         public let properties: FeatureProperties
         
+        /// Creates a feature.
+        /// - Parameters:
+        ///   - type: GeoJSON type identifier (defaults to "Feature").
+        ///   - id: Optional feature identifier.
+        ///   - geometry: Geographic shape.
+        ///   - properties: Feature metadata.
         public init(type: String = "Feature", id: String? = nil, geometry: Geometry, properties: FeatureProperties) {
             self.type = type
             self.id = id
@@ -29,17 +57,28 @@ public extension Foli {
             self.properties = properties
         }
         
-        /// Extract coordinate from Point geometry
+        // MARK: - Computed Properties
+        
+        /// Extracts coordinate from Point geometry.
+        ///
+        /// Returns `nil` if the geometry is not a Point or has invalid coordinates.
         public var coordinate: Coordinate? {
             guard case .point(let coords) = geometry, coords.count == 2 else { return nil }
             return Coordinate(latitude: coords[1], longitude: coords[0])
         }
     }
     
-    /// GeoJSON geometry type
+    // MARK: - Geometry
+    /// GeoJSON geometry type representing a geographic shape.
+    ///
+    /// Supports Point (single location), MultiPolygon (service areas), and
+    /// MultiLineString (routes/boundaries) geometry types.
     enum Geometry: Codable, Sendable {
+        /// Single point with [longitude, latitude] coordinates.
         case point([Double])
+        /// Multiple polygons for complex area boundaries.
         case multiPolygon([[[[Double]]]])
+        /// Multiple line strings for routes or linear boundaries.
         case multiLineString([[[Double]]])
         
         enum CodingKeys: String, CodingKey {
@@ -83,21 +122,39 @@ public extension Foli {
         }
     }
     
-    /// Feature properties
+    // MARK: - FeatureProperties
+    /// Metadata properties associated with a GeoJSON feature.
+    ///
+    /// Properties vary by feature type but commonly include names in multiple languages,
+    /// category information, addresses, and display icons.
     struct FeatureProperties: Codable, Sendable {
+        /// Feature category (e.g., "bike_parking", "service_point").
         public let category: String?
+        /// Default feature name.
         public let name: String?
+        /// Finnish feature name.
         public let nameFi: String?
+        /// Swedish feature name.
         public let nameSv: String?
+        /// English feature name.
         public let nameEn: String?
+        /// HTML content for map popups.
         public let popup: String?
+        /// Plain text description.
         public let text: String?
+        /// Default city name.
         public let city: String?
+        /// Finnish city name.
         public let cityFi: String?
+        /// Swedish city name.
         public let citySv: String?
+        /// Default street address.
         public let address: String?
+        /// Finnish street address.
         public let addressFi: String?
+        /// Swedish street address.
         public let addressSv: String?
+        /// Icon definition for map display.
         public let icon: GeoJSONIcon?
         
         enum CodingKeys: String, CodingKey {
@@ -117,6 +174,22 @@ public extension Foli {
             case icon
         }
         
+        /// Creates feature properties.
+        /// - Parameters:
+        ///   - category: Feature category.
+        ///   - name: Default name.
+        ///   - nameFi: Finnish name.
+        ///   - nameSv: Swedish name.
+        ///   - nameEn: English name.
+        ///   - popup: Popup HTML content.
+        ///   - text: Plain text description.
+        ///   - city: Default city.
+        ///   - cityFi: Finnish city name.
+        ///   - citySv: Swedish city name.
+        ///   - address: Default address.
+        ///   - addressFi: Finnish address.
+        ///   - addressSv: Swedish address.
+        ///   - icon: Map icon definition.
         public init(
             category: String? = nil,
             name: String? = nil,
@@ -149,7 +222,11 @@ public extension Foli {
             self.icon = icon
         }
         
-        /// Get localized name
+        // MARK: - Computed Properties
+        
+        /// Returns the localized name for the specified language.
+        /// - Parameter language: Language code ("fi", "sv", or "en"). Defaults to "en".
+        /// - Returns: Localized name, falling back to default name if unavailable.
         public func localizedName(language: String = "en") -> String? {
             switch language {
             case "fi": return nameFi ?? name
@@ -159,14 +236,25 @@ public extension Foli {
         }
     }
     
-    /// Icon definition
+    // MARK: - GeoJSONIcon
+    /// Icon definition for GeoJSON feature display.
+    ///
+    /// Icons are identified by ID and may include an inline SVG definition.
+    /// Note that the API only sends the SVG for the first occurrence of each icon ID.
     struct GeoJSONIcon: Codable, Sendable {
+        /// Unique icon identifier.
         public let id: String
         
-        /// The SVG string for this icon.
-        /// Note that the Föli API currently only sends the SVG for the *first* instance of that SVG. 
+        /// The SVG markup for this icon.
+        ///
+        /// - Note: The Föli API only includes the SVG for the *first* instance of each icon ID
+        ///   in a response. Subsequent features with the same icon ID will have `nil` here.
         public let svg: String?
         
+        /// Creates an icon definition.
+        /// - Parameters:
+        ///   - id: Icon identifier.
+        ///   - svg: Optional SVG markup.
         public init(id: String, svg: String? = nil) {
             self.id = id
             self.svg = svg

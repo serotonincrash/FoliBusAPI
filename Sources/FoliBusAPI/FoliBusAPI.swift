@@ -191,9 +191,9 @@ public final class FoliBusAPI {
     /// Fetch a specific calendar by its service ID
     /// - Parameter serviceId: The service ID of the calendar to fetch
     /// - Returns: The calendar if found
-    public static func fetchCalendar(byServiceId serviceId: String) async throws -> Foli.Calendar? {
+    public static func fetchCalendar(forServiceId serviceId: String) async throws -> Foli.Calendar? {
         let client = defaultClient()
-        return try await client.fetchCalendar(serviceID: serviceId)
+        return try await client.fetchCalendar(forServiceId: serviceId)
     }
     
     // MARK: - Convenience Methods - Trips (GTFS)
@@ -244,7 +244,7 @@ public final class FoliBusAPI {
     /// - Returns: Array of stop times for the specified stop
     public static func fetchStopTimes(forStop stopId: String) async throws -> [Foli.StopTime] {
         let client = defaultClient()
-        return try await client.fetchStopTimes(stopID: stopId)
+        return try await client.fetchStopTimes(forStop: stopId)
     }
     
     // MARK: - Convenience Methods - Shapes (GTFS)
