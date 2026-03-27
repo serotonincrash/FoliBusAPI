@@ -142,7 +142,7 @@ struct EndpointCompatibilityTests {
         }
 
         let client = FoliClient(transport: transport, cacheBehavior: .noCache)
-        _ = try await client.fetchStopTimes(stopID: "4")
+        _ = try await client.fetchStopTimes(forStop: "4")
         let requests = await transport.requests()
 
         #expect(requests.count == 1)
