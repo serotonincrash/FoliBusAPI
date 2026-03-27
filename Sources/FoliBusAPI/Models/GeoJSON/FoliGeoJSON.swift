@@ -15,7 +15,7 @@ public extension Foli {
         }
     }
     
-    /// A GeoJSON Feature
+    /// A GeoJSON feature
     struct Feature: Codable, Sendable {
         public let type: String
         public let id: String?
@@ -36,7 +36,7 @@ public extension Foli {
         }
     }
     
-    /// GeoJSON Geometry types
+    /// GeoJSON geometry type
     enum Geometry: Codable, Sendable {
         case point([Double])
         case multiPolygon([[[[Double]]]])
@@ -162,6 +162,9 @@ public extension Foli {
     /// Icon definition
     struct GeoJSONIcon: Codable, Sendable {
         public let id: String
+        
+        /// The SVG string for this icon.
+        /// Note that the Föli API currently only sends the SVG for the *first* instance of that SVG. 
         public let svg: String?
         
         public init(id: String, svg: String? = nil) {
