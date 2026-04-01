@@ -1,16 +1,16 @@
 import Foundation
 
 extension Foli.DiskCache {
-    internal func fileURL(for type: Foli.CacheResource) -> URL {
+    internal func fileURL(for type: Foli.Resource) throws -> URL {
         let filename: String
 
         switch type {
         case .stopMonitoring:
-            preconditionFailure("Stop monitoring responses are deduped but never persisted to disk cache.")
+            throw Foli.CacheError.resourceNotCacheable(type)
         case .vehicleMonitoring:
-            preconditionFailure("Vehicle monitoring responses are deduped but never persisted to disk cache.")
+            throw Foli.CacheError.resourceNotCacheable(type)
         case .alerts, .alertMessages, .alertCancellations:
-            preconditionFailure("Alert responses are deduped but never persisted to disk cache.")
+            throw Foli.CacheError.resourceNotCacheable(type)
         case .routes:
             filename = "routes.json"
         case .stops:

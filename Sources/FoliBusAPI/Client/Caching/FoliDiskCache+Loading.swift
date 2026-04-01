@@ -97,14 +97,14 @@ extension Foli.DiskCache {
         try await loadIgnoringFreshness(type: .shapePointsForShape(shapeId))
     }
 
-    func cacheAge(for type: Foli.CacheResource) async -> TimeInterval? {
+    func cacheAge(for type: Foli.Resource) async -> TimeInterval? {
         guard let metadata = try? await loadMetadata(for: type) else {
             return nil
         }
         return Date().timeIntervalSince(metadata.cachedAt)
     }
 
-    internal func load<T: Codable>(type: Foli.CacheResource) async throws -> T? {
+    internal func load<T: Codable>(type: Foli.Resource) async throws -> T? {
         guard await hasValidCache(for: type) else {
             return nil
         }
@@ -112,8 +112,8 @@ extension Foli.DiskCache {
         return try await loadIgnoringFreshness(type: type)
     }
 
-    internal func loadIgnoringFreshness<T: Codable>(type: Foli.CacheResource) async throws -> T? {
-        let fileURL = fileURL(for: type)
+    internal func loadIgnoringFreshness<T: Codable>(type: Foli.Resource) async throws -> T? {
+        let fileURL = try fileURL(for: type)
 
         guard fileManager.fileExists(atPath: fileURL.path) else {
             return nil

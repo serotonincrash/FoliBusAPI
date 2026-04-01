@@ -49,7 +49,7 @@ extension Foli.DiskCache {
         try await save(shapePoints, type: .shapePointsForShape(shapeId))
     }
 
-    internal func save<T: Codable>(_ value: T, type: Foli.CacheResource) async throws {
+    internal func save<T: Codable>(_ value: T, type: Foli.Resource) async throws {
         let datasetId = try await fetchLatestDatasetId()
 
         let metadata = DatasetMetadata(
@@ -63,7 +63,7 @@ extension Foli.DiskCache {
         encoder.outputFormatting = [.sortedKeys, .prettyPrinted]
         let data = try encoder.encode(cachedData)
 
-        let fileURL = fileURL(for: type)
+        let fileURL = try fileURL(for: type)
         try data.write(to: fileURL, options: .atomic)
     }
 }
