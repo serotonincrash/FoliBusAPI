@@ -53,6 +53,10 @@ extension Foli.DiskCache {
         switch type {
         case .stopMonitoring:
             preconditionFailure("Stop monitoring responses are deduped but never persisted to disk cache.")
+        case .vehicleMonitoring:
+            preconditionFailure("Vehicle monitoring responses are deduped but never persisted to disk cache.")
+        case .alerts, .alertMessages, .alertCancellations:
+            preconditionFailure("Alert responses are deduped but never persisted to disk cache.")
         case .routes:
             cachedData = try decoder.decode(CachedData<[Foli.Route]>.self, from: data)
         case .stops:
@@ -71,6 +75,10 @@ extension Foli.DiskCache {
             cachedData = try decoder.decode(CachedData<[String]>.self, from: data)
         case .shapePointsForShape:
             cachedData = try decoder.decode(CachedData<[Foli.ShapePoint]>.self, from: data)
+        case .geoJSONLayers:
+            cachedData = try decoder.decode(CachedData<[Foli.GeoJSONLayer]>.self, from: data)
+        case .geoJSONPOI, .geoJSONPOICategory, .geoJSONBounds:
+            cachedData = try decoder.decode(CachedData<Foli.FeatureCollection>.self, from: data)
         }
 
         let oldMetadata: DatasetMetadata

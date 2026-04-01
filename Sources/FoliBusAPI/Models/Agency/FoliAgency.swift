@@ -1,24 +1,36 @@
 import Foundation
 
 // MARK: - Agency Model
-/// Information about a transit agency (GTFS agency.txt)
+/// Information about a transit agency (GTFS agency.txt).
+///
+/// Agencies operate one or more routes and provide contact information
+/// and service details for passengers.
 public extension Foli {
     struct Agency: Codable, Sendable, Identifiable, Equatable {
-        /// The GTFS agency_id value.
+        /// The GTFS `agency_id` value.
         public let id: String
-        /// The GTFS agency_name value.
+        /// The full agency name (GTFS `agency_name`).
         public let name: String
-        /// The GTFS agency_url value.
+        /// The agency's website URL (GTFS `agency_url`).
         public let url: String?
-        /// The GTFS agency_timezone value.
+        /// The timezone where the agency operates (GTFS `agency_timezone`).
         public let agencyTimezone: String?
-        /// The GTFS agency_lang value.
+        /// Primary language used by the agency (GTFS `agency_lang`).
         public let agencyLang: String?
-        /// The GTFS agency_phone value.
+        /// Customer service phone number (GTFS `agency_phone`).
         public let agencyPhone: String?
-        /// The GTFS agency_fare_url value.
+        /// URL for fare information (GTFS `agency_fare_url`).
         public let agencyFareUrl: String?
 
+        /// Creates an agency value.
+        /// - Parameters:
+        ///   - id: The GTFS `agency_id` value.
+        ///   - name: The GTFS `agency_name` value.
+        ///   - url: Optional GTFS `agency_url` value.
+        ///   - agencyTimezone: Optional GTFS `agency_timezone` value.
+        ///   - agencyLang: Optional GTFS `agency_lang` value.
+        ///   - agencyPhone: Optional GTFS `agency_phone` value.
+        ///   - agencyFareUrl: Optional GTFS `agency_fare_url` value.
         public init(
             id: String,
             name: String,

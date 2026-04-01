@@ -11,10 +11,10 @@ public extension FoliService {
     }
 
     /// Fetch a specific calendar by service ID.
-    /// - Parameter serviceID: The service ID to fetch.
+    /// - Parameter serviceId: The service ID to fetch.
     /// - Returns: The calendar if found.
-    func fetchCalendar(serviceID: String) async throws -> Foli.Calendar {
-        guard let calendar = try await client.fetchCalendar(serviceID: serviceID) else {
+    func fetchCalendar(forServiceId serviceId: String) async throws -> Foli.Calendar {
+        guard let calendar = try await client.fetchCalendar(forServiceId: serviceId) else {
             throw Foli.APIError.noData
         }
         return calendar

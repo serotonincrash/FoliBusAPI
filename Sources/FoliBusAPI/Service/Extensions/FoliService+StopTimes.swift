@@ -26,9 +26,9 @@ public extension FoliService {
     }
     
     /// Fetch stop times for a specific stop
-    /// - Parameter stopID: The stop ID to fetch stop times for
+    /// - Parameter stopId: The stop ID to fetch stop times for
     /// - Returns: Array of stop times for the stop
-    func fetchStopTimes(stopID: String) async throws -> [Foli.StopTime] {
-        return try await client.fetchStopTimes(stopID: stopID)
+    func fetchStopTimes(forStop stopId: String) async throws -> [Foli.StopTime] {
+        return try await client.fetchStopTimes(forStop: stopId)
     }
 }

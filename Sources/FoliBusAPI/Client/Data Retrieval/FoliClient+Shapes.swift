@@ -107,4 +107,41 @@ public extension FoliClient {
             return try await fetchShapePointsFromNetwork(forRouteId: routeId)
         }
     }
+    
+    // MARK: - Shape Discovery Helpers
+    
+    /// Get all unique shape IDs used by a specific route.
+    ///
+    /// This method fetches all trips for a route and extracts the unique shape IDs.
+    ///
+    /// - Parameter routeId: The route identifier to fetch shape IDs for.
+    /// - Returns: Array of unique shape IDs used by the route.
+    /// - Throws: `Foli.APIError` if the request fails.
+    func fetchShapeIds(forRoute routeId: String) async throws -> [String] {
+        let trips = try await fetchTrips(forRoute: routeId)
+        let shapeIds = Set(trips.compactMap { $0.shapeId })
+        return Array(shapeIds).sorted()
+    }
+    
+    /// Get the most commonly used shape ID for a specific route.
+    ///
+    /// This is useful when you want to display a single representative route shape
+    /// on a map, as it selects the shape used by the most trips.
+    ///
+    /// - Parameter routeId: The route identifier to analyze.
+    /// - Returns: The most frequently used shape ID, or `nil` if no shapes are found.
+    /// - Throws: `Foli.APIError` if the request fails.
+    func fetchMostCommonShapeId(forRoute routeId: String) async throws -> String? {
+        let trips = try await fetchTrips(forRoute: routeId)
+        let shapeIds = trips.compactMap { $0.shapeId }
+        
+        guard !shapeIds.isEmpty else { return nil }
+        
+        // Count occurrences of each shape ID
+        let shapeCounts = Dictionary(grouping: shapeIds) { $0 }
+            .mapValues { $0.count }
+        
+        // Return the shape ID with the highest count
+        return shapeCounts.max { $0.value < $1.value }?.key
+    }
 }

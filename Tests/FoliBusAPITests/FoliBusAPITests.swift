@@ -192,6 +192,70 @@ struct FoliStopListTests {
         let notFound = stops.first { $0.id == "99" }
         #expect(notFound == nil)
     }
+    
+    @Test("Decode stop with full GTFS fields from real API format")
+    func decodeFullGTFSStop() async throws {
+        // Based on actual API response from https://data.foli.fi/gtfs/stops
+        let json = """
+        {
+            "3079": {
+                "stop_code": "",
+                "stop_name": "Mikoinen",
+                "stop_desc": "",
+                "stop_lat": 60.50957,
+                "stop_lon": 21.73462,
+                "zone_id": "",
+                "stop_url": "",
+                "location_type": 0,
+                "parent_station": 0,
+                "stop_timezone": "Europe/Helsinki"
+            }
+        }
+        """.data(using: .utf8)!
+        
+        let stopList = try JSONDecoder().decode(Foli.StopList.self, from: json)
+        
+        #expect(stopList.stops.count == 1)
+        let stop = try #require(stopList.stops.first)
+        #expect(stop.id == "3079")
+        #expect(stop.name == "Mikoinen")
+        #expect(stop.code == "")
+        #expect(stop.description == "")
+        #expect(stop.latitude == 60.50957)
+        #expect(stop.longitude == 21.73462)
+        #expect(stop.zoneId == "")
+        #expect(stop.url == "")
+        #expect(stop.locationType == 0)
+        #expect(stop.parentStation == "0")
+        #expect(stop.timezone == "Europe/Helsinki")
+    }
+    
+    @Test("Decode stop with parent station as string")
+    func decodeStopWithStringParentStation() async throws {
+        let json = """
+        {
+            "100": {
+                "stop_code": "001",
+                "stop_name": "Test Platform",
+                "stop_desc": "Platform 1",
+                "stop_lat": 60.45,
+                "stop_lon": 22.27,
+                "zone_id": "A",
+                "stop_url": "https://example.com",
+                "location_type": 0,
+                "parent_station": "STATION_1",
+                "stop_timezone": "Europe/Helsinki",
+                "wheelchair_boarding": 1
+            }
+        }
+        """.data(using: .utf8)!
+        
+        let stopList = try JSONDecoder().decode(Foli.StopList.self, from: json)
+        
+        let stop = try #require(stopList.stops.first)
+        #expect(stop.parentStation == "STATION_1")
+        #expect(stop.wheelchairBoarding == 1)
+    }
 }
 @Suite("FoliRouteList Tests")
 struct FoliRouteListTests {
@@ -219,22 +283,27 @@ struct FoliRouteListTests {
         #expect(routeList.routes.isEmpty)
     }
     
-    @Test("Decode FoliRouteList from valid JSON")
+    @Test("Decode FoliRouteList from real API format")
     func decodeFromValidJSON() async throws {
+        // Based on actual API response from https://data.foli.fi/gtfs/routes
         let json = """
         [
-            {"route_id": "1001", "route_short_name": "15", "route_long_name": "Harbor - University", "route_type": 3},
-            {"route_id": "1002", "route_short_name": "61", "route_long_name": "Airport Express", "route_type": 3},
-            {"route_id": "1003", "route_short_name": "1", "route_long_name": "City Center Loop", "route_type": 0, "route_color": "FF0000"}
+            {"route_id": "25", "agency_id": "2", "route_short_name": "L14", "route_long_name": "Loukinainen-Avanti", "route_desc": "", "route_type": 3, "route_url": "", "route_color": "000000", "route_text_color": "ffffff"},
+            {"route_id": "3", "agency_id": "11", "route_short_name": "2A", "route_long_name": "Kohmo-Liljalaakso", "route_desc": "", "route_type": 3, "route_url": "", "route_color": "000000", "route_text_color": "ffffff"}
         ]
         """.data(using: .utf8)!
         
         let routeList = try JSONDecoder().decode(Foli.RouteList.self, from: json)
         
-        #expect(routeList.routes.count == 3)
-        #expect(routeList.routes.contains { $0.id == "1001" && $0.shortName == "15" })
-        #expect(routeList.routes.contains { $0.id == "1002" && $0.shortName == "61" })
-        #expect(routeList.routes.contains { $0.id == "1003" && $0.shortName == "1" })
+        #expect(routeList.routes.count == 2)
+        #expect(routeList.routes.contains { $0.id == "25" && $0.shortName == "L14" })
+        #expect(routeList.routes.contains { $0.id == "3" && $0.shortName == "2A" })
+        let route = try #require(routeList.routes.first { $0.id == "25" })
+        #expect(route.agencyId == "2")
+        #expect(route.longName == "Loukinainen-Avanti")
+        #expect(route.type == 3)
+        #expect(route.colorHex == "000000")
+        #expect(route.textColorHex == "ffffff")
     }
     
     @Test("Decode FoliRouteList with colors")

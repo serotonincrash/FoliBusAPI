@@ -1,17 +1,29 @@
 import Foundation
 
+// MARK: - Foli.Trip Model
+/// Planned GTFS trip metadata for a single service run.
+///
+/// A trip represents a single journey by a vehicle along a route at a specific time.
+/// Trips are associated with a service calendar that determines operating days.
 public extension Foli {
-    /// Planned GTFS trip metadata for a single service run.
     struct Trip: Codable, Sendable, Identifiable, Equatable {
         /// The GTFS `trip_id` value — used as the stable `Identifiable` identity.
         public let tripId: String
+        /// The route this trip belongs to (GTFS `route_id`).
         public let routeId: String?
+        /// The service calendar this trip follows (GTFS `service_id`).
         public let serviceId: String
+        /// The text displayed on the vehicle indicating the destination (GTFS `trip_headsign`).
         public let tripHeadsign: String
+        /// Travel direction: 0 for one direction, 1 for the opposite (GTFS `direction_id`).
         public let directionId: Int
+        /// Block identifier for vehicle interlining (GTFS `block_id`).
         public let blockId: String
+        /// Shape identifier for route geometry (GTFS `shape_id`).
         public let shapeId: String
+        /// Wheelchair accessibility: 0 = no info, 1 = accessible, 2 = not accessible (GTFS `wheelchair_accessible`).
         public let wheelchairAccessible: Int
+        /// Bike policy: 0 = no info, 1 = allowed, 2 = not allowed (GTFS `bikes_allowed`).
         public let bikesAllowed: Int?
 
         /// The stable identifier for this trip (the GTFS `trip_id`).

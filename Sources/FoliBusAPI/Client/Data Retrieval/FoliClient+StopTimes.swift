@@ -122,40 +122,40 @@ public extension FoliClient {
     }
     
     /// Fetch stop times for a stop using the client's configured caching behavior.
-    /// - Parameter stopID: The ID of the stop.
+    /// - Parameter stopId: The ID of the stop.
     /// - Returns: Array of StopTime objects associated with the stop.
-    func fetchStopTimes(stopID: String) async throws -> [Foli.StopTime] {
+    func fetchStopTimes(forStop stopId: String) async throws -> [Foli.StopTime] {
         switch self.cacheBehavior {
         case .cachedOrFetch:
-            if let cached = try await cache?.loadStopTimes(forStop: stopID) {
+            if let cached = try await cache?.loadStopTimes(forStop: stopId) {
                 return cached
             }
             fallthrough
 
         case .staleWhileRevalidate:
-            if let staleCached = try await cache?.loadStaleStopTimes(forStop: stopID) {
+            if let staleCached = try await cache?.loadStaleStopTimes(forStop: stopId) {
                 refreshCacheInBackground(
-                    for: .stopTimesForStop(stopID),
-                    fetch: { [self] in try await fetchStopTimesFromNetwork(forStop: stopID) },
-                    save: { [cache] stopTimes in try await cache?.saveStopTimes(stopTimes, forStop: stopID) }
+                    for: .stopTimesForStop(stopId),
+                    fetch: { [self] in try await fetchStopTimesFromNetwork(forStop: stopId) },
+                    save: { [cache] stopTimes in try await cache?.saveStopTimes(stopTimes, forStop: stopId) }
                 )
                 return staleCached
             }
             fallthrough
             
         case .forceRefresh:
-            let stopTimes = try await fetchStopTimesFromNetwork(forStop: stopID)
-            try? await cache?.saveStopTimes(stopTimes, forStop: stopID)
+            let stopTimes = try await fetchStopTimesFromNetwork(forStop: stopId)
+            try? await cache?.saveStopTimes(stopTimes, forStop: stopId)
             return stopTimes
             
         case .cachedOnly:
-            guard let cached = try await cache?.loadStopTimes(forStop: stopID) else {
+            guard let cached = try await cache?.loadStopTimes(forStop: stopId) else {
                 throw Foli.APIError.noData
             }
             return cached
             
         case .noCache:
-            return try await fetchStopTimesFromNetwork(forStop: stopID)
+            return try await fetchStopTimesFromNetwork(forStop: stopId)
         }
     }
 
