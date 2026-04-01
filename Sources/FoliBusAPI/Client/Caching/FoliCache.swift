@@ -85,18 +85,18 @@ extension Foli {
         func clearAllCache() async throws
 
         /// Clear cached data for a specific type
-        func clearCache(for type: Foli.CacheResource) async throws
+        func clearCache(for type: Foli.Resource) async throws
 
         /// Check if cached data exists and is valid (not expired)
-        func hasValidCache(for type: Foli.CacheResource) async -> Bool
+        func hasValidCache(for type: Foli.Resource) async -> Bool
 
         /// Get the age of cached data in seconds, or nil if not cached
-        func cacheAge(for type: Foli.CacheResource) async -> TimeInterval?
+        func cacheAge(for type: Foli.Resource) async -> TimeInterval?
 
         /// Get the dataset ID being used for cached data
         /// - Parameter type: The specific resource type to check, or nil to get the most recently cached dataset ID
         /// - Returns: The dataset ID, or nil if no cached data exists
-        func currentDatasetId(for type: Foli.CacheResource?) async throws -> String?
+        func currentDatasetId(for type: Foli.Resource?) async throws -> String?
 
         /// The configuration for this cache
         var timeoutDuration: Foli.CacheTimeout { get }
@@ -142,6 +142,6 @@ extension Foli {
 
         /// Revalidate cached data for a resource, returning true if the cache remained current.
         @discardableResult
-        func revalidateCache(for type: Foli.CacheResource) async throws -> Bool
+        func revalidateCache(for type: Foli.Resource) async throws -> Bool
     }
 }
