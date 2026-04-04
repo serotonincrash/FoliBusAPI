@@ -9,13 +9,13 @@ struct ConcurrencyBehaviorTests {
         let urlError = URLError(.timedOut)
         let error = Foli.APIError.networkError(urlError)
 
-        guard case .networkError(let wrappedError) = error else {
+        guard case .networkError(let underlyingError) = error else {
             Issue.record("Expected networkError case")
             return
         }
 
-        #expect(wrappedError as? URLError == urlError)
-        #expect(wrappedError.localizedDescription == urlError.localizedDescription)
+        #expect(underlyingError as? URLError == urlError)
+        #expect(underlyingError.localizedDescription == urlError.localizedDescription)
         #expect(error.localizedDescription == "Network error: \(urlError.localizedDescription)")
     }
 
