@@ -62,15 +62,15 @@ public extension Foli {
         /// Shape points for a specific shape ID. Retrieves from cache if cache behavior is set accordingly.
         case shapePointsForShape(String)
         
-        // MARK: - GeoJSON Resources (Deduplication Only)
+        // MARK: - GeoJSON Resources (Cached)
         
-        /// GeoJSON layers (not cached).
+        /// GeoJSON layers. Retrieves from cache if cache behavior is set accordingly.
         case geoJSONLayers
-        /// All points of interest (not cached).
+        /// All points of interest. Retrieves from cache if cache behavior is set accordingly.
         case geoJSONPOI
-        /// Points of interest by category (not cached).
+        /// Points of interest by category. Retrieves from cache if cache behavior is set accordingly.
         case geoJSONPOICategory(String)
-        /// Service boundaries with resolution and format (not cached).
+        /// Service boundaries with resolution and format. Retrieves from cache if cache behavior is set accordingly.
         case geoJSONBounds(resolution: String, format: String)
     }
 }
