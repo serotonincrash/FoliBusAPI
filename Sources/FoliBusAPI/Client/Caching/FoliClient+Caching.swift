@@ -54,7 +54,7 @@ public extension FoliClient {
     }
 
     /// Starts a best-effort stale-while-revalidate refresh and removes its bookkeeping entry once the task finishes.
-    internal func refreshCacheInBackground<T>(for type: Foli.Resource, fetch: @escaping @Sendable () async throws -> T, save: @escaping @Sendable (T) async throws -> Void) {
+    internal func refreshCacheInBackground<T: Sendable>(for type: Foli.Resource, fetch: @escaping @Sendable () async throws -> T, save: @escaping @Sendable (T) async throws -> Void) {
         cancelBackgroundRefreshTask(for: type)
 
         let task = Task { [weak self] in
@@ -65,7 +65,7 @@ public extension FoliClient {
         setBackgroundRefreshTask(task, for: type)
     }
 
-    private func runBackgroundRefresh<T>(for type: Foli.Resource, fetch: @escaping @Sendable () async throws -> T, save: @escaping @Sendable (T) async throws -> Void) async {
+    private func runBackgroundRefresh<T: Sendable>(for type: Foli.Resource, fetch: @escaping @Sendable () async throws -> T, save: @escaping @Sendable (T) async throws -> Void) async {
         // Get the current task reference for proper cleanup
         let currentTask = backgroundRefreshTasks[type]
         
