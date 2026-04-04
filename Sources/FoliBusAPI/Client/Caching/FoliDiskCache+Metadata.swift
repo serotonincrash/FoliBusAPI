@@ -21,8 +21,8 @@ extension Foli.DiskCache {
         let data: T
     }
 
-    internal func loadMetadata(for type: Foli.CacheResource) async throws -> DatasetMetadata? {
-        let fileURL = fileURL(for: type)
+    internal func loadMetadata(for type: Foli.Resource) async throws -> DatasetMetadata? {
+        let fileURL = try fileURL(for: type)
 
         guard fileManager.fileExists(atPath: fileURL.path) else {
             return nil
@@ -39,8 +39,8 @@ extension Foli.DiskCache {
         return nil
     }
 
-    internal func refreshMetadataTimestamp(for type: Foli.CacheResource) async throws {
-        let fileURL = fileURL(for: type)
+    internal func refreshMetadataTimestamp(for type: Foli.Resource) async throws {
+        let fileURL = try fileURL(for: type)
 
         guard fileManager.fileExists(atPath: fileURL.path) else {
             return
@@ -51,12 +51,6 @@ extension Foli.DiskCache {
 
         let cachedData: any Codable
         switch type {
-        case .stopMonitoring:
-            preconditionFailure("Stop monitoring responses are deduped but never persisted to disk cache.")
-        case .vehicleMonitoring:
-            preconditionFailure("Vehicle monitoring responses are deduped but never persisted to disk cache.")
-        case .alerts, .alertMessages, .alertCancellations:
-            preconditionFailure("Alert responses are deduped but never persisted to disk cache.")
         case .routes:
             cachedData = try decoder.decode(CachedData<[Foli.Route]>.self, from: data)
         case .stops:
@@ -79,6 +73,8 @@ extension Foli.DiskCache {
             cachedData = try decoder.decode(CachedData<[Foli.GeoJSONLayer]>.self, from: data)
         case .geoJSONPOI, .geoJSONPOICategory, .geoJSONBounds:
             cachedData = try decoder.decode(CachedData<Foli.FeatureCollection>.self, from: data)
+        default:
+            throw Foli.CacheError.resourceNotCacheable(type)
         }
 
         let oldMetadata: DatasetMetadata
@@ -158,7 +154,7 @@ extension Foli.DiskCache {
             return try JSONDecoder().decode(DatasetMetadata.self, from: metadataData)
         }
 
-        throw Foli.APIError.decodingError(.init(CodingError.invalidMetadata))
+        throw Foli.APIError.decodingError(CodingError.invalidMetadata)
     }
 
     internal enum CodingError: Error {

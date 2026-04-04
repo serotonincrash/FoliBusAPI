@@ -42,7 +42,7 @@ extension FoliClient {
     ///   - operation: The async operation to execute if no request is in flight.
     /// - Returns: The result from either the new or existing request.
     /// - Throws: Any error thrown by the operation.
-    internal func performDeduplicated<T: Sendable>(_ key: Foli.CacheResource, operation: @escaping @Sendable () async throws -> T) async throws -> T {
+    internal func performDeduplicated<T: Sendable>(_ key: Foli.Resource, operation: @escaping @Sendable () async throws -> T) async throws -> T {
         // Check for existing in-flight request first
         if let existingTask = inFlightRequests[key] {
             return try await existingTask.value(as: T.self)

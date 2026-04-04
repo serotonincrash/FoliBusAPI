@@ -68,7 +68,7 @@ struct TransportIntegrationTests {
             Issue.record("Expected fetchRoutes to throw networkError")
         } catch let error as Foli.APIError {
             guard case .networkError(let wrappedError) = error,
-                  let urlError = wrappedError.base as? URLError else {
+                  let urlError = wrappedError as? URLError else {
                 Issue.record("Expected networkError wrapping URLError, got \(error)")
                 return
             }

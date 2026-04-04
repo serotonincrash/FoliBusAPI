@@ -4,18 +4,18 @@ import Testing
 
 @Suite("Concurrency Behavior Tests")
 struct ConcurrencyBehaviorTests {
-    @Test("APIError wraps underlying errors in a sendable wrapper while preserving the original error")
-    func apiErrorWrappedErrorPreservesBaseError() async throws {
+    @Test("APIError wraps underlying errors while preserving the original error and being Sendable")
+    func apiErrorWrapsUnderlyingErrorsWhileRemainingSendable() async throws {
         let urlError = URLError(.timedOut)
-        let error = Foli.APIError.networkError(.init(urlError))
+        let error = Foli.APIError.networkError(urlError)
 
-        guard case .networkError(let wrappedError) = error else {
+        guard case .networkError(let underlyingError) = error else {
             Issue.record("Expected networkError case")
             return
         }
 
-        #expect(wrappedError.base as? URLError == urlError)
-        #expect(wrappedError.localizedDescription == urlError.localizedDescription)
+        #expect(underlyingError as? URLError == urlError)
+        #expect(underlyingError.localizedDescription == urlError.localizedDescription)
         #expect(error.localizedDescription == "Network error: \(urlError.localizedDescription)")
     }
 
@@ -52,6 +52,40 @@ struct ConcurrencyBehaviorTests {
 
         #expect(await !client.hasBackgroundRefreshTask(for: .routes))
         #expect(await cache.savedRoutes == [["fresh-routes"]])
+    }
+
+    @Test("CacheError is thrown when attempting to get file URL for non-cacheable resource")
+    func cacheErrorThrownForNonCacheableResourceInFileURL() async throws {
+        let cache = try Foli.DiskCache()
+        
+        do {
+            _ = try await cache.fileURL(for: Foli.Resource.vehicleMonitoring)
+            Issue.record("Expected fileURL to throw CacheError for vehicleMonitoring")
+        } catch let error as Foli.CacheError {
+            guard case .resourceNotCacheable(let resource) = error else {
+                Issue.record("Expected resourceNotCacheable case, got \(error)")
+                return
+            }
+            #expect(resource == Foli.Resource.vehicleMonitoring)
+            #expect(error.localizedDescription.contains("not cacheable"))
+        }
+    }
+
+    @Test("CacheError is thrown when attempting to refresh metadata for non-cacheable resource")
+    func cacheErrorThrownForNonCacheableResourceInRefreshMetadata() async throws {
+        let cache = try Foli.DiskCache()
+        
+        do {
+            try await cache.refreshMetadataTimestamp(for: Foli.Resource.alerts)
+            Issue.record("Expected refreshMetadataTimestamp to throw CacheError for alerts")
+        } catch let error as Foli.CacheError {
+            guard case .resourceNotCacheable(let resource) = error else {
+                Issue.record("Expected resourceNotCacheable case, got \(error)")
+                return
+            }
+            #expect(resource == Foli.Resource.alerts)
+            #expect(error.localizedDescription.contains("Real-time data"))
+        }
     }
 }
 
@@ -93,10 +127,10 @@ private actor ControlledCache: Foli.Cache {
     func loadShapePoints(forShape shapeId: String) async throws -> [Foli.ShapePoint]? { nil }
     func saveShapePoints(_ shapePoints: [Foli.ShapePoint], forShape shapeId: String) async throws {}
     func clearAllCache() async throws {}
-    func clearCache(for type: Foli.CacheResource) async throws {}
-    func hasValidCache(for type: Foli.CacheResource) async -> Bool { false }
-    func cacheAge(for type: Foli.CacheResource) async -> TimeInterval? { nil }
-    func currentDatasetId(for type: Foli.CacheResource?) async throws -> String? { nil }
+    func clearCache(for type: Foli.Resource) async throws {}
+    func hasValidCache(for type: Foli.Resource) async -> Bool { false }
+    func cacheAge(for type: Foli.Resource) async -> TimeInterval? { nil }
+    func currentDatasetId(for type: Foli.Resource?) async throws -> String? { nil }
     func loadStaleRoutes() async throws -> [Foli.Route]? { nil }
     func loadStaleStops() async throws -> [Foli.Stop]? { nil }
     func loadStaleTrips() async throws -> [Foli.Trip]? { nil }
@@ -109,7 +143,7 @@ private actor ControlledCache: Foli.Cache {
     func loadStaleCalendars() async throws -> [Foli.Calendar]? { nil }
     func loadStaleShapeRouteIds() async throws -> [String]? { nil }
     func loadStaleShapePoints(forShape shapeId: String) async throws -> [Foli.ShapePoint]? { nil }
-    func revalidateCache(for type: Foli.CacheResource) async throws -> Bool { revalidationResult }
+    func revalidateCache(for type: Foli.Resource) async throws -> Bool { revalidationResult }
 
     func recordSavedRoutes(_ routes: [String]) {
         savedRoutes.append(routes)

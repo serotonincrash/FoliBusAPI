@@ -1,16 +1,10 @@
 import Foundation
 
 extension Foli.DiskCache {
-    internal func fileURL(for type: Foli.CacheResource) -> URL {
+    internal func fileURL(for type: Foli.Resource) throws -> URL {
         let filename: String
 
         switch type {
-        case .stopMonitoring:
-            preconditionFailure("Stop monitoring responses are deduped but never persisted to disk cache.")
-        case .vehicleMonitoring:
-            preconditionFailure("Vehicle monitoring responses are deduped but never persisted to disk cache.")
-        case .alerts, .alertMessages, .alertCancellations:
-            preconditionFailure("Alert responses are deduped but never persisted to disk cache.")
         case .routes:
             filename = "routes.json"
         case .stops:
@@ -43,6 +37,8 @@ extension Foli.DiskCache {
             filename = "geojson_poi_\(category).json"
         case .geoJSONBounds(let resolution, let format):
             filename = "geojson_bounds_\(resolution)_\(format).json"
+        default:
+            throw Foli.CacheError.resourceNotCacheable(type)
         }
 
         return cacheDirectory.appendingPathComponent(filename)
