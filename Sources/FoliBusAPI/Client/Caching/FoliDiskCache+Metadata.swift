@@ -51,12 +51,6 @@ extension Foli.DiskCache {
 
         let cachedData: any Codable
         switch type {
-        case .stopMonitoring:
-            throw Foli.CacheError.resourceNotCacheable(type)
-        case .vehicleMonitoring:
-            throw Foli.CacheError.resourceNotCacheable(type)
-        case .alerts, .alertMessages, .alertCancellations:
-            throw Foli.CacheError.resourceNotCacheable(type)
         case .routes:
             cachedData = try decoder.decode(CachedData<[Foli.Route]>.self, from: data)
         case .stops:
@@ -79,6 +73,8 @@ extension Foli.DiskCache {
             cachedData = try decoder.decode(CachedData<[Foli.GeoJSONLayer]>.self, from: data)
         case .geoJSONPOI, .geoJSONPOICategory, .geoJSONBounds:
             cachedData = try decoder.decode(CachedData<Foli.FeatureCollection>.self, from: data)
+        default:
+            throw Foli.CacheError.resourceNotCacheable(type)
         }
 
         let oldMetadata: DatasetMetadata
