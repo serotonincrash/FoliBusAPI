@@ -46,7 +46,7 @@ import SwiftUI
 ///
 /// Or inject a custom client directly:
 /// ```swift
-/// let customClient = FoliClient(cachedBy: .noCache)
+/// let customClient = FoliClient(cacheBehavior: .noCache)
 /// @FoliService(client: customClient) var foliService
 /// ```
 @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)

@@ -24,6 +24,26 @@ extension FoliClient {
         return url
     }
 
+    /// Constructs a full URL for a given Alerts endpoint path
+    /// - Parameter path: The endpoint path (e.g., "/alerts" or "/alerts/messages")
+    /// - Returns: A complete URL
+    internal func makeAlertsEndpointURL(path: String) throws -> URL {
+        guard let url = URL(string: alertsBaseURL + path) else {
+            throw Foli.APIError.invalidURL
+        }
+        return url
+    }
+
+    /// Constructs a full URL for a given GeoJSON endpoint path
+    /// - Parameter path: The endpoint path (e.g., "/geojson/layers" or "/geojson/poi")
+    /// - Returns: A complete URL
+    internal func makeGeoJSONEndpointURL(path: String) throws -> URL {
+        guard let url = URL(string: geoJSONBaseURL + path) else {
+            throw Foli.APIError.invalidURL
+        }
+        return url
+    }
+
     /// Fetch and decode a response from a SIRI endpoint.
     internal func requestSIRI<T: Decodable>(_ path: String, as type: T.Type = T.self) async throws -> T {
         let url = try makeEndpointURL(path: path)
@@ -36,9 +56,28 @@ extension FoliClient {
         return try await request(url, as: type)
     }
 
+    /// Fetch and decode a response from an Alerts endpoint.
+    internal func requestAlerts<T: Decodable>(_ path: String, as type: T.Type = T.self) async throws -> T {
+        let url = try makeAlertsEndpointURL(path: path)
+        var request = URLRequest(url: url)
+        // Alerts endpoint supports gzip compression
+        request.setValue("gzip", forHTTPHeaderField: "Accept-Encoding")
+        return try await requestWithCustomURLRequest(request, as: type)
+    }
+
+    /// Fetch and decode a response from a GeoJSON endpoint.
+    internal func requestGeoJSON<T: Decodable>(_ path: String, as type: T.Type = T.self) async throws -> T {
+        let url = try makeGeoJSONEndpointURL(path: path)
+        return try await request(url, as: type)
+    }
+
     private func request<T: Decodable>(_ url: URL, as type: T.Type) async throws -> T {
+        let request = URLRequest(url: url)
+        return try await requestWithCustomURLRequest(request, as: type)
+    }
+
+    private func requestWithCustomURLRequest<T: Decodable>(_ request: URLRequest, as type: T.Type) async throws -> T {
         do {
-            let request = URLRequest(url: url)
             let (data, response) = try await transport.data(for: request)
 
             guard let httpResponse = response as? HTTPURLResponse,

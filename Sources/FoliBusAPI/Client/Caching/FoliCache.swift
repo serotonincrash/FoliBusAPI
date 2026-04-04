@@ -1,11 +1,10 @@
 import Foundation
 
-public extension Foli {
-    /// A cache interface for storing and retrieving GTFS-backed resources.
+extension Foli {
+    /// Internal cache interface for storing and retrieving GTFS-backed resources.
     ///
-    /// The package ships with ``Foli/DiskCache`` as its default implementation,
-    /// but custom caches can conform to this protocol to provide alternate storage
-    /// or invalidation behavior.
+    /// The package currently ships with an internal disk-backed implementation and does not
+    /// expose cache injection as part of the public API surface.
     ///
     /// All methods are asynchronous to support actor-isolated implementations and
     /// avoid blocking the caller.
@@ -58,22 +57,46 @@ public extension Foli {
         /// Save calendar dates to cache with current timestamp
         func saveCalendarDates(_ calendarDates: [Foli.CalendarDate]) async throws
 
+        /// Load cached agencies if available and not expired
+        func loadAgencies() async throws -> [Foli.Agency]?
+
+        /// Save agencies to cache with current timestamp
+        func saveAgencies(_ agencies: [Foli.Agency]) async throws
+
+        /// Load cached calendars if available and not expired
+        func loadCalendars() async throws -> [Foli.Calendar]?
+
+        /// Save calendars to cache with current timestamp
+        func saveCalendars(_ calendars: [Foli.Calendar]) async throws
+
+        /// Load cached route IDs that have shape points.
+        func loadShapeRouteIds() async throws -> [String]?
+
+        /// Save route IDs that have shape points.
+        func saveShapeRouteIds(_ routeIds: [String]) async throws
+
+        /// Load cached shape points for a specific shape ID.
+        func loadShapePoints(forShape shapeId: String) async throws -> [Foli.ShapePoint]?
+
+        /// Save shape points for a specific shape ID.
+        func saveShapePoints(_ shapePoints: [Foli.ShapePoint], forShape shapeId: String) async throws
+
         /// Clear all cached data
         func clearAllCache() async throws
 
         /// Clear cached data for a specific type
-        func clearCache(for type: Foli.CacheResource) async throws
+        func clearCache(for type: Foli.Resource) async throws
 
         /// Check if cached data exists and is valid (not expired)
-        func hasValidCache(for type: Foli.CacheResource) async -> Bool
+        func hasValidCache(for type: Foli.Resource) async -> Bool
 
         /// Get the age of cached data in seconds, or nil if not cached
-        func cacheAge(for type: Foli.CacheResource) async -> TimeInterval?
+        func cacheAge(for type: Foli.Resource) async -> TimeInterval?
 
         /// Get the dataset ID being used for cached data
         /// - Parameter type: The specific resource type to check, or nil to get the most recently cached dataset ID
         /// - Returns: The dataset ID, or nil if no cached data exists
-        func currentDatasetId(for type: Foli.CacheResource?) async throws -> String?
+        func currentDatasetId(for type: Foli.Resource?) async throws -> String?
 
         /// The configuration for this cache
         var timeoutDuration: Foli.CacheTimeout { get }
@@ -105,8 +128,20 @@ public extension Foli {
         /// Load cached calendar dates regardless of freshness.
         func loadStaleCalendarDates() async throws -> [Foli.CalendarDate]?
 
+        /// Load cached agencies regardless of freshness.
+        func loadStaleAgencies() async throws -> [Foli.Agency]?
+
+        /// Load cached calendars regardless of freshness.
+        func loadStaleCalendars() async throws -> [Foli.Calendar]?
+
+        /// Load cached route IDs with shape points regardless of freshness.
+        func loadStaleShapeRouteIds() async throws -> [String]?
+
+        /// Load cached shape points for a specific shape ID regardless of freshness.
+        func loadStaleShapePoints(forShape shapeId: String) async throws -> [Foli.ShapePoint]?
+
         /// Revalidate cached data for a resource, returning true if the cache remained current.
         @discardableResult
-        func revalidateCache(for type: Foli.CacheResource) async throws -> Bool
+        func revalidateCache(for type: Foli.Resource) async throws -> Bool
     }
 }

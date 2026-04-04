@@ -1,15 +1,15 @@
 import Foundation
 
-public extension Foli {
+extension Foli {
     /// File-based cache implementation for GTFS data.
     ///
-    /// ``DiskCache`` is the package's default ``Foli/Cache`` implementation. It stores
+    /// DiskCache is the package's internal default cache implementation. It stores
     /// serialized data under the app support directory and uses actor isolation to keep
     /// file-system operations safe across concurrent access.
     actor DiskCache: Foli.Cache {
         internal let fileManager: FileManager
         internal let cacheDirectory: URL
-        public let timeoutDuration: Foli.CacheTimeout
+        let timeoutDuration: Foli.CacheTimeout
         internal let baseURL: String = "https://data.foli.fi/gtfs/v0"
         internal let session: URLSession
 
@@ -17,7 +17,7 @@ public extension Foli {
         /// - Parameters:
         ///   - timeout: The freshness policy applied to cached resources.
         ///   - fileManager: The file manager used to create and access cache files.
-        public init(
+        init(
             timeout: Foli.CacheTimeout = .default,
             fileManager: FileManager = .default
         ) throws {

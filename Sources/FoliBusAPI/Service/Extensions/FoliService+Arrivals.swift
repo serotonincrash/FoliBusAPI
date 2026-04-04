@@ -18,9 +18,5 @@ public extension FoliService {
         return try await client.fetchArrivals(for: stopId)
     }
     
-    func fetchArrivals(for stopId: Int) async throws -> [Foli.Arrival] {
-        return try await fetchArrivals(for: String(stopId))
-    }
-    
 }
 

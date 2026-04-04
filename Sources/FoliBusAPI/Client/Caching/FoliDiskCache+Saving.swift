@@ -1,6 +1,6 @@
 import Foundation
 
-public extension Foli.DiskCache {
+extension Foli.DiskCache {
     func saveRoutes(_ routes: [Foli.Route]) async throws {
         try await save(routes, type: .routes)
     }
@@ -33,7 +33,23 @@ public extension Foli.DiskCache {
         try await save(calendarDates, type: .calendarDates)
     }
 
-    internal func save<T: Codable>(_ value: T, type: Foli.CacheResource) async throws {
+    func saveAgencies(_ agencies: [Foli.Agency]) async throws {
+        try await save(agencies, type: .agencies)
+    }
+
+    func saveCalendars(_ calendars: [Foli.Calendar]) async throws {
+        try await save(calendars, type: .calendars)
+    }
+
+    func saveShapeRouteIds(_ routeIds: [String]) async throws {
+        try await save(routeIds, type: .shapeRouteIds)
+    }
+
+    func saveShapePoints(_ shapePoints: [Foli.ShapePoint], forShape shapeId: String) async throws {
+        try await save(shapePoints, type: .shapePointsForShape(shapeId))
+    }
+
+    internal func save<T: Codable>(_ value: T, type: Foli.Resource) async throws {
         let datasetId = try await fetchLatestDatasetId()
 
         let metadata = DatasetMetadata(
@@ -47,7 +63,7 @@ public extension Foli.DiskCache {
         encoder.outputFormatting = [.sortedKeys, .prettyPrinted]
         let data = try encoder.encode(cachedData)
 
-        let fileURL = fileURL(for: type)
+        let fileURL = try fileURL(for: type)
         try data.write(to: fileURL, options: .atomic)
     }
 }

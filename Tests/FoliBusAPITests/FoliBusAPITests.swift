@@ -9,22 +9,22 @@ struct FoliStopListTests {
     @Test("Initialize FoliStopList with stops array")
     func initializeWithStops() async throws {
         let stops: [Foli.Stop] = [
-            Foli.Stop(id: "1", stopName: "Central Station"),
-            Foli.Stop(id: "2", stopName: "Market Square")
+            Foli.Stop(id: "1", name: "Central Station"),
+            Foli.Stop(id: "2", name: "Market Square")
         ]
         
-        let stopList = FoliStopList(stops: stops)
+        let stopList = Foli.StopList(stops: stops)
         
         #expect(stopList.stops.count == 2)
         #expect(stopList.stops[0].id == "1")
-        #expect(stopList.stops[0].stopName == "Central Station")
+        #expect(stopList.stops[0].name == "Central Station")
         #expect(stopList.stops[1].id == "2")
-        #expect(stopList.stops[1].stopName == "Market Square")
+        #expect(stopList.stops[1].name == "Market Square")
     }
     
     @Test("Initialize FoliStopList with empty array")
     func initializeWithEmptyStops() async throws {
-        let stopList = FoliStopList(stops: [])
+        let stopList = Foli.StopList(stops: [])
         
         #expect(stopList.stops.isEmpty)
     }
@@ -39,19 +39,19 @@ struct FoliStopListTests {
         }
         """.data(using: .utf8)!
         
-        let stopList = try JSONDecoder().decode(FoliStopList.self, from: json)
+        let stopList = try JSONDecoder().decode(Foli.StopList.self, from: json)
         
         #expect(stopList.stops.count == 3)
-        #expect(stopList.stops.contains { $0.id == "1" && $0.stopName == "Central Station" })
-        #expect(stopList.stops.contains { $0.id == "2" && $0.stopName == "Market Square" })
-        #expect(stopList.stops.contains { $0.id == "3" && $0.stopName == "Harbor Terminal" })
+        #expect(stopList.stops.contains { $0.id == "1" && $0.name == "Central Station" })
+        #expect(stopList.stops.contains { $0.id == "2" && $0.name == "Market Square" })
+        #expect(stopList.stops.contains { $0.id == "3" && $0.name == "Harbor Terminal" })
     }
     
     @Test("Decode FoliStopList from empty JSON object")
     func decodeFromEmptyJSON() async throws {
         let json = "{}".data(using: .utf8)!
         
-        let stopList = try JSONDecoder().decode(FoliStopList.self, from: json)
+        let stopList = try JSONDecoder().decode(Foli.StopList.self, from: json)
         
         #expect(stopList.stops.isEmpty)
     }
@@ -65,22 +65,22 @@ struct FoliStopListTests {
         }
         """.data(using: .utf8)!
         
-        let stopList = try JSONDecoder().decode(FoliStopList.self, from: json)
+        let stopList = try JSONDecoder().decode(Foli.StopList.self, from: json)
         
         #expect(stopList.stops.count == 2)
         let stop1 = stopList.stops.first { $0.id == "1" }
-        #expect(stop1?.stopLat == 60.45)
-        #expect(stop1?.stopLon == 22.27)
+        #expect(stop1?.latitude == 60.45)
+        #expect(stop1?.longitude == 22.27)
         #expect(stop1?.hasLocation == true)
         
         let stop2 = stopList.stops.first { $0.id == "2" }
-        #expect(stop2?.stopCode == "002")
+        #expect(stop2?.code == "002")
     }
     
     @Test("Stop displayName includes stop code when available")
     func stopDisplayNameIncludesCode() async throws {
-        let stopWithCode = Foli.Stop(id: "1", stopName: "Central", stopCode: "001")
-        let stopWithoutCode = Foli.Stop(id: "2", stopName: "Market", stopCode: nil)
+        let stopWithCode = Foli.Stop(id: "1", name: "Central", code: "001")
+        let stopWithoutCode = Foli.Stop(id: "2", name: "Market", code: nil)
         
         #expect(stopWithCode.displayName == "001 Central")
         #expect(stopWithoutCode.displayName == "Market")
@@ -89,10 +89,10 @@ struct FoliStopListTests {
     @Test("Encode FoliStopList to JSON")
     func encodeToJSON() async throws {
         let stops: [Foli.Stop] = [
-            Foli.Stop(id: "1", stopName: "Central Station"),
-            Foli.Stop(id: "2", stopName: "Market Square")
+            Foli.Stop(id: "1", name: "Central Station"),
+            Foli.Stop(id: "2", name: "Market Square")
         ]
-        let stopList = FoliStopList(stops: stops)
+        let stopList = Foli.StopList(stops: stops)
         
         let encodedData = try JSONEncoder().encode(stopList)
         let decoded = try #require(JSONSerialization.jsonObject(with: encodedData) as? [String: [String: String]])
@@ -107,21 +107,21 @@ struct FoliStopListTests {
     @Test("Round-trip encode and decode FoliStopList")
     func roundTripEncodeDecode() async throws {
         let originalStops: [Foli.Stop] = [
-            Foli.Stop(id: "1", stopName: "Central Station"),
-            Foli.Stop(id: "2", stopName: "Market Square"),
-            Foli.Stop(id: "42", stopName: "Bus Depot")
+            Foli.Stop(id: "1", name: "Central Station"),
+            Foli.Stop(id: "2", name: "Market Square"),
+            Foli.Stop(id: "42", name: "Bus Depot")
         ]
-        let original = FoliStopList(stops: originalStops)
+        let original = Foli.StopList(stops: originalStops)
         
         let encoder = JSONEncoder()
         let decoder = JSONDecoder()
         
         let encodedData = try encoder.encode(original)
-        let decoded = try decoder.decode(FoliStopList.self, from: encodedData)
+        let decoded = try decoder.decode(Foli.StopList.self, from: encodedData)
         
         #expect(decoded.stops.count == original.stops.count)
         for stop in original.stops {
-            #expect(decoded.stops.contains { $0.id == stop.id && $0.stopName == stop.stopName })
+            #expect(decoded.stops.contains { $0.id == stop.id && $0.name == stop.name })
         }
     }
     
@@ -135,11 +135,11 @@ struct FoliStopListTests {
         }
         """.data(using: .utf8)!
         
-        let stopList = try JSONDecoder().decode(FoliStopList.self, from: json)
+        let stopList = try JSONDecoder().decode(Foli.StopList.self, from: json)
         
-        #expect(stopList.stops.contains { $0.stopName == "Åkerströms Gata" })
-        #expect(stopList.stops.contains { $0.stopName == "Östra Sjukhuset" })
-        #expect(stopList.stops.contains { $0.stopName == "Västra Tunneln" })
+        #expect(stopList.stops.contains { $0.name == "Åkerströms Gata" })
+        #expect(stopList.stops.contains { $0.name == "Östra Sjukhuset" })
+        #expect(stopList.stops.contains { $0.name == "Västra Tunneln" })
     }
     
     @Test("Decode fails with invalid JSON structure")
@@ -151,7 +151,7 @@ struct FoliStopListTests {
         """.data(using: .utf8)!
         
         #expect(throws: DecodingError.self) {
-            try JSONDecoder().decode(FoliStopList.self, from: json)
+            try JSONDecoder().decode(Foli.StopList.self, from: json)
         }
     }
     
@@ -164,16 +164,16 @@ struct FoliStopListTests {
         }
         """.data(using: .utf8)!
         
-        let stopList = try JSONDecoder().decode(FoliStopList.self, from: json)
+        let stopList = try JSONDecoder().decode(Foli.StopList.self, from: json)
         
         #expect(stopList.stops.count == 2)
-        #expect(stopList.stops.contains { $0.id == "12345" && $0.stopName == "Stop 12345" })
-        #expect(stopList.stops.contains { $0.id == "67890" && $0.stopName == "Stop 67890" })
+        #expect(stopList.stops.contains { $0.id == "12345" && $0.name == "Stop 12345" })
+        #expect(stopList.stops.contains { $0.id == "67890" && $0.name == "Stop 67890" })
     }
     
     @Test("Foli.Stop conforms to Identifiable")
     func stopIsIdentifiable() async throws {
-        let stop = Foli.Stop(id: "42", stopName: "Test Stop")
+        let stop = Foli.Stop(id: "42", name: "Test Stop")
         
         #expect(stop.id == "42")
     }
@@ -181,16 +181,80 @@ struct FoliStopListTests {
     @Test("Find stop by ID in array")
     func findStopById() async throws {
         let stops: [Foli.Stop] = [
-            Foli.Stop(id: "1", stopName: "Central Station"),
-            Foli.Stop(id: "2", stopName: "Market Square"),
-            Foli.Stop(id: "3", stopName: "Harbor Terminal")
+            Foli.Stop(id: "1", name: "Central Station"),
+            Foli.Stop(id: "2", name: "Market Square"),
+            Foli.Stop(id: "3", name: "Harbor Terminal")
         ]
         
         let found = stops.first { $0.id == "2" }
-        #expect(found?.stopName == "Market Square")
+        #expect(found?.name == "Market Square")
         
         let notFound = stops.first { $0.id == "99" }
         #expect(notFound == nil)
+    }
+    
+    @Test("Decode stop with full GTFS fields from real API format")
+    func decodeFullGTFSStop() async throws {
+        // Based on actual API response from https://data.foli.fi/gtfs/stops
+        let json = """
+        {
+            "3079": {
+                "stop_code": "",
+                "stop_name": "Mikoinen",
+                "stop_desc": "",
+                "stop_lat": 60.50957,
+                "stop_lon": 21.73462,
+                "zone_id": "",
+                "stop_url": "",
+                "location_type": 0,
+                "parent_station": 0,
+                "stop_timezone": "Europe/Helsinki"
+            }
+        }
+        """.data(using: .utf8)!
+        
+        let stopList = try JSONDecoder().decode(Foli.StopList.self, from: json)
+        
+        #expect(stopList.stops.count == 1)
+        let stop = try #require(stopList.stops.first)
+        #expect(stop.id == "3079")
+        #expect(stop.name == "Mikoinen")
+        #expect(stop.code == "")
+        #expect(stop.description == "")
+        #expect(stop.latitude == 60.50957)
+        #expect(stop.longitude == 21.73462)
+        #expect(stop.zoneId == "")
+        #expect(stop.url == "")
+        #expect(stop.locationType == 0)
+        #expect(stop.parentStation == "0")
+        #expect(stop.timezone == "Europe/Helsinki")
+    }
+    
+    @Test("Decode stop with parent station as string")
+    func decodeStopWithStringParentStation() async throws {
+        let json = """
+        {
+            "100": {
+                "stop_code": "001",
+                "stop_name": "Test Platform",
+                "stop_desc": "Platform 1",
+                "stop_lat": 60.45,
+                "stop_lon": 22.27,
+                "zone_id": "A",
+                "stop_url": "https://example.com",
+                "location_type": 0,
+                "parent_station": "STATION_1",
+                "stop_timezone": "Europe/Helsinki",
+                "wheelchair_boarding": 1
+            }
+        }
+        """.data(using: .utf8)!
+        
+        let stopList = try JSONDecoder().decode(Foli.StopList.self, from: json)
+        
+        let stop = try #require(stopList.stops.first)
+        #expect(stop.parentStation == "STATION_1")
+        #expect(stop.wheelchairBoarding == 1)
     }
 }
 @Suite("FoliRouteList Tests")
@@ -199,11 +263,11 @@ struct FoliRouteListTests {
     @Test("Initialize FoliRouteList with routes array")
     func initializeWithRoutes() async throws {
         let routes: [Foli.Route] = [
-            Foli.Route(id: "1001", shortName: "15", longName: "Harbor - University", routeType: 3),
-            Foli.Route(id: "1002", shortName: "61", longName: "Airport Express", routeType: 3)
+            Foli.Route(id: "1001", shortName: "15", longName: "Harbor - University", type: 3),
+            Foli.Route(id: "1002", shortName: "61", longName: "Airport Express", type: 3)
         ]
         
-        let routeList = FoliRouteList(routes: routes)
+        let routeList = Foli.RouteList(routes: routes)
         
         #expect(routeList.routes.count == 2)
         #expect(routeList.routes[0].id == "1001")
@@ -214,27 +278,32 @@ struct FoliRouteListTests {
     
     @Test("Initialize FoliRouteList with empty array")
     func initializeWithEmptyRoutes() async throws {
-        let routeList = FoliRouteList(routes: [])
+        let routeList = Foli.RouteList(routes: [])
         
         #expect(routeList.routes.isEmpty)
     }
     
-    @Test("Decode FoliRouteList from valid JSON")
+    @Test("Decode FoliRouteList from real API format")
     func decodeFromValidJSON() async throws {
+        // Based on actual API response from https://data.foli.fi/gtfs/routes
         let json = """
         [
-            {"route_id": "1001", "route_short_name": "15", "route_long_name": "Harbor - University", "route_type": 3},
-            {"route_id": "1002", "route_short_name": "61", "route_long_name": "Airport Express", "route_type": 3},
-            {"route_id": "1003", "route_short_name": "1", "route_long_name": "City Center Loop", "route_type": 0, "route_color": "FF0000"}
+            {"route_id": "25", "agency_id": "2", "route_short_name": "L14", "route_long_name": "Loukinainen-Avanti", "route_desc": "", "route_type": 3, "route_url": "", "route_color": "000000", "route_text_color": "ffffff"},
+            {"route_id": "3", "agency_id": "11", "route_short_name": "2A", "route_long_name": "Kohmo-Liljalaakso", "route_desc": "", "route_type": 3, "route_url": "", "route_color": "000000", "route_text_color": "ffffff"}
         ]
         """.data(using: .utf8)!
         
-        let routeList = try JSONDecoder().decode(FoliRouteList.self, from: json)
+        let routeList = try JSONDecoder().decode(Foli.RouteList.self, from: json)
         
-        #expect(routeList.routes.count == 3)
-        #expect(routeList.routes.contains { $0.id == "1001" && $0.shortName == "15" })
-        #expect(routeList.routes.contains { $0.id == "1002" && $0.shortName == "61" })
-        #expect(routeList.routes.contains { $0.id == "1003" && $0.shortName == "1" })
+        #expect(routeList.routes.count == 2)
+        #expect(routeList.routes.contains { $0.id == "25" && $0.shortName == "L14" })
+        #expect(routeList.routes.contains { $0.id == "3" && $0.shortName == "2A" })
+        let route = try #require(routeList.routes.first { $0.id == "25" })
+        #expect(route.agencyId == "2")
+        #expect(route.longName == "Loukinainen-Avanti")
+        #expect(route.type == 3)
+        #expect(route.colorHex == "000000")
+        #expect(route.textColorHex == "ffffff")
     }
     
     @Test("Decode FoliRouteList with colors")
@@ -245,12 +314,12 @@ struct FoliRouteListTests {
         ]
         """.data(using: .utf8)!
         
-        let routeList = try JSONDecoder().decode(FoliRouteList.self, from: json)
+        let routeList = try JSONDecoder().decode(Foli.RouteList.self, from: json)
         
         #expect(routeList.routes.count == 1)
         let route = routeList.routes.first!
-        #expect(route.routeColor == "007AC3")
-        #expect(route.routeTextColor == "FFFFFF")
+        #expect(route.colorHex == "007AC3")
+        #expect(route.textColorHex == "FFFFFF")
         #expect(route.color != nil)
         #expect(route.textColor != nil)
     }
@@ -261,14 +330,14 @@ struct FoliRouteListTests {
             id: "1001",
             shortName: "15",
             longName: "Harbor - University",
-            routeType: 3
+            type: 3
         )
         
         let tramRoute = Foli.Route(
             id: "2001",
             shortName: "1",
             longName: "City Loop",
-            routeType: 0
+            type: 0
         )
         
         #expect(busRoute.isBus == true)
@@ -287,7 +356,7 @@ struct FoliRouteListTests {
             id: "1001",
             shortName: "15",
             longName: "",
-            routeType: 3
+            type: 3
         )
         
         #expect(route.displayName == "15")
@@ -297,7 +366,7 @@ struct FoliRouteListTests {
     func decodeFromEmptyJSON() async throws {
         let json = "[]".data(using: .utf8)!
         
-        let routeList = try JSONDecoder().decode(FoliRouteList.self, from: json)
+        let routeList = try JSONDecoder().decode(Foli.RouteList.self, from: json)
         
         #expect(routeList.routes.isEmpty)
     }
@@ -305,10 +374,10 @@ struct FoliRouteListTests {
     @Test("Encode FoliRouteList to JSON")
     func encodeToJSON() async throws {
         let routes: [Foli.Route] = [
-            Foli.Route(id: "1001", shortName: "15", longName: "Harbor - University", routeType: 3),
-            Foli.Route(id: "1002", shortName: "61", longName: "Airport Express", routeType: 3)
+            Foli.Route(id: "1001", shortName: "15", longName: "Harbor - University", type: 3),
+            Foli.Route(id: "1002", shortName: "61", longName: "Airport Express", type: 3)
         ]
-        let routeList = FoliRouteList(routes: routes)
+        let routeList = Foli.RouteList(routes: routes)
         
         let encodedData = try JSONEncoder().encode(routeList)
         let decoded = try #require(JSONSerialization.jsonObject(with: encodedData) as? [[String: Any]])
@@ -325,16 +394,16 @@ struct FoliRouteListTests {
     @Test("Round-trip encode and decode FoliRouteList")
     func roundTripEncodeDecode() async throws {
         let originalRoutes: [Foli.Route] = [
-            Foli.Route(id: "1001", shortName: "15", longName: "Harbor - University", routeType: 3),
-            Foli.Route(id: "1002", shortName: "61", longName: "Airport Express", routeType: 3)
+            Foli.Route(id: "1001", shortName: "15", longName: "Harbor - University", type: 3),
+            Foli.Route(id: "1002", shortName: "61", longName: "Airport Express", type: 3)
         ]
-        let original = FoliRouteList(routes: originalRoutes)
+        let original = Foli.RouteList(routes: originalRoutes)
         
         let encoder = JSONEncoder()
         let decoder = JSONDecoder()
         
         let encodedData = try encoder.encode(original)
-        let decoded = try decoder.decode(FoliRouteList.self, from: encodedData)
+        let decoded = try decoder.decode(Foli.RouteList.self, from: encodedData)
         
         #expect(decoded.routes.count == original.routes.count)
         for route in original.routes {
@@ -348,7 +417,7 @@ struct FoliRouteListTests {
     
     @Test("Foli.Route conforms to Identifiable")
     func routeIsIdentifiable() async throws {
-        let route = Foli.Route(id: "1001", shortName: "15", longName: "Test", routeType: 3)
+        let route = Foli.Route(id: "1001", shortName: "15", longName: "Test", type: 3)
         
         #expect(route.id == "1001")
     }
@@ -356,9 +425,9 @@ struct FoliRouteListTests {
     @Test("Find route by ID in array")
     func findRouteById() async throws {
         let routes: [Foli.Route] = [
-            Foli.Route(id: "1001", shortName: "15", longName: "Harbor - University", routeType: 3),
-            Foli.Route(id: "1002", shortName: "61", longName: "Airport Express", routeType: 3),
-            Foli.Route(id: "2001", shortName: "1", longName: "City Loop", routeType: 0)
+            Foli.Route(id: "1001", shortName: "15", longName: "Harbor - University", type: 3),
+            Foli.Route(id: "1002", shortName: "61", longName: "Airport Express", type: 3),
+            Foli.Route(id: "2001", shortName: "1", longName: "City Loop", type: 0)
         ]
         
         let found = routes.first { $0.id == "1002" }
