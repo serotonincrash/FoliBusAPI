@@ -1,6 +1,6 @@
 import Foundation
 
-public extension Foli.DiskCache {
+extension Foli.DiskCache {
     func loadRoutes() async throws -> [Foli.Route]? {
         try await load(type: .routes)
     }
@@ -65,14 +65,46 @@ public extension Foli.DiskCache {
         try await loadIgnoringFreshness(type: .calendarDates)
     }
 
-    func cacheAge(for type: Foli.CacheResource) async -> TimeInterval? {
+    func loadAgencies() async throws -> [Foli.Agency]? {
+        try await load(type: .agencies)
+    }
+
+    func loadStaleAgencies() async throws -> [Foli.Agency]? {
+        try await loadIgnoringFreshness(type: .agencies)
+    }
+
+    func loadCalendars() async throws -> [Foli.Calendar]? {
+        try await load(type: .calendars)
+    }
+
+    func loadStaleCalendars() async throws -> [Foli.Calendar]? {
+        try await loadIgnoringFreshness(type: .calendars)
+    }
+
+    func loadShapeRouteIds() async throws -> [String]? {
+        try await load(type: .shapeRouteIds)
+    }
+
+    func loadStaleShapeRouteIds() async throws -> [String]? {
+        try await loadIgnoringFreshness(type: .shapeRouteIds)
+    }
+
+    func loadShapePoints(forShape shapeId: String) async throws -> [Foli.ShapePoint]? {
+        try await load(type: .shapePointsForShape(shapeId))
+    }
+
+    func loadStaleShapePoints(forShape shapeId: String) async throws -> [Foli.ShapePoint]? {
+        try await loadIgnoringFreshness(type: .shapePointsForShape(shapeId))
+    }
+
+    func cacheAge(for type: Foli.Resource) async -> TimeInterval? {
         guard let metadata = try? await loadMetadata(for: type) else {
             return nil
         }
         return Date().timeIntervalSince(metadata.cachedAt)
     }
 
-    internal func load<T: Codable>(type: Foli.CacheResource) async throws -> T? {
+    internal func load<T: Codable>(type: Foli.Resource) async throws -> T? {
         guard await hasValidCache(for: type) else {
             return nil
         }
@@ -80,8 +112,8 @@ public extension Foli.DiskCache {
         return try await loadIgnoringFreshness(type: type)
     }
 
-    internal func loadIgnoringFreshness<T: Codable>(type: Foli.CacheResource) async throws -> T? {
-        let fileURL = fileURL(for: type)
+    internal func loadIgnoringFreshness<T: Codable>(type: Foli.Resource) async throws -> T? {
+        let fileURL = try fileURL(for: type)
 
         guard fileManager.fileExists(atPath: fileURL.path) else {
             return nil

@@ -49,6 +49,12 @@ public actor FoliClient {
     /// Base URL for the Foli GTFS API
     internal let gtfsBaseURL = "https://data.foli.fi/gtfs"
 
+    /// Base URL for the Foli Alerts API
+    internal let alertsBaseURL = "https://data.foli.fi"
+
+    /// Base URL for the Foli GeoJSON API
+    internal let geoJSONBaseURL = "https://data.foli.fi"
+
     /// Transport used for making network requests
     internal let transport: any FoliTransport
 
@@ -60,24 +66,45 @@ public actor FoliClient {
 
     /// Shared decoder for API responses.
     internal let decoder = JSONDecoder()
-    internal var inFlightRequests: [RequestKey: AnyInFlightTask] = [:]
+    internal var inFlightRequests: [Foli.Resource: AnyInFlightTask] = [:]
     internal var stopsByID: [String: Foli.Stop] = [:]
     internal var routesByID: [String: Foli.Route] = [:]
     internal var routesByShortName: [String: [Foli.Route]] = [:]
+    internal var agenciesByID: [String: Foli.Agency] = [:]
+    internal var calendarsByID: [String: Foli.Calendar] = [:]
+    internal var tripsByID: [String: Foli.Trip] = [:]
+
+    /// Tracks background revalidation tasks so they can be cancelled when the client
+    /// is asked to refresh the same resource again before the previous refresh completes.
+    internal var backgroundRefreshTasks: [Foli.Resource: Task<Void, Never>] = [:]
+
+    /// Called when a background stale-while-revalidate refresh fails.
+    ///
+    /// The client itself cannot surface errors from background refreshes (they are
+    /// fire-and-observe), so set this handler if you want to log or react to failures.
+    /// The handler is called on the actor's executor.
+    ///
+    /// ```swift
+    /// client.onBackgroundRefreshError = { resource, error in
+    ///     logger.error("Background refresh failed for \(resource): \(error)")
+    /// }
+    /// ```
+    public var onBackgroundRefreshError: (@Sendable (Foli.Resource, Error) -> Void)?
 
     /// Creates a client that executes requests through a `URLSession`.
     /// - Parameters:
     ///   - session: The session used for network requests.
     ///   - cacheBehavior: The cache behavior to apply to cacheable GTFS resources.
-    ///   - timeout: The disk-cache freshness policy.
-    public init(session: URLSession = .shared, cachedBy cacheBehavior: Foli.CacheBehavior = .cachedOrFetch, withTimeout timeout: Foli.CacheTimeout = .default) {
+    ///   - cacheTimeout: The disk-cache freshness policy.
+    public init(session: URLSession = .shared, cacheBehavior: Foli.CacheBehavior = .cachedOrFetch, cacheTimeout: Foli.CacheTimeout = .default) {
         self.transport = URLSessionTransport(session: session)
         self.cacheBehavior = cacheBehavior
 
         do {
-            self.cache = try Foli.DiskCache(timeout: timeout)
+            self.cache = try Foli.DiskCache(timeout: cacheTimeout)
         } catch {
-            print("An error occurred initialising the cache for FoliBusAPI. Defaulting to no cache implementation.")
+            // Cache initialization failed - fall back to no-cache mode
+            // This is expected when disk access is unavailable
             self.cacheBehavior = .noCache
         }
     }
@@ -86,20 +113,44 @@ public actor FoliClient {
     ///
     /// This initializer is especially useful for testing, offline fixtures, or advanced
     /// networking setups where request execution should be controlled independently from
-    /// the client’s decoding and cache logic.
+    /// the client's decoding and cache logic.
     /// - Parameters:
     ///   - transport: The transport used to execute requests.
     ///   - cacheBehavior: The cache behavior to apply to cacheable GTFS resources.
-    ///   - timeout: The disk-cache freshness policy.
-    public init(transport: any FoliTransport, cachedBy cacheBehavior: Foli.CacheBehavior = .cachedOrFetch, withTimeout timeout: Foli.CacheTimeout = .default) {
+    ///   - cacheTimeout: The disk-cache freshness policy.
+    public init(transport: any FoliTransport, cacheBehavior: Foli.CacheBehavior = .cachedOrFetch, cacheTimeout: Foli.CacheTimeout = .default) {
         self.transport = transport
         self.cacheBehavior = cacheBehavior
 
         do {
-            self.cache = try Foli.DiskCache(timeout: timeout)
+            self.cache = try Foli.DiskCache(timeout: cacheTimeout)
         } catch {
-            print("An error occurred initialising the cache for FoliBusAPI. Defaulting to no cache implementation.")
+            // Cache initialization failed - fall back to no-cache mode
+            // This is expected when disk access is unavailable
             self.cacheBehavior = .noCache
         }
+    }
+
+    /// Records a background refresh task for the provided resource.
+    internal func setBackgroundRefreshTask(_ task: Task<Void, Never>, for resource: Foli.Resource) {
+        backgroundRefreshTasks[resource] = task
+    }
+
+    /// Removes a background refresh task if it is still the task currently registered for the resource.
+    internal func clearBackgroundRefreshTask(for resource: Foli.Resource, matching task: Task<Void, Never>) {
+        guard let currentTask = backgroundRefreshTasks[resource], currentTask == task else {
+            return
+        }
+        backgroundRefreshTasks[resource] = nil
+    }
+
+    /// Cancels any in-flight background refresh for the provided resource.
+    internal func cancelBackgroundRefreshTask(for resource: Foli.Resource) {
+        backgroundRefreshTasks[resource]?.cancel()
+    }
+
+    /// Returns whether a resource currently has a background refresh task registered.
+    internal func hasBackgroundRefreshTask(for resource: Foli.Resource) -> Bool {
+        backgroundRefreshTasks[resource] != nil
     }
 }

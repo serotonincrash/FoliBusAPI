@@ -1,7 +1,7 @@
 import Foundation
 
-public extension Foli.DiskCache {
-    internal func fileURL(for type: Foli.CacheResource) -> URL {
+extension Foli.DiskCache {
+    internal func fileURL(for type: Foli.Resource) throws -> URL {
         let filename: String
 
         switch type {
@@ -21,6 +21,24 @@ public extension Foli.DiskCache {
             filename = "stop_times_stop_\(stopId).json"
         case .calendarDates:
             filename = "calendar_dates.json"
+        case .agencies:
+            filename = "agencies.json"
+        case .calendars:
+            filename = "calendars.json"
+        case .shapeRouteIds:
+            filename = "shape_route_ids.json"
+        case .shapePointsForShape(let shapeId):
+            filename = "shape_points_\(shapeId).json"
+        case .geoJSONLayers:
+            filename = "geojson_layers.json"
+        case .geoJSONPOI:
+            filename = "geojson_poi.json"
+        case .geoJSONPOICategory(let category):
+            filename = "geojson_poi_\(category).json"
+        case .geoJSONBounds(let resolution, let format):
+            filename = "geojson_bounds_\(resolution)_\(format).json"
+        default:
+            throw Foli.CacheError.resourceNotCacheable(type)
         }
 
         return cacheDirectory.appendingPathComponent(filename)

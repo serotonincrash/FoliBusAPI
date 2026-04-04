@@ -1,6 +1,6 @@
 import Foundation
 
-public extension Foli.DiskCache {
+extension Foli.DiskCache {
     func clearAllCache() async throws {
         let contents = try fileManager.contentsOfDirectory(
             at: cacheDirectory,
@@ -12,14 +12,14 @@ public extension Foli.DiskCache {
         }
     }
 
-    func clearCache(for type: Foli.CacheResource) async throws {
-        let fileURL = fileURL(for: type)
+    func clearCache(for type: Foli.Resource) async throws {
+        let fileURL = try fileURL(for: type)
         if fileManager.fileExists(atPath: fileURL.path) {
             try fileManager.removeItem(at: fileURL)
         }
     }
 
-    func hasValidCache(for type: Foli.CacheResource) async -> Bool {
+    func hasValidCache(for type: Foli.Resource) async -> Bool {
         guard let metadata = try? await loadMetadata(for: type) else {
             return false
         }
@@ -35,7 +35,7 @@ public extension Foli.DiskCache {
         }
     }
 
-    func currentDatasetId(for type: Foli.CacheResource?) async throws -> String? {
+    func currentDatasetId(for type: Foli.Resource?) async throws -> String? {
         if let type = type {
             return try await loadMetadata(for: type)?.datasetId
         } else {
@@ -50,7 +50,7 @@ public extension Foli.DiskCache {
     }
 
     @discardableResult
-    func revalidateCache(for type: Foli.CacheResource) async throws -> Bool {
+    func revalidateCache(for type: Foli.Resource) async throws -> Bool {
         guard let metadata = try await loadMetadata(for: type) else {
             return false
         }

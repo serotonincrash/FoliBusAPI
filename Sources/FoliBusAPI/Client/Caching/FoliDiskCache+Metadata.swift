@@ -1,6 +1,6 @@
 import Foundation
 
-public extension Foli.DiskCache {
+extension Foli.DiskCache {
     internal struct DatasetMetadata: Codable {
         let datasetId: String
         let cachedAt: Date
@@ -21,8 +21,8 @@ public extension Foli.DiskCache {
         let data: T
     }
 
-    internal func loadMetadata(for type: Foli.CacheResource) async throws -> DatasetMetadata? {
-        let fileURL = fileURL(for: type)
+    internal func loadMetadata(for type: Foli.Resource) async throws -> DatasetMetadata? {
+        let fileURL = try fileURL(for: type)
 
         guard fileManager.fileExists(atPath: fileURL.path) else {
             return nil
@@ -39,8 +39,8 @@ public extension Foli.DiskCache {
         return nil
     }
 
-    internal func refreshMetadataTimestamp(for type: Foli.CacheResource) async throws {
-        let fileURL = fileURL(for: type)
+    internal func refreshMetadataTimestamp(for type: Foli.Resource) async throws {
+        let fileURL = try fileURL(for: type)
 
         guard fileManager.fileExists(atPath: fileURL.path) else {
             return
@@ -61,6 +61,20 @@ public extension Foli.DiskCache {
             cachedData = try decoder.decode(CachedData<[Foli.StopTime]>.self, from: data)
         case .calendarDates:
             cachedData = try decoder.decode(CachedData<[Foli.CalendarDate]>.self, from: data)
+        case .agencies:
+            cachedData = try decoder.decode(CachedData<[Foli.Agency]>.self, from: data)
+        case .calendars:
+            cachedData = try decoder.decode(CachedData<[Foli.Calendar]>.self, from: data)
+        case .shapeRouteIds:
+            cachedData = try decoder.decode(CachedData<[String]>.self, from: data)
+        case .shapePointsForShape:
+            cachedData = try decoder.decode(CachedData<[Foli.ShapePoint]>.self, from: data)
+        case .geoJSONLayers:
+            cachedData = try decoder.decode(CachedData<[Foli.GeoJSONLayer]>.self, from: data)
+        case .geoJSONPOI, .geoJSONPOICategory, .geoJSONBounds:
+            cachedData = try decoder.decode(CachedData<Foli.FeatureCollection>.self, from: data)
+        default:
+            throw Foli.CacheError.resourceNotCacheable(type)
         }
 
         let oldMetadata: DatasetMetadata
@@ -80,6 +94,18 @@ public extension Foli.DiskCache {
             oldMetadata = cached.metadata
             newData = CachedData(metadata: DatasetMetadata(datasetId: oldMetadata.datasetId, cachedAt: Date()), data: cached.data)
         case let cached as CachedData<[Foli.CalendarDate]>:
+            oldMetadata = cached.metadata
+            newData = CachedData(metadata: DatasetMetadata(datasetId: oldMetadata.datasetId, cachedAt: Date()), data: cached.data)
+        case let cached as CachedData<[Foli.Agency]>:
+            oldMetadata = cached.metadata
+            newData = CachedData(metadata: DatasetMetadata(datasetId: oldMetadata.datasetId, cachedAt: Date()), data: cached.data)
+        case let cached as CachedData<[Foli.Calendar]>:
+            oldMetadata = cached.metadata
+            newData = CachedData(metadata: DatasetMetadata(datasetId: oldMetadata.datasetId, cachedAt: Date()), data: cached.data)
+        case let cached as CachedData<[String]>:
+            oldMetadata = cached.metadata
+            newData = CachedData(metadata: DatasetMetadata(datasetId: oldMetadata.datasetId, cachedAt: Date()), data: cached.data)
+        case let cached as CachedData<[Foli.ShapePoint]>:
             oldMetadata = cached.metadata
             newData = CachedData(metadata: DatasetMetadata(datasetId: oldMetadata.datasetId, cachedAt: Date()), data: cached.data)
         default:
