@@ -2,7 +2,7 @@ import Foundation
 
 /// Real-time location and status information for a vehicle
 public extension Foli {
-    struct VehicleLocation: Codable, Sendable, Identifiable, Equatable {
+    struct VehicleLocation: Codable, Sendable, Identifiable, Equatable, Hashable {
         /// Unix timestamp representing when this location was recorded
         public let recordedAtTime: TimeInterval
         /// Unix timestamp until which this data is considered valid
@@ -70,7 +70,7 @@ public extension Foli {
         public var id: String { vehicleRef }
 
         /// Represents a stop call (previous or onward)
-        public struct StopCall: Codable, Sendable, Equatable {
+        public struct StopCall: Codable, Sendable, Equatable, Hashable {
             /// Reference code for the stop point
             public let stopPointRef: String
             /// Visit number for this stop in the trip sequence

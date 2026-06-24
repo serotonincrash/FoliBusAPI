@@ -3,7 +3,7 @@ import Foundation
 // MARK: - Stop Monitoring Response
 extension Foli {
     /// Response from the stop monitoring endpoint
-    struct ArrivalResponse: Codable, Sendable {
+    struct ArrivalResponse: Codable, Sendable, Equatable, Hashable {
         // MARK: - Known Status Values
 
         /// Named constants for the well-known status strings returned by the stop monitoring endpoint.

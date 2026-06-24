@@ -10,7 +10,7 @@ public extension Foli {
     /// A GeoJSON Feature Collection containing multiple features.
     ///
     /// Feature collections are the top-level response type for all geographic data endpoints.
-    struct FeatureCollection: Codable, Sendable {
+    struct FeatureCollection: Codable, Sendable, Equatable, Hashable {
         /// GeoJSON type identifier (always "FeatureCollection").
         public let type: String
         /// Optional collection name.
@@ -34,7 +34,7 @@ public extension Foli {
     /// A GeoJSON feature representing a single geographic entity.
     ///
     /// Features combine geometry (location/shape) with properties (metadata).
-    struct Feature: Codable, Sendable {
+    struct Feature: Codable, Sendable, Identifiable, Equatable, Hashable {
         /// GeoJSON type identifier (always "Feature").
         public let type: String
         /// Optional unique identifier for this feature.
@@ -73,7 +73,7 @@ public extension Foli {
     ///
     /// Supports Point (single location), MultiPolygon (service areas), and
     /// MultiLineString (routes/boundaries) geometry types.
-    enum Geometry: Codable, Sendable {
+    enum Geometry: Codable, Sendable, Equatable, Hashable {
         /// Single point with [longitude, latitude] coordinates.
         case point([Double])
         /// Multiple polygons for complex area boundaries.
@@ -127,7 +127,7 @@ public extension Foli {
     ///
     /// Properties vary by feature type but commonly include names in multiple languages,
     /// category information, addresses, and display icons.
-    struct FeatureProperties: Codable, Sendable {
+    struct FeatureProperties: Codable, Sendable, Equatable, Hashable {
         /// Feature category (e.g., "bike_parking", "service_point").
         public let category: String?
         /// Default feature name.
@@ -241,7 +241,7 @@ public extension Foli {
     ///
     /// Icons are identified by ID and may include an inline SVG definition.
     /// Note that the API only sends the SVG for the first occurrence of each icon ID.
-    struct GeoJSONIcon: Codable, Sendable {
+    struct GeoJSONIcon: Codable, Sendable, Identifiable, Equatable, Hashable {
         /// Unique icon identifier.
         public let id: String
         

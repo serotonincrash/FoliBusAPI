@@ -3,7 +3,7 @@ import Foundation
 // MARK: - Shape Point List Response
 extension Foli {
     /// Response containing shape geometry points (GTFS shapes.txt)
-    struct ShapePointList: Codable, Sendable {
+    struct ShapePointList: Codable, Sendable, Equatable, Hashable {
         /// Ordered shape points for a specific shape.
         let shapePoints: [Foli.ShapePoint]
 

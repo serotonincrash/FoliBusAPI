@@ -4,7 +4,7 @@ import Foundation
 /// Weekly service calendar record (GTFS calendar.txt)
 public extension Foli {
     /// Weekly service schedule metadata keyed by GTFS `service_id`.
-    struct Calendar: Codable, Sendable, Identifiable, Equatable {
+    struct Calendar: Codable, Sendable, Identifiable, Equatable, Hashable {
         /// The GTFS `service_id`.
         public let id: String
         /// Whether the service is active on Mondays.

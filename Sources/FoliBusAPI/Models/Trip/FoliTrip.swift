@@ -6,7 +6,7 @@ import Foundation
 /// A trip represents a single journey by a vehicle along a route at a specific time.
 /// Trips are associated with a service calendar that determines operating days.
 public extension Foli {
-    struct Trip: Codable, Sendable, Identifiable, Equatable {
+    struct Trip: Codable, Sendable, Identifiable, Equatable, Hashable {
         /// The GTFS `trip_id` value — used as the stable `Identifiable` identity.
         public let tripId: String
         /// The route this trip belongs to (GTFS `route_id`).

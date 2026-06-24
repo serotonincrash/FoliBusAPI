@@ -2,7 +2,7 @@ import Foundation
 
 /// Trip cancellation information
 public extension Foli {
-    struct TripCancellation: Codable, Sendable, Identifiable, Equatable {
+    struct TripCancellation: Codable, Sendable, Identifiable, Equatable, Hashable {
         /// Line reference (e.g., "2A")
         public let line: String
         /// Icon recommendation
@@ -53,7 +53,7 @@ public extension Foli {
     }
     
     /// Stop affected by a trip cancellation
-    struct CancelledStop: Codable, Sendable, Identifiable, Equatable {
+    struct CancelledStop: Codable, Sendable, Identifiable, Equatable, Hashable {
         /// Stop ID
         public let stop: String
         /// Scheduled arrival time at this stop

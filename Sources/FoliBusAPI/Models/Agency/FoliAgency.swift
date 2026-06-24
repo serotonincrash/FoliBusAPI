@@ -6,7 +6,7 @@ import Foundation
 /// Agencies operate one or more routes and provide contact information
 /// and service details for passengers.
 public extension Foli {
-    struct Agency: Codable, Sendable, Identifiable, Equatable {
+    struct Agency: Codable, Sendable, Identifiable, Equatable, Hashable {
         /// The GTFS `agency_id` value.
         public let id: String
         /// The full agency name (GTFS `agency_name`).
