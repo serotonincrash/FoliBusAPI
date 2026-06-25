@@ -73,8 +73,6 @@ extension Foli.DiskCache {
             cachedData = try decoder.decode(CachedData<[Foli.GeoJSONLayer]>.self, from: data)
         case .geoJSONPOI, .geoJSONPOICategory, .geoJSONBounds:
             cachedData = try decoder.decode(CachedData<Foli.FeatureCollection>.self, from: data)
-        default:
-            throw Foli.CacheError.resourceNotCacheable(type)
         }
 
         let oldMetadata: DatasetMetadata

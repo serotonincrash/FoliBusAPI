@@ -2,39 +2,16 @@ import Foundation
 
 // MARK: - Cache Resource Keys
 public extension Foli {
-    /// Identifies a cacheable (or deduplication-keyed) resource from the Föli API.
+    /// Identifies a cacheable resource from the Föli API.
     ///
-    /// This type serves a dual purpose:
-    /// - As keys for cache operations (load, save, clear).
-    /// - As deduplication keys in ``FoliClient`` to coalesce concurrent in-flight requests.
-    ///
-    /// Resources are categorized as:
-    /// - **Cached**: GTFS static data that changes infrequently (routes, stops, trips, etc.)
-    /// - **Deduplication-only**: Real-time data that should not be cached but benefits
-    ///   from coalescing duplicate concurrent requests.
+    /// Used as keys for cache operations (load, save, clear).
+    /// For request deduplication, see ``DedupeKey``.
     ///
     /// ## Example
     /// ```swift
-    /// // GTFS data is cached and deduplicated
-    /// let routes = try await client.fetchRoutes()  // Uses .routes key
-    ///
-    /// // Real-time data is deduplicated but not cached
-    /// let alerts = try await client.fetchAlerts()  // Uses .alerts key
+    /// let routes = try await client.fetchRoutes()  // Cached with .routes key
     /// ```
     enum Resource: Hashable, Sendable {
-        // MARK: - Real-Time Resources (Deduplication Only)
-        
-        /// Real-time stop monitoring for a given stop ID (not cached).
-        case stopMonitoring(String)
-        /// Real-time vehicle monitoring (not cached).
-        case vehicleMonitoring
-        /// Real-time alerts (not cached).
-        case alerts
-        /// Real-time alert messages only (not cached).
-        case alertMessages
-        /// Real-time cancellations only (not cached).
-        case alertCancellations
-        
         // MARK: - GTFS Static Resources (Cached)
         
         /// All routes from GTFS `routes.txt`. Retrieves from cache if cache behavior is set accordingly.
