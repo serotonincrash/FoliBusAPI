@@ -64,36 +64,37 @@ internal struct FoliRequester: Sendable {
     // MARK: - Request + Decode
 
     /// Fetch and decode a response from a SIRI endpoint.
-    internal func requestSIRI<T: Decodable>(_ path: String, as type: T.Type = T.self) async throws -> T {
+    internal func requestSIRI<T: Decodable>(_ path: String, as type: T.Type = T.self, headers: [String: String] = [:]) async throws -> T {
         let url = try makeEndpointURL(path: path)
-        return try await request(url, as: type)
+        return try await request(url, as: type, headers: headers)
     }
 
     /// Fetch and decode a response from a GTFS endpoint.
-    internal func requestGTFS<T: Decodable>(_ path: String, as type: T.Type = T.self) async throws -> T {
+    internal func requestGTFS<T: Decodable>(_ path: String, as type: T.Type = T.self, headers: [String: String] = [:]) async throws -> T {
         let url = try makeGTFSEndpointURL(path: path)
-        return try await request(url, as: type)
+        return try await request(url, as: type, headers: headers)
     }
 
     /// Fetch and decode a response from an Alerts endpoint.
     internal func requestAlerts<T: Decodable>(_ path: String, as type: T.Type = T.self) async throws -> T {
         let url = try makeAlertsEndpointURL(path: path)
-        var request = URLRequest(url: url)
-        // Alerts endpoint supports gzip compression
-        request.setValue("gzip", forHTTPHeaderField: "Accept-Encoding")
-        return try await requestWithCustomURLRequest(request, as: type)
+        // gzip is an alerts-endpoint declaration, not a transport concern
+        return try await request(url, as: type, headers: ["Accept-Encoding": "gzip"])
     }
 
     /// Fetch and decode a response from a GeoJSON endpoint.
-    internal func requestGeoJSON<T: Decodable>(_ path: String, as type: T.Type = T.self) async throws -> T {
+    internal func requestGeoJSON<T: Decodable>(_ path: String, as type: T.Type = T.self, headers: [String: String] = [:]) async throws -> T {
         let url = try makeGeoJSONEndpointURL(path: path)
-        return try await request(url, as: type)
+        return try await request(url, as: type, headers: headers)
     }
 
     // MARK: - Private Helpers
 
-    private func request<T: Decodable>(_ url: URL, as type: T.Type) async throws -> T {
-        let request = URLRequest(url: url)
+    private func request<T: Decodable>(_ url: URL, as type: T.Type, headers: [String: String]) async throws -> T {
+        var request = URLRequest(url: url)
+        for (key, value) in headers {
+            request.setValue(value, forHTTPHeaderField: key)
+        }
         return try await requestWithCustomURLRequest(request, as: type)
     }
 
