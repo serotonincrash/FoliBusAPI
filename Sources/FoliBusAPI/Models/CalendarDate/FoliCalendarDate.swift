@@ -3,7 +3,7 @@ import Foundation
 // MARK: - Calendar Date Model
 /// Information about service exceptions for a specific date (GTFS calendar\_dates.txt)
 public extension Foli {
-    struct CalendarDate: Codable, Sendable, Identifiable, Equatable {
+    struct CalendarDate: Codable, Sendable, Identifiable, Equatable, Hashable {
         /// The service ID that this exception applies to
         public let serviceId: String
 

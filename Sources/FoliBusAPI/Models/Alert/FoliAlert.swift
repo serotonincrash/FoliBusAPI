@@ -2,7 +2,7 @@ import Foundation
 
 /// Real-time transit service alert or announcement
 public extension Foli {
-    struct Alert: Codable, Sendable, Identifiable, Equatable {
+    struct Alert: Codable, Sendable, Identifiable, Equatable, Hashable {
         /// Unique message identifier
         public let messageId: Int
         /// Icon recommendation (e.g., "BUS", "BOAT", "BIKE", "NONE", or combinations like "BUS_BIKE")
@@ -167,7 +167,7 @@ public extension Foli {
     }
     
     /// Translation of an alert in a specific language
-    struct AlertTranslation: Codable, Sendable, Equatable {
+    struct AlertTranslation: Codable, Sendable, Equatable, Hashable {
         public let header: String?
         public let message: String
         public let information: String?
@@ -180,7 +180,7 @@ public extension Foli {
     }
     
     /// Image attached to an alert
-    struct AlertImage: Codable, Sendable, Equatable {
+    struct AlertImage: Codable, Sendable, Equatable, Hashable {
         /// Protocol-relative URL (add "http:" or "https:" as needed)
         public let url: String
         /// MIME type (e.g., "image/png")

@@ -3,7 +3,7 @@ import Foundation
 // MARK: - Route List Response
 extension Foli {
     /// Response containing all known routes (GTFS routes.txt)
-    struct RouteList: Codable, Sendable {
+    struct RouteList: Codable, Sendable, Equatable, Hashable {
         /// Array of all routes
         let routes: [Foli.Route]
 

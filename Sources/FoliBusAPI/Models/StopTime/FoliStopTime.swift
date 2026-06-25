@@ -6,7 +6,7 @@ import Foundation
 /// Stop times define when a vehicle arrives at and departs from individual stops during a trip.
 /// Times are in HH:MM:SS format and may exceed 24:00:00 for trips crossing midnight.
 public extension Foli {
-    struct StopTime: Codable, Sendable, Identifiable, Equatable {
+    struct StopTime: Codable, Sendable, Identifiable, Equatable, Hashable {
         /// The trip this stop time belongs to (GTFS `trip_id`).
         public let tripId: String?
         /// Scheduled arrival time in HH:MM:SS format (GTFS `arrival_time`).

@@ -3,7 +3,7 @@ import Foundation
 // MARK: - Stop List Response
 extension Foli {
     /// Response containing all known stops (GTFS stops.txt)
-    struct StopList: Codable, Sendable {
+    struct StopList: Codable, Sendable, Equatable, Hashable {
         /// Private helper struct to decode the API response format where lat/lon are numbers
         /// and parent_station can be either Int (0) or String (station ID)
         private struct APIStopData: Decodable, Sendable {

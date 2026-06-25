@@ -6,7 +6,7 @@ import Foundation
 /// Layers represent different categories of geographic data available from the API,
 /// such as points of interest, service boundaries, or bike parking locations.
 public extension Foli {
-    struct GeoJSONLayer: Codable, Sendable, Identifiable {
+    struct GeoJSONLayer: Codable, Sendable, Identifiable, Equatable, Hashable {
         /// Localized layer names in Finnish, Swedish, and English.
         public let name: LayerName
         /// Relative URL path to fetch this layer's GeoJSON data.
@@ -19,7 +19,7 @@ public extension Foli {
         
         // MARK: - LayerName
         /// Localized layer name in three languages.
-        public struct LayerName: Codable, Sendable {
+        public struct LayerName: Codable, Sendable, Equatable, Hashable {
             /// Finnish layer name.
             public let fi: String
             /// Swedish layer name.
@@ -41,7 +41,7 @@ public extension Foli {
         
         // MARK: - LayerMetadata
         /// Metadata describing how to display feature properties from this layer.
-        public struct LayerMetadata: Codable, Sendable {
+        public struct LayerMetadata: Codable, Sendable, Equatable, Hashable {
             /// Property key containing the feature name.
             public let name: String
             /// Property keys to include in popup content (HTML template).
@@ -88,12 +88,12 @@ public extension Foli {
     
     // MARK: - GeoJSONLayersResponse
     /// Response wrapper for the GeoJSON layers endpoint.
-    struct GeoJSONLayersResponse: Codable, Sendable {
+    struct GeoJSONLayersResponse: Codable, Sendable, Equatable, Hashable {
         /// Container for the layers array.
         public let geojson: GeoJSONData
         
         /// Inner container holding the layers array.
-        public struct GeoJSONData: Codable, Sendable {
+        public struct GeoJSONData: Codable, Sendable, Equatable, Hashable {
             /// Available GeoJSON layers.
             public let layers: [GeoJSONLayer]
             

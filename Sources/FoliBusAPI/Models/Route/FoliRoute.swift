@@ -4,7 +4,7 @@ import SwiftUI
 // MARK: - Foli.Route Model
 /// Information about a transit route (GTFS-compliant)
 public extension Foli {
-    struct Route: Codable, Sendable, Identifiable, Equatable {
+    struct Route: Codable, Sendable, Identifiable, Equatable, Hashable {
         /// The unique identifier for the route (GTFS route_id)
         public let id: String
         /// Short name of the route (GTFS route_short_name) - often the line number

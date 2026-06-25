@@ -12,7 +12,7 @@ public extension Foli {
     ///
     /// This mirrors the shape of CoreLocation's coordinate type while remaining safe to
     /// move across concurrency domains. Convert to CoreLocation's type via ``toCLCoordinate()``.
-    struct Coordinate: Sendable {
+    struct Coordinate: Codable, Sendable, Equatable, Hashable {
         public let latitude: Double
         public let longitude: Double
 

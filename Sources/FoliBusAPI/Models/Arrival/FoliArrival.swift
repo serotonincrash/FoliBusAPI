@@ -2,7 +2,7 @@ import Foundation
 
 /// Information about a vehicle arrival or departure
 public extension Foli {
-    struct Arrival: Codable, Sendable, Identifiable, Equatable {
+    struct Arrival: Codable, Sendable, Identifiable, Equatable, Hashable {
         /// Unix timestamp representing the last update from the vehicle
         public let recordedAtTime: TimeInterval
         /// Line reference (e.g., "15", "61")
