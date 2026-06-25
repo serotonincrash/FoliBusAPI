@@ -7,7 +7,7 @@ public extension FoliClient {
     /// Fetch the complete list of weekly service calendars from GTFS.
     /// - Returns: An array of all calendar records.
     internal func fetchCalendarsFromNetwork() async throws -> [Foli.Calendar] {
-        try await performDeduplicated(.calendars) { [self] in
+        try await dedup.performDeduplicated(.calendars) { [self] in
             let calendarList = try await requestGTFS("/calendar", as: Foli.CalendarList.self)
             return calendarList.calendars
         }
@@ -16,44 +16,14 @@ public extension FoliClient {
     /// Fetch the complete list of weekly service calendars from GTFS.
     /// - Returns: An array of all calendar records.
     func fetchCalendars() async throws -> [Foli.Calendar] {
-        switch self.cacheBehavior {
-        case .cachedOrFetch:
-            if let cached = try await cache?.loadCalendars() {
-                rebuildCalendarIndex(using: cached)
-                return cached
-            }
-            fallthrough
-
-        case .staleWhileRevalidate:
-            if let staleCached = try await cache?.loadStaleCalendars() {
-                rebuildCalendarIndex(using: staleCached)
-                refreshCacheInBackground(
-                    for: .calendars,
-                    fetch: { [self] in try await fetchCalendarsFromNetwork() },
-                    save: { [cache] calendars in try await cache?.saveCalendars(calendars) }
-                )
-                return staleCached
-            }
-            fallthrough
-
-        case .forceRefresh:
-            let calendars = try await fetchCalendarsFromNetwork()
-            rebuildCalendarIndex(using: calendars)
-            try? await cache?.saveCalendars(calendars)
-            return calendars
-
-        case .cachedOnly:
-            guard let cached = try await cache?.loadCalendars() else {
-                throw Foli.APIError.noData
-            }
-            rebuildCalendarIndex(using: cached)
-            return cached
-
-        case .noCache:
-            let calendars = try await fetchCalendarsFromNetwork()
-            rebuildCalendarIndex(using: calendars)
-            return calendars
-        }
+        try await resolveCached(
+            for: .calendars,
+            load: { [cache] in try await cache?.loadCalendars() },
+            loadStale: { [cache] in try await cache?.loadStaleCalendars() },
+            save: { [cache] calendars in try await cache?.saveCalendars(calendars) },
+            fetch: { [self] in try await fetchCalendarsFromNetwork() },
+            rebuildIndex: { [self] calendars in await rebuildCalendarIndex(using: calendars) }
+        )
     }
 
     /// Fetch a specific calendar by service ID.
@@ -61,6 +31,6 @@ public extension FoliClient {
     /// - Returns: The calendar if found.
     func fetchCalendar(forServiceId serviceId: String) async throws -> Foli.Calendar? {
         _ = try await fetchCalendars()
-        return indexedCalendar(for: serviceId)
+        return await indexedCalendar(for: serviceId)
     }
 }

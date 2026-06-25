@@ -43,20 +43,11 @@ import Foundation
 /// ```
 @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
 public actor FoliClient {
-    /// Base URL for the Foli API
-    internal let baseURL = "https://data.foli.fi/siri"
-
-    /// Base URL for the Foli GTFS API
-    internal let gtfsBaseURL = "https://data.foli.fi/gtfs"
-
-    /// Base URL for the Foli Alerts API
-    internal let alertsBaseURL = "https://data.foli.fi"
-
-    /// Base URL for the Foli GeoJSON API
-    internal let geoJSONBaseURL = "https://data.foli.fi"
-
-    /// Transport used for making network requests
-    internal let transport: any FoliTransport
+    /// Transport, decoder, base URLs, and request execution.
+    ///
+    /// Extracted into a separate ``Sendable`` value type so that JSON decoding
+    /// for large GTFS payloads does not block the actor's executor.
+    internal let requester: FoliRequester
 
     /// Cache for GTFS data (optional - set to enable caching)
     internal var cache: (any Foli.Cache)?
@@ -64,19 +55,13 @@ public actor FoliClient {
     /// Whether this client should cache its static GTFS data
     internal var cacheBehavior: Foli.CacheBehavior = .cachedOrFetch
 
-    /// Shared decoder for API responses.
-    internal let decoder = JSONDecoder()
-    internal var inFlightRequests: [Foli.Resource: AnyInFlightTask] = [:]
-    internal var stopsByID: [String: Foli.Stop] = [:]
-    internal var routesByID: [String: Foli.Route] = [:]
-    internal var routesByShortName: [String: [Foli.Route]] = [:]
-    internal var agenciesByID: [String: Foli.Agency] = [:]
-    internal var calendarsByID: [String: Foli.Calendar] = [:]
-    internal var tripsByID: [String: Foli.Trip] = [:]
+    internal let indexes = FoliIndexes()
 
-    /// Tracks background revalidation tasks so they can be cancelled when the client
-    /// is asked to refresh the same resource again before the previous refresh completes.
-    internal var backgroundRefreshTasks: [Foli.Resource: Task<Void, Never>] = [:]
+    /// Deduplicates concurrent in-flight requests for the same resource.
+    internal let dedup = FoliDedup()
+
+    /// Tracks background stale-while-revalidate refresh tasks.
+    internal let refreshTracker = FoliRefreshTracker()
 
     /// Called when a background stale-while-revalidate refresh fails.
     ///
@@ -97,7 +82,7 @@ public actor FoliClient {
     ///   - cacheBehavior: The cache behavior to apply to cacheable GTFS resources.
     ///   - cacheTimeout: The disk-cache freshness policy.
     public init(session: URLSession = .shared, cacheBehavior: Foli.CacheBehavior = .cachedOrFetch, cacheTimeout: Foli.CacheTimeout = .default) {
-        self.transport = URLSessionTransport(session: session)
+        self.requester = FoliRequester(transport: URLSessionTransport(session: session))
         self.cacheBehavior = cacheBehavior
 
         do {
@@ -119,7 +104,7 @@ public actor FoliClient {
     ///   - cacheBehavior: The cache behavior to apply to cacheable GTFS resources.
     ///   - cacheTimeout: The disk-cache freshness policy.
     public init(transport: any FoliTransport, cacheBehavior: Foli.CacheBehavior = .cachedOrFetch, cacheTimeout: Foli.CacheTimeout = .default) {
-        self.transport = transport
+        self.requester = FoliRequester(transport: transport)
         self.cacheBehavior = cacheBehavior
 
         do {
@@ -131,26 +116,4 @@ public actor FoliClient {
         }
     }
 
-    /// Records a background refresh task for the provided resource.
-    internal func setBackgroundRefreshTask(_ task: Task<Void, Never>, for resource: Foli.Resource) {
-        backgroundRefreshTasks[resource] = task
-    }
-
-    /// Removes a background refresh task if it is still the task currently registered for the resource.
-    internal func clearBackgroundRefreshTask(for resource: Foli.Resource, matching task: Task<Void, Never>) {
-        guard let currentTask = backgroundRefreshTasks[resource], currentTask == task else {
-            return
-        }
-        backgroundRefreshTasks[resource] = nil
-    }
-
-    /// Cancels any in-flight background refresh for the provided resource.
-    internal func cancelBackgroundRefreshTask(for resource: Foli.Resource) {
-        backgroundRefreshTasks[resource]?.cancel()
-    }
-
-    /// Returns whether a resource currently has a background refresh task registered.
-    internal func hasBackgroundRefreshTask(for resource: Foli.Resource) -> Bool {
-        backgroundRefreshTasks[resource] != nil
-    }
 }

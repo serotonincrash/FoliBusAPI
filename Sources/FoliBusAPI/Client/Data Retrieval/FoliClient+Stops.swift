@@ -15,7 +15,7 @@ public extension FoliClient {
     /// Fetch the complete list of all known stops via GTFS API
     /// - Returns: An array of all stops
     internal func fetchStopsFromNetwork() async throws -> [Foli.Stop] {
-        try await performDeduplicated(.stops) { [self] in
+        try await dedup.performDeduplicated(.stops) { [self] in
             let stopList = try await requestGTFS("/stops", as: Foli.StopList.self)
             return stopList.stops
         }
@@ -26,7 +26,7 @@ public extension FoliClient {
     /// - Returns: The stop if found
     func fetchStop(for stopId: String) async throws -> Foli.Stop? {
         _ = try await fetchStops()
-        return indexedStop(for: stopId)
+        return await indexedStop(for: stopId)
     }
     
     // MARK: - Stops with Caching
@@ -34,45 +34,14 @@ public extension FoliClient {
     /// Fetch stops using the client's configured caching behavior.
     /// - Returns: Array of Stop objects.
     func fetchStops() async throws -> [Foli.Stop] {
-        switch self.cacheBehavior {
-        case .cachedOrFetch:
-            if let cached = try await cache?.loadStops() {
-                rebuildStopIndex(using: cached)
-                return cached
-            }
-            // fallthrough to fetch
-            fallthrough
-
-        case .staleWhileRevalidate:
-            if let staleCached = try await cache?.loadStaleStops() {
-                rebuildStopIndex(using: staleCached)
-                refreshCacheInBackground(
-                    for: .stops,
-                    fetch: { [self] in try await fetchStopsFromNetwork() },
-                    save: { [cache] stops in try await cache?.saveStops(stops) }
-                )
-                return staleCached
-            }
-            fallthrough
-            
-        case .forceRefresh:
-            let stops = try await fetchStopsFromNetwork()
-            rebuildStopIndex(using: stops)
-            try? await cache?.saveStops(stops)
-            return stops
-            
-        case .cachedOnly:
-            guard let cached = try await cache?.loadStops() else {
-                throw Foli.APIError.noData
-            }
-            rebuildStopIndex(using: cached)
-            return cached
-            
-        case .noCache:
-            let stops = try await fetchStopsFromNetwork()
-            rebuildStopIndex(using: stops)
-            return stops
-        }
+        try await resolveCached(
+            for: .stops,
+            load: { [cache] in try await cache?.loadStops() },
+            loadStale: { [cache] in try await cache?.loadStaleStops() },
+            save: { [cache] stops in try await cache?.saveStops(stops) },
+            fetch: { [self] in try await fetchStopsFromNetwork() },
+            rebuildIndex: { [self] stops in await rebuildStopIndex(using: stops) }
+        )
     }
     
 }

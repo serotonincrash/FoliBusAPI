@@ -1,9 +1,13 @@
 import Foundation
 
-// MARK: - Request Deduplication
-
+/// Owns the in-flight request dictionary used by ``FoliClient`` for request deduplication.
+///
+/// Extracting deduplication into a dedicated actor means the dedup bookkeeping
+/// (dictionary lookups, task creation, and cleanup) no longer blocks unrelated
+/// ``FoliClient`` calls, since they execute on the dedup actor's executor
+/// rather than the client's.
 @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
-extension FoliClient {
+internal actor FoliDedup {
     /// Type-erased wrapper for in-flight tasks.
     ///
     /// This wrapper allows storing heterogeneous task types in a single dictionary
@@ -31,6 +35,8 @@ extension FoliClient {
         }
     }
 
+    private var inFlightRequests: [Foli.Resource: AnyInFlightTask] = [:]
+
     /// Executes an operation with request deduplication.
     ///
     /// If an identical request (identified by `key`) is already in flight, this method
@@ -42,7 +48,7 @@ extension FoliClient {
     ///   - operation: The async operation to execute if no request is in flight.
     /// - Returns: The result from either the new or existing request.
     /// - Throws: Any error thrown by the operation.
-    internal func performDeduplicated<T: Sendable>(_ key: Foli.Resource, operation: @escaping @Sendable () async throws -> T) async throws -> T {
+    func performDeduplicated<T: Sendable>(_ key: Foli.Resource, operation: @escaping @Sendable () async throws -> T) async throws -> T {
         // Check for existing in-flight request first
         if let existingTask = inFlightRequests[key] {
             return try await existingTask.value(as: T.self)
@@ -51,7 +57,7 @@ extension FoliClient {
         // Create and register task before awaiting to prevent reentrancy races
         let task = Task { try await operation() }
         inFlightRequests[key] = AnyInFlightTask(task)
-        
+
         do {
             let result = try await task.value
             inFlightRequests[key] = nil
