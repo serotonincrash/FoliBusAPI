@@ -14,24 +14,59 @@ internal actor FoliIndexes {
     private var calendarsByID: [String: Foli.Calendar] = [:]
     private var tripsByID: [String: Foli.Trip] = [:]
 
+    /// Fingerprint of the last array passed to ``rebuildStops(using:)``.
+    private var lastStopsFp: Int?
+    /// Fingerprint of the last array passed to ``rebuildRoutes(using:)``.
+    private var lastRoutesFp: Int?
+    /// Fingerprint of the last array passed to ``rebuildAgencies(using:)``.
+    private var lastAgenciesFp: Int?
+    /// Fingerprint of the last array passed to ``rebuildCalendars(using:)``.
+    private var lastCalendarsFp: Int?
+    /// Fingerprint of the last array passed to ``rebuildTrips(using:)``.
+    private var lastTripsFp: Int?
+
+    /// Returns a stable hash of the items for cheap idempotency checks.
+    /// Uses the elements' synthesized `Hashable` conformance, so any field-level
+    /// change (not just an ID change) produces a different fingerprint.
+    private func fingerprint<H: Hashable>(_ items: [H]) -> Int {
+        var hasher = Hasher()
+        hasher.combine(items)
+        return hasher.finalize()
+    }
+
     func rebuildStops(using stops: [Foli.Stop]) {
+        let fp = fingerprint(stops)
+        guard fp != lastStopsFp else { return }
+        lastStopsFp = fp
         stopsByID = Dictionary(uniqueKeysWithValues: stops.map { ($0.id, $0) })
     }
 
     func rebuildRoutes(using routes: [Foli.Route]) {
+        let fp = fingerprint(routes)
+        guard fp != lastRoutesFp else { return }
+        lastRoutesFp = fp
         routesByID = Dictionary(uniqueKeysWithValues: routes.map { ($0.id, $0) })
         routesByShortName = Dictionary(grouping: routes, by: \Foli.Route.shortName)
     }
 
     func rebuildAgencies(using agencies: [Foli.Agency]) {
+        let fp = fingerprint(agencies)
+        guard fp != lastAgenciesFp else { return }
+        lastAgenciesFp = fp
         agenciesByID = Dictionary(uniqueKeysWithValues: agencies.map { ($0.id, $0) })
     }
 
     func rebuildCalendars(using calendars: [Foli.Calendar]) {
+        let fp = fingerprint(calendars)
+        guard fp != lastCalendarsFp else { return }
+        lastCalendarsFp = fp
         calendarsByID = Dictionary(uniqueKeysWithValues: calendars.map { ($0.id, $0) })
     }
 
     func rebuildTrips(using trips: [Foli.Trip]) {
+        let fp = fingerprint(trips)
+        guard fp != lastTripsFp else { return }
+        lastTripsFp = fp
         tripsByID = Dictionary(uniqueKeysWithValues: trips.map { ($0.id, $0) })
     }
 
