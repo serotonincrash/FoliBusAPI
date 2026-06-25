@@ -36,76 +36,26 @@ public extension FoliClient {
     /// Fetch all route IDs that have shape points available in GTFS.
     /// - Returns: Array of route IDs that have at least one available shape.
     func fetchShapeRouteIDs() async throws -> [String] {
-        switch self.cacheBehavior {
-        case .cachedOrFetch:
-            if let cached = try await cache?.loadShapeRouteIds() {
-                return cached
-            }
-            fallthrough
-
-        case .staleWhileRevalidate:
-            if let staleCached = try await cache?.loadStaleShapeRouteIds() {
-                await refreshCacheInBackground(
-                    for: .shapeRouteIds,
-                    fetch: { [self] in try await fetchShapeRouteIDsFromNetwork() },
-                    save: { [cache] routeIds in try await cache?.saveShapeRouteIds(routeIds) }
-                )
-                return staleCached
-            }
-            fallthrough
-
-        case .forceRefresh:
-            let routeIds = try await fetchShapeRouteIDsFromNetwork()
-            try? await cache?.saveShapeRouteIds(routeIds)
-            return routeIds
-
-        case .cachedOnly:
-            guard let cached = try await cache?.loadShapeRouteIds() else {
-                throw Foli.APIError.noData
-            }
-            return cached
-
-        case .noCache:
-            return try await fetchShapeRouteIDsFromNetwork()
-        }
+        try await resolveCached(
+            for: .shapeRouteIds,
+            load: { [cache] in try await cache?.loadShapeRouteIds() },
+            loadStale: { [cache] in try await cache?.loadStaleShapeRouteIds() },
+            save: { [cache] routeIds in try await cache?.saveShapeRouteIds(routeIds) },
+            fetch: { [self] in try await fetchShapeRouteIDsFromNetwork() }
+        )
     }
 
     /// Fetch shape points for one shape ID.
     /// - Parameter routeId: The route identifier to fetch shapes for.
     /// - Returns: Shape points ordered by sequence.
     func fetchShapePoints(forRouteId routeId: String) async throws -> [Foli.ShapePoint] {
-        switch self.cacheBehavior {
-        case .cachedOrFetch:
-            if let cached = try await cache?.loadShapePoints(forShape: routeId) {
-                return cached
-            }
-            fallthrough
-
-        case .staleWhileRevalidate:
-            if let staleCached = try await cache?.loadStaleShapePoints(forShape: routeId) {
-                await refreshCacheInBackground(
-                    for: .shapePointsForShape(routeId),
-                    fetch: { [self] in try await fetchShapePointsFromNetwork(forRouteId: routeId) },
-                    save: { [cache] shapePoints in try await cache?.saveShapePoints(shapePoints, forShape: routeId) }
-                )
-                return staleCached
-            }
-            fallthrough
-
-        case .forceRefresh:
-            let shapePoints = try await fetchShapePointsFromNetwork(forRouteId: routeId)
-            try? await cache?.saveShapePoints(shapePoints, forShape: routeId)
-            return shapePoints
-
-        case .cachedOnly:
-            guard let cached = try await cache?.loadShapePoints(forShape: routeId) else {
-                throw Foli.APIError.noData
-            }
-            return cached
-
-        case .noCache:
-            return try await fetchShapePointsFromNetwork(forRouteId: routeId)
-        }
+        try await resolveCached(
+            for: .shapePointsForShape(routeId),
+            load: { [cache] in try await cache?.loadShapePoints(forShape: routeId) },
+            loadStale: { [cache] in try await cache?.loadStaleShapePoints(forShape: routeId) },
+            save: { [cache] shapePoints in try await cache?.saveShapePoints(shapePoints, forShape: routeId) },
+            fetch: { [self] in try await fetchShapePointsFromNetwork(forRouteId: routeId) }
+        )
     }
     
     // MARK: - Shape Discovery Helpers

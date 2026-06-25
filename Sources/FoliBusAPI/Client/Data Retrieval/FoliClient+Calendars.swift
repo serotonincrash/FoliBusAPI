@@ -16,44 +16,14 @@ public extension FoliClient {
     /// Fetch the complete list of weekly service calendars from GTFS.
     /// - Returns: An array of all calendar records.
     func fetchCalendars() async throws -> [Foli.Calendar] {
-        switch self.cacheBehavior {
-        case .cachedOrFetch:
-            if let cached = try await cache?.loadCalendars() {
-                await rebuildCalendarIndex(using: cached)
-                return cached
-            }
-            fallthrough
-
-        case .staleWhileRevalidate:
-            if let staleCached = try await cache?.loadStaleCalendars() {
-                await rebuildCalendarIndex(using: staleCached)
-                await refreshCacheInBackground(
-                    for: .calendars,
-                    fetch: { [self] in try await fetchCalendarsFromNetwork() },
-                    save: { [cache] calendars in try await cache?.saveCalendars(calendars) }
-                )
-                return staleCached
-            }
-            fallthrough
-
-        case .forceRefresh:
-            let calendars = try await fetchCalendarsFromNetwork()
-            await rebuildCalendarIndex(using: calendars)
-            try? await cache?.saveCalendars(calendars)
-            return calendars
-
-        case .cachedOnly:
-            guard let cached = try await cache?.loadCalendars() else {
-                throw Foli.APIError.noData
-            }
-            await rebuildCalendarIndex(using: cached)
-            return cached
-
-        case .noCache:
-            let calendars = try await fetchCalendarsFromNetwork()
-            await rebuildCalendarIndex(using: calendars)
-            return calendars
-        }
+        try await resolveCached(
+            for: .calendars,
+            load: { [cache] in try await cache?.loadCalendars() },
+            loadStale: { [cache] in try await cache?.loadStaleCalendars() },
+            save: { [cache] calendars in try await cache?.saveCalendars(calendars) },
+            fetch: { [self] in try await fetchCalendarsFromNetwork() },
+            rebuildIndex: { [self] calendars in await rebuildCalendarIndex(using: calendars) }
+        )
     }
 
     /// Fetch a specific calendar by service ID.

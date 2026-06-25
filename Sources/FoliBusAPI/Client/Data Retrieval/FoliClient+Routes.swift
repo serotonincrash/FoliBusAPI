@@ -43,44 +43,13 @@ public extension FoliClient {
     /// Fetch routes using the client's configured caching behavior.
     /// - Returns: Array of Route objects.
     func fetchRoutes() async throws -> [Foli.Route] {
-        switch self.cacheBehavior {
-        case .cachedOrFetch:
-            if let cached = try await cache?.loadRoutes() {
-                await rebuildRouteIndexes(using: cached)
-                return cached
-            }
-            // fallthrough to fetch
-            fallthrough
-
-        case .staleWhileRevalidate:
-            if let staleCached = try await cache?.loadStaleRoutes() {
-                await rebuildRouteIndexes(using: staleCached)
-                await refreshCacheInBackground(
-                    for: .routes,
-                    fetch: { [self] in try await fetchRoutesFromNetwork() },
-                    save: { [cache] routes in try await cache?.saveRoutes(routes) }
-                )
-                return staleCached
-            }
-            fallthrough
-            
-        case .forceRefresh:
-            let routes = try await fetchRoutesFromNetwork()
-            await rebuildRouteIndexes(using: routes)
-            try? await cache?.saveRoutes(routes)
-            return routes
-            
-        case .cachedOnly:
-            guard let cached = try await cache?.loadRoutes() else {
-                throw Foli.APIError.noData
-            }
-            await rebuildRouteIndexes(using: cached)
-            return cached
-            
-        case .noCache:
-            let routes = try await fetchRoutesFromNetwork()
-            await rebuildRouteIndexes(using: routes)
-            return routes
-        }
+        try await resolveCached(
+            for: .routes,
+            load: { [cache] in try await cache?.loadRoutes() },
+            loadStale: { [cache] in try await cache?.loadStaleRoutes() },
+            save: { [cache] routes in try await cache?.saveRoutes(routes) },
+            fetch: { [self] in try await fetchRoutesFromNetwork() },
+            rebuildIndex: { [self] routes in await rebuildRouteIndexes(using: routes) }
+        )
     }
 }

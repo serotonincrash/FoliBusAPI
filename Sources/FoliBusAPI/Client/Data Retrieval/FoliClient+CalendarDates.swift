@@ -26,37 +26,12 @@ public extension FoliClient {
     /// Fetch calendar dates using the client's configured caching behavior.
     /// - Returns: Array of CalendarDate objects.
     func fetchCalendarDates() async throws -> [Foli.CalendarDate] {
-        switch self.cacheBehavior {
-        case .cachedOrFetch:
-            if let cached = try await cache?.loadCalendarDates() {
-                return cached
-            }
-            fallthrough
-
-        case .staleWhileRevalidate:
-            if let staleCached = try await cache?.loadStaleCalendarDates() {
-                await refreshCacheInBackground(
-                    for: .calendarDates,
-                    fetch: { [self] in try await fetchCalendarDatesFromNetwork() },
-                    save: { [cache] calendarDates in try await cache?.saveCalendarDates(calendarDates) }
-                )
-                return staleCached
-            }
-            fallthrough
-            
-        case .forceRefresh:
-            let calendarDates = try await fetchCalendarDatesFromNetwork()
-            try? await cache?.saveCalendarDates(calendarDates)
-            return calendarDates
-            
-        case .cachedOnly:
-            guard let cached = try await cache?.loadCalendarDates() else {
-                throw Foli.APIError.noData
-            }
-            return cached
-            
-        case .noCache:
-            return try await fetchCalendarDatesFromNetwork()
-        }
+        try await resolveCached(
+            for: .calendarDates,
+            load: { [cache] in try await cache?.loadCalendarDates() },
+            loadStale: { [cache] in try await cache?.loadStaleCalendarDates() },
+            save: { [cache] calendarDates in try await cache?.saveCalendarDates(calendarDates) },
+            fetch: { [self] in try await fetchCalendarDatesFromNetwork() }
+        )
     }
 }
