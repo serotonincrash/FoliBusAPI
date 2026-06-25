@@ -11,7 +11,7 @@ A Swift package for working with the Föli public transport APIs.
 - Optional local caching for static GTFS resources
 - SwiftUI-oriented service access through ``FoliService`` (in the ``FoliBusUI`` target) and client providers
 
-The package is built around ``FoliClient``, which is an actor responsible for request execution, response decoding, in-flight deduplication, and cache coordination.
+The package is built around ``FoliClient``, which is an actor responsible for request execution, response decoding, in-flight deduplication, and cache coordination. The ``FoliBusAPI`` static facade provides a convenient entry point backed by a configurable provider &mdash; replace it at app launch via ``FoliBusAPI/configure(_:)`` or reset it between tests via ``FoliBusAPI/reset()``.
 
 ## Topics
 

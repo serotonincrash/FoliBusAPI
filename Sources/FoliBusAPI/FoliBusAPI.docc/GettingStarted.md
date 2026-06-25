@@ -36,6 +36,16 @@ let routes = try await FoliBusAPI.fetchRoutes()
 let arrivals = try await FoliBusAPI.fetchArrivals(for: "1000")
 ```
 
+The facade backs onto a configurable provider. Replace it at launch or reset it for testing:
+
+```swift
+// Configure with a custom provider at app launch
+FoliBusAPI.configure(MyCustomProvider())
+
+// Reset between test cases
+FoliBusAPI.reset()
+```
+
 ## Choose a cache behavior
 
 For GTFS-backed resources, cache behavior is configured when creating the client.

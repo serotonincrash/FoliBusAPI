@@ -2,15 +2,42 @@ import Foundation
 
 /// Convenience facade for common Föli API operations.
 ///
-/// Use ``FoliBusAPI`` when you want simple static entry points backed by the shared
-/// default client provider. For more control over transport, caching, or environment
+/// Use ``FoliBusAPI`` when you want simple static entry points backed by a configurable
+/// client provider. For more control over transport, caching, or environment
 /// integration, use ``FoliClient`` directly.
+///
+/// The facade's backing provider can be replaced at app launch via ``configure(_:)``
+/// and reset between test cases via ``reset()``.
 @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
 public final class FoliBusAPI {
-    private static let defaultProvider = DefaultFoliClientProvider.shared
+    /// The provider backing the static convenience methods.
+    ///
+    /// Defaults to a ``DefaultFoliClientProvider`` with ``FoliClientConfiguration/default``.
+    /// Replace it at app launch via ``configure(_:)`` to route the convenience API through
+    /// a custom provider (e.g., one using a test transport or a specific cache configuration).
+    /// Reset it between test cases via ``reset()``.
+    private static nonisolated(unsafe) var provider: any FoliClientProviding = DefaultFoliClientProvider()
+
+    /// Configures the provider backing the static convenience methods.
+    ///
+    /// Call this at app launch to route ``FoliBusAPI`` static methods through a custom
+    /// provider. This replaces the previous provider entirely.
+    ///
+    /// - Parameter provider: The provider to use for all subsequent static fetch calls.
+    public static func configure(_ provider: any FoliClientProviding) {
+        Self.provider = provider
+    }
+
+    /// Resets the provider to a fresh ``DefaultFoliClientProvider`` with default configuration.
+    ///
+    /// Call this between test cases to ensure the static convenience methods don't share
+    /// cache state across tests.
+    public static func reset() {
+        Self.provider = DefaultFoliClientProvider()
+    }
 
     private static func defaultClient() -> FoliClient {
-        defaultProvider.client()
+        provider.client()
     }
     
     // MARK: - Convenience Methods - Real-Time Data
