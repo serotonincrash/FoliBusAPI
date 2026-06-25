@@ -15,7 +15,7 @@ public extension FoliClient {
     /// Fetch the complete list of all known stops via GTFS API
     /// - Returns: An array of all stops
     internal func fetchStopsFromNetwork() async throws -> [Foli.Stop] {
-        try await performDeduplicated(.stops) { [self] in
+        try await dedup.performDeduplicated(.stops) { [self] in
             let stopList = try await requestGTFS("/stops", as: Foli.StopList.self)
             return stopList.stops
         }
@@ -46,7 +46,7 @@ public extension FoliClient {
         case .staleWhileRevalidate:
             if let staleCached = try await cache?.loadStaleStops() {
                 await rebuildStopIndex(using: staleCached)
-                refreshCacheInBackground(
+                await refreshCacheInBackground(
                     for: .stops,
                     fetch: { [self] in try await fetchStopsFromNetwork() },
                     save: { [cache] stops in try await cache?.saveStops(stops) }

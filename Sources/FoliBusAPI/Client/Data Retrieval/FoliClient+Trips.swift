@@ -15,7 +15,7 @@ public extension FoliClient {
     /// Fetch all GTFS trips
     /// - Returns: Array of Trip objects
     internal func fetchTripsFromNetwork() async throws -> [Foli.Trip] {
-        try await performDeduplicated(.trips) { [self] in
+        try await dedup.performDeduplicated(.trips) { [self] in
             try await requestGTFS("/trips/all", as: [Foli.Trip].self)
         }
     }
@@ -24,7 +24,7 @@ public extension FoliClient {
     /// - Parameter routeId: The ID of the route to fetch trips for
     /// - Returns: Array of Trip objects belonging to the specified route
     internal func fetchTripsFromNetwork(forRoute routeId: String) async throws -> [Foli.Trip] {
-        try await performDeduplicated(.tripsForRoute(routeId)) { [self] in
+        try await dedup.performDeduplicated(.tripsForRoute(routeId)) { [self] in
             try await requestGTFS("/trips/route/\(routeId)", as: [Foli.Trip].self)
         }
     }
@@ -54,7 +54,7 @@ public extension FoliClient {
         case .staleWhileRevalidate:
             if let staleCached = try await cache?.loadStaleTrips() {
                 await rebuildTripIndex(using: staleCached)
-                refreshCacheInBackground(
+                await refreshCacheInBackground(
                     for: .trips,
                     fetch: { [self] in try await fetchTripsFromNetwork() },
                     save: { [cache] trips in try await cache?.saveTrips(trips) }
@@ -99,7 +99,7 @@ public extension FoliClient {
         case .staleWhileRevalidate:
             if let staleCached = try await cache?.loadStaleTrips(forRoute: routeId) {
                 await rebuildTripIndex(using: staleCached)
-                refreshCacheInBackground(
+                await refreshCacheInBackground(
                     for: .tripsForRoute(routeId),
                     fetch: { [self] in try await fetchTripsFromNetwork(forRoute: routeId) },
                     save: { [cache] trips in try await cache?.saveTrips(trips, forRoute: routeId) }

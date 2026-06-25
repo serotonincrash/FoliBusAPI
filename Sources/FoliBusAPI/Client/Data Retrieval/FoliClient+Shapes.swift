@@ -7,7 +7,7 @@ public extension FoliClient {
     /// Fetch route IDs that expose shapes from GTFS.
     /// - Returns: Array of route IDs that have at least one available shape.
     internal func fetchShapeRouteIDsFromNetwork() async throws -> [String] {
-        try await performDeduplicated(.shapeRouteIds) { [self] in
+        try await dedup.performDeduplicated(.shapeRouteIds) { [self] in
             try await requestGTFS("/shapes", as: [String].self)
         }
     }
@@ -16,7 +16,7 @@ public extension FoliClient {
     /// - Parameter routeId: The route identifier to fetch shapes for.
     /// - Returns: Shape points ordered by sequence.
     internal func fetchShapePointsFromNetwork(forRouteId routeId: String) async throws -> [Foli.ShapePoint] {
-        try await performDeduplicated(.shapePointsForShape(routeId)) { [self] in
+        try await dedup.performDeduplicated(.shapePointsForShape(routeId)) { [self] in
             let shapePointList = try await requestGTFS("/shapes/\(routeId)", as: Foli.ShapePointList.self)
             return shapePointList.shapePoints
                 .enumerated()
@@ -45,7 +45,7 @@ public extension FoliClient {
 
         case .staleWhileRevalidate:
             if let staleCached = try await cache?.loadStaleShapeRouteIds() {
-                refreshCacheInBackground(
+                await refreshCacheInBackground(
                     for: .shapeRouteIds,
                     fetch: { [self] in try await fetchShapeRouteIDsFromNetwork() },
                     save: { [cache] routeIds in try await cache?.saveShapeRouteIds(routeIds) }
@@ -83,7 +83,7 @@ public extension FoliClient {
 
         case .staleWhileRevalidate:
             if let staleCached = try await cache?.loadStaleShapePoints(forShape: routeId) {
-                refreshCacheInBackground(
+                await refreshCacheInBackground(
                     for: .shapePointsForShape(routeId),
                     fetch: { [self] in try await fetchShapePointsFromNetwork(forRouteId: routeId) },
                     save: { [cache] shapePoints in try await cache?.saveShapePoints(shapePoints, forShape: routeId) }

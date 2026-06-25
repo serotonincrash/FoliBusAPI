@@ -7,7 +7,7 @@ public extension FoliClient {
     /// Fetch the complete list of agencies from GTFS.
     /// - Returns: An array of all agencies.
     internal func fetchAgenciesFromNetwork() async throws -> [Foli.Agency] {
-        try await performDeduplicated(.agencies) { [self] in
+        try await dedup.performDeduplicated(.agencies) { [self] in
             let agencyList = try await requestGTFS("/agency", as: Foli.AgencyList.self)
             return agencyList.agencies
         }
@@ -27,7 +27,7 @@ public extension FoliClient {
         case .staleWhileRevalidate:
             if let staleCached = try await cache?.loadStaleAgencies() {
                 await rebuildAgencyIndex(using: staleCached)
-                refreshCacheInBackground(
+                await refreshCacheInBackground(
                     for: .agencies,
                     fetch: { [self] in try await fetchAgenciesFromNetwork() },
                     save: { [cache] agencies in try await cache?.saveAgencies(agencies) }

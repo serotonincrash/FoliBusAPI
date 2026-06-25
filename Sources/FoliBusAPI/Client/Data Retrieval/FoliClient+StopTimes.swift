@@ -16,7 +16,7 @@ public extension FoliClient {
     /// Not recommended for use, not data-efficient.
     /// - Returns: Array of StopTime objects
     internal func fetchStopTimesFromNetwork() async throws -> [Foli.StopTime] {
-        try await performDeduplicated(.stopTimes) { [self] in
+        try await dedup.performDeduplicated(.stopTimes) { [self] in
             try await requestGTFS("/stop_times", as: [Foli.StopTime].self)
         }
     }
@@ -27,7 +27,7 @@ public extension FoliClient {
     /// - Returns: Array of StopTime objects associated with the trip
     internal func fetchStopTimesFromNetwork(forTrip tripId: String) async throws -> [Foli.StopTime] {
         // Documented endpoint: /gtfs/stop_times/trip/{tripId}
-        try await performDeduplicated(.stopTimesForTrip(tripId)) { [self] in
+        try await dedup.performDeduplicated(.stopTimesForTrip(tripId)) { [self] in
             try await requestGTFS("/stop_times/trip/\(tripId)", as: [Foli.StopTime].self)
         }
     }
@@ -37,7 +37,7 @@ public extension FoliClient {
     /// - Returns: Array of StopTime objects associated with the stop
     internal func fetchStopTimesFromNetwork(forStop stopId: String) async throws -> [Foli.StopTime] {
         // Documented endpoint: /gtfs/stop_times/stop/{stopId}
-        try await performDeduplicated(.stopTimesForStop(stopId)) { [self] in
+        try await dedup.performDeduplicated(.stopTimesForStop(stopId)) { [self] in
             try await requestGTFS("/stop_times/stop/\(stopId)", as: [Foli.StopTime].self)
         }
     }
@@ -56,7 +56,7 @@ public extension FoliClient {
 
         case .staleWhileRevalidate:
             if let staleCached = try await cache?.loadStaleStopTimes() {
-                refreshCacheInBackground(
+                await refreshCacheInBackground(
                     for: .stopTimes,
                     fetch: { [self] in try await fetchStopTimesFromNetwork() },
                     save: { [cache] stopTimes in try await cache?.saveStopTimes(stopTimes) }
@@ -96,7 +96,7 @@ public extension FoliClient {
 
         case .staleWhileRevalidate:
             if let staleCached = try await cache?.loadStaleStopTimes(forTrip: tripId) {
-                refreshCacheInBackground(
+                await refreshCacheInBackground(
                     for: .stopTimesForTrip(tripId),
                     fetch: { [self] in try await fetchStopTimesFromNetwork(forTrip: tripId) },
                     save: { [cache] stopTimes in try await cache?.saveStopTimes(stopTimes, forTrip: tripId) }
@@ -134,7 +134,7 @@ public extension FoliClient {
 
         case .staleWhileRevalidate:
             if let staleCached = try await cache?.loadStaleStopTimes(forStop: stopId) {
-                refreshCacheInBackground(
+                await refreshCacheInBackground(
                     for: .stopTimesForStop(stopId),
                     fetch: { [self] in try await fetchStopTimesFromNetwork(forStop: stopId) },
                     save: { [cache] stopTimes in try await cache?.saveStopTimes(stopTimes, forStop: stopId) }

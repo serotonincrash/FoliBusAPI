@@ -7,7 +7,7 @@ public extension FoliClient {
     /// Fetch the complete list of weekly service calendars from GTFS.
     /// - Returns: An array of all calendar records.
     internal func fetchCalendarsFromNetwork() async throws -> [Foli.Calendar] {
-        try await performDeduplicated(.calendars) { [self] in
+        try await dedup.performDeduplicated(.calendars) { [self] in
             let calendarList = try await requestGTFS("/calendar", as: Foli.CalendarList.self)
             return calendarList.calendars
         }
@@ -27,7 +27,7 @@ public extension FoliClient {
         case .staleWhileRevalidate:
             if let staleCached = try await cache?.loadStaleCalendars() {
                 await rebuildCalendarIndex(using: staleCached)
-                refreshCacheInBackground(
+                await refreshCacheInBackground(
                     for: .calendars,
                     fetch: { [self] in try await fetchCalendarsFromNetwork() },
                     save: { [cache] calendars in try await cache?.saveCalendars(calendars) }

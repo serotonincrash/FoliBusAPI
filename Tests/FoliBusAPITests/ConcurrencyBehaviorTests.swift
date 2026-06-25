@@ -41,16 +41,16 @@ struct ConcurrencyBehaviorTests {
             }
         )
 
-        #expect(await client.hasBackgroundRefreshTask(for: .routes))
+        #expect(await client.refreshTracker.hasActiveTask(for: .routes))
 
         for _ in 0..<40 {
-            if await !client.hasBackgroundRefreshTask(for: .routes) {
+            if await !client.refreshTracker.hasActiveTask(for: .routes) {
                 break
             }
             try await Task.sleep(for: .milliseconds(25))
         }
 
-        #expect(await !client.hasBackgroundRefreshTask(for: .routes))
+        #expect(await !client.refreshTracker.hasActiveTask(for: .routes))
         #expect(await cache.savedRoutes == [["fresh-routes"]])
     }
 

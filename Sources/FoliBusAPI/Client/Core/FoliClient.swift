@@ -66,12 +66,13 @@ public actor FoliClient {
 
     /// Shared decoder for API responses.
     internal let decoder = JSONDecoder()
-    internal var inFlightRequests: [Foli.Resource: AnyInFlightTask] = [:]
     internal let indexes = FoliIndexes()
 
-    /// Tracks background revalidation tasks so they can be cancelled when the client
-    /// is asked to refresh the same resource again before the previous refresh completes.
-    internal var backgroundRefreshTasks: [Foli.Resource: Task<Void, Never>] = [:]
+    /// Deduplicates concurrent in-flight requests for the same resource.
+    internal let dedup = FoliDedup()
+
+    /// Tracks background stale-while-revalidate refresh tasks.
+    internal let refreshTracker = FoliRefreshTracker()
 
     /// Called when a background stale-while-revalidate refresh fails.
     ///
@@ -126,26 +127,4 @@ public actor FoliClient {
         }
     }
 
-    /// Records a background refresh task for the provided resource.
-    internal func setBackgroundRefreshTask(_ task: Task<Void, Never>, for resource: Foli.Resource) {
-        backgroundRefreshTasks[resource] = task
-    }
-
-    /// Removes a background refresh task if it is still the task currently registered for the resource.
-    internal func clearBackgroundRefreshTask(for resource: Foli.Resource, matching task: Task<Void, Never>) {
-        guard let currentTask = backgroundRefreshTasks[resource], currentTask == task else {
-            return
-        }
-        backgroundRefreshTasks[resource] = nil
-    }
-
-    /// Cancels any in-flight background refresh for the provided resource.
-    internal func cancelBackgroundRefreshTask(for resource: Foli.Resource) {
-        backgroundRefreshTasks[resource]?.cancel()
-    }
-
-    /// Returns whether a resource currently has a background refresh task registered.
-    internal func hasBackgroundRefreshTask(for resource: Foli.Resource) -> Bool {
-        backgroundRefreshTasks[resource] != nil
-    }
 }

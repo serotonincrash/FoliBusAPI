@@ -16,7 +16,7 @@ public extension FoliClient {
     /// Fetch the complete list of all known routes from GTFS
     /// - Returns: An array of all routes
     internal func fetchRoutesFromNetwork() async throws -> [Foli.Route] {
-        try await performDeduplicated(.routes) { [self] in
+        try await dedup.performDeduplicated(.routes) { [self] in
             let routeList = try await requestGTFS("/routes", as: Foli.RouteList.self)
             return routeList.routes
         }
@@ -55,7 +55,7 @@ public extension FoliClient {
         case .staleWhileRevalidate:
             if let staleCached = try await cache?.loadStaleRoutes() {
                 await rebuildRouteIndexes(using: staleCached)
-                refreshCacheInBackground(
+                await refreshCacheInBackground(
                     for: .routes,
                     fetch: { [self] in try await fetchRoutesFromNetwork() },
                     save: { [cache] routes in try await cache?.saveRoutes(routes) }
