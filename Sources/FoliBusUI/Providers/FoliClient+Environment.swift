@@ -1,4 +1,5 @@
 import SwiftUI
+import FoliBusAPI
 
 // MARK: - SwiftUI Environment Support
 

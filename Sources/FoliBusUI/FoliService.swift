@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import FoliBusAPI
 
 // MARK: - FoliService Property Wrapper
 

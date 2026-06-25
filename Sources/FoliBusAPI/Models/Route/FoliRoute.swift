@@ -1,5 +1,4 @@
 import Foundation
-import SwiftUI
 
 // MARK: - Foli.Route Model
 /// Information about a transit route (GTFS-compliant)
@@ -85,22 +84,6 @@ public extension Foli {
                 return shortName
             }
             return "\(shortName) - \(longName)"
-        }
-
-        /// Route color as a Color if available
-        public var color: Color? {
-            guard let hexColor = colorHex, !hexColor.isEmpty else {
-                return nil
-            }
-            return Color(hex: hexColor)
-        }
-
-        /// Route text color if available
-        public var textColor: Color? {
-            guard let hexColor = textColorHex, !hexColor.isEmpty else {
-                return nil
-            }
-            return Color(hex: hexColor)
         }
 
         /// Whether this is a bus route (route_type 3 or similar)

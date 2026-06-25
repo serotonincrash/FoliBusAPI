@@ -1,6 +1,7 @@
 import Testing
 import SwiftUI
 @testable import FoliBusAPI
+@testable import FoliBusUI
 import Foundation
 
 @Suite("FoliStopList Tests")
