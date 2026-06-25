@@ -3,7 +3,7 @@ import Foundation
 // MARK: - Agency List Response
 extension Foli {
     /// Response containing all known agencies (GTFS agency.txt)
-    struct AgencyList: Codable, Sendable {
+    struct AgencyList: Codable, Sendable, Equatable, Hashable {
         /// Array of all agencies
         let agencies: [Foli.Agency]
 

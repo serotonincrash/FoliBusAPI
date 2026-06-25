@@ -15,7 +15,7 @@ public extension FoliClient {
     /// Fetch all GTFS trips
     /// - Returns: Array of Trip objects
     internal func fetchTripsFromNetwork() async throws -> [Foli.Trip] {
-        try await performDeduplicated(.trips) { [self] in
+        try await dedup.performDeduplicated(.trips) { [self] in
             try await requestGTFS("/trips/all", as: [Foli.Trip].self)
         }
     }
@@ -24,7 +24,7 @@ public extension FoliClient {
     /// - Parameter routeId: The ID of the route to fetch trips for
     /// - Returns: Array of Trip objects belonging to the specified route
     internal func fetchTripsFromNetwork(forRoute routeId: String) async throws -> [Foli.Trip] {
-        try await performDeduplicated(.tripsForRoute(routeId)) { [self] in
+        try await dedup.performDeduplicated(.tripsForRoute(routeId)) { [self] in
             try await requestGTFS("/trips/route/\(routeId)", as: [Foli.Trip].self)
         }
     }
@@ -34,7 +34,7 @@ public extension FoliClient {
     /// - Returns: The trip if found
     func fetchTrip(tripId: String) async throws -> Foli.Trip? {
         _ = try await fetchTrips()
-        return indexedTrip(for: tripId)
+        return await indexedTrip(for: tripId)
     }
     
     // MARK: - Trips with Caching
@@ -42,89 +42,27 @@ public extension FoliClient {
     /// Fetch all trips using the client's configured caching behavior.
     /// - Returns: Array of Trip objects.
     func fetchTrips() async throws -> [Foli.Trip] {
-        switch self.cacheBehavior {
-        case .cachedOrFetch:
-            if let cached = try await cache?.loadTrips() {
-                rebuildTripIndex(using: cached)
-                return cached
-            }
-            // fallthrough to fetch
-            fallthrough
-
-        case .staleWhileRevalidate:
-            if let staleCached = try await cache?.loadStaleTrips() {
-                rebuildTripIndex(using: staleCached)
-                refreshCacheInBackground(
-                    for: .trips,
-                    fetch: { [self] in try await fetchTripsFromNetwork() },
-                    save: { [cache] trips in try await cache?.saveTrips(trips) }
-                )
-                return staleCached
-            }
-            fallthrough
-            
-        case .forceRefresh:
-            let trips = try await fetchTripsFromNetwork()
-            rebuildTripIndex(using: trips)
-            try? await cache?.saveTrips(trips)
-            return trips
-            
-        case .cachedOnly:
-            guard let cached = try await cache?.loadTrips() else {
-                throw Foli.APIError.noData
-            }
-            rebuildTripIndex(using: cached)
-            return cached
-            
-        case .noCache:
-            let trips = try await fetchTripsFromNetwork()
-            rebuildTripIndex(using: trips)
-            return trips
-        }
+        try await resolveCached(
+            for: .trips,
+            load: { [cache] in try await cache?.loadTrips() },
+            loadStale: { [cache] in try await cache?.loadStaleTrips() },
+            save: { [cache] trips in try await cache?.saveTrips(trips) },
+            fetch: { [self] in try await fetchTripsFromNetwork() },
+            rebuildIndex: { [self] trips in await rebuildTripIndex(using: trips) }
+        )
     }
     
     /// Fetch trips for a specific route using the client's configured caching behavior.
     /// - Parameter routeId: The ID of the route to fetch trips for.
     /// - Returns: Array of Trip objects belonging to the specified route.
     func fetchTrips(forRoute routeId: String) async throws -> [Foli.Trip] {
-        switch self.cacheBehavior {
-        case .cachedOrFetch:
-            if let cached = try await cache?.loadTrips(forRoute: routeId) {
-                rebuildTripIndex(using: cached)
-                return cached
-            }
-            // fallthrough to fetch
-            fallthrough
-
-        case .staleWhileRevalidate:
-            if let staleCached = try await cache?.loadStaleTrips(forRoute: routeId) {
-                rebuildTripIndex(using: staleCached)
-                refreshCacheInBackground(
-                    for: .tripsForRoute(routeId),
-                    fetch: { [self] in try await fetchTripsFromNetwork(forRoute: routeId) },
-                    save: { [cache] trips in try await cache?.saveTrips(trips, forRoute: routeId) }
-                )
-                return staleCached
-            }
-            fallthrough
-            
-        case .forceRefresh:
-            let trips = try await fetchTripsFromNetwork(forRoute: routeId)
-            rebuildTripIndex(using: trips)
-            try? await cache?.saveTrips(trips, forRoute: routeId)
-            return trips
-            
-        case .cachedOnly:
-            guard let cached = try await cache?.loadTrips(forRoute: routeId) else {
-                throw Foli.APIError.noData
-            }
-            rebuildTripIndex(using: cached)
-            return cached
-            
-        case .noCache:
-            let trips = try await fetchTripsFromNetwork(forRoute: routeId)
-            rebuildTripIndex(using: trips)
-            return trips
-        }
+        try await resolveCached(
+            for: .tripsForRoute(routeId),
+            load: { [cache] in try await cache?.loadTrips(forRoute: routeId) },
+            loadStale: { [cache] in try await cache?.loadStaleTrips(forRoute: routeId) },
+            save: { [cache] trips in try await cache?.saveTrips(trips, forRoute: routeId) },
+            fetch: { [self] in try await fetchTripsFromNetwork(forRoute: routeId) },
+            rebuildIndex: { [self] trips in await rebuildTripIndex(using: trips) }
+        )
     }
 }

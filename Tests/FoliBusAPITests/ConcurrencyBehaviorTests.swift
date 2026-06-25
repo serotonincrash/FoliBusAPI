@@ -41,51 +41,17 @@ struct ConcurrencyBehaviorTests {
             }
         )
 
-        #expect(await client.hasBackgroundRefreshTask(for: .routes))
+        #expect(await client.refreshTracker.hasActiveTask(for: .routes))
 
         for _ in 0..<40 {
-            if await !client.hasBackgroundRefreshTask(for: .routes) {
+            if await !client.refreshTracker.hasActiveTask(for: .routes) {
                 break
             }
             try await Task.sleep(for: .milliseconds(25))
         }
 
-        #expect(await !client.hasBackgroundRefreshTask(for: .routes))
+        #expect(await !client.refreshTracker.hasActiveTask(for: .routes))
         #expect(await cache.savedRoutes == [["fresh-routes"]])
-    }
-
-    @Test("CacheError is thrown when attempting to get file URL for non-cacheable resource")
-    func cacheErrorThrownForNonCacheableResourceInFileURL() async throws {
-        let cache = try Foli.DiskCache()
-        
-        do {
-            _ = try await cache.fileURL(for: Foli.Resource.vehicleMonitoring)
-            Issue.record("Expected fileURL to throw CacheError for vehicleMonitoring")
-        } catch let error as Foli.CacheError {
-            guard case .resourceNotCacheable(let resource) = error else {
-                Issue.record("Expected resourceNotCacheable case, got \(error)")
-                return
-            }
-            #expect(resource == Foli.Resource.vehicleMonitoring)
-            #expect(error.localizedDescription.contains("not cacheable"))
-        }
-    }
-
-    @Test("CacheError is thrown when attempting to refresh metadata for non-cacheable resource")
-    func cacheErrorThrownForNonCacheableResourceInRefreshMetadata() async throws {
-        let cache = try Foli.DiskCache()
-        
-        do {
-            try await cache.refreshMetadataTimestamp(for: Foli.Resource.alerts)
-            Issue.record("Expected refreshMetadataTimestamp to throw CacheError for alerts")
-        } catch let error as Foli.CacheError {
-            guard case .resourceNotCacheable(let resource) = error else {
-                Issue.record("Expected resourceNotCacheable case, got \(error)")
-                return
-            }
-            #expect(resource == Foli.Resource.alerts)
-            #expect(error.localizedDescription.contains("Real-time data"))
-        }
     }
 }
 
@@ -150,7 +116,7 @@ private actor ControlledCache: Foli.Cache {
     }
 }
 
-private extension FoliClient {
+extension FoliClient {
     func installCacheForTesting(_ cache: some Foli.Cache) {
         self.cache = cache
     }

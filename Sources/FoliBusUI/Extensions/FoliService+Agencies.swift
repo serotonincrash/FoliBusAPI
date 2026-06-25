@@ -1,4 +1,5 @@
 import Foundation
+import FoliBusAPI
 
 // MARK: - Agencies API
 
@@ -15,7 +16,7 @@ public extension FoliService {
     /// - Returns: The agency if found.
     func fetchAgency(id agencyID: String) async throws -> Foli.Agency {
         guard let agency = try await client.fetchAgency(id: agencyID) else {
-            throw Foli.APIError.noData
+            throw Foli.APIError.notFound
         }
         return agency
     }

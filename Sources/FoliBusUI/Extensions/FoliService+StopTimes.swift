@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import FoliBusAPI
 
 // MARK: - Stop Times API
 

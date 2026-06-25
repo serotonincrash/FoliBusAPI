@@ -3,7 +3,7 @@ import Foundation
 // MARK: - Calendar List Response
 extension Foli {
     /// Response containing weekly calendars (GTFS calendar.txt)
-    struct CalendarList: Codable, Sendable {
+    struct CalendarList: Codable, Sendable, Equatable, Hashable {
         /// Array of decoded weekly service calendars.
         let calendars: [Foli.Calendar]
         

@@ -3,7 +3,7 @@ import Foundation
 // MARK: - Vehicle Monitoring Response
 extension Foli {
     /// Response from the vehicle monitoring endpoint
-    struct VehicleMonitoringResponse: Codable, Sendable {
+    struct VehicleMonitoringResponse: Codable, Sendable, Equatable, Hashable {
         // MARK: - Response Wrapper
         
         /// System identifier ("VM" for vehicle monitoring)
@@ -46,7 +46,7 @@ extension Foli {
     }
     
     /// Inner result structure containing actual vehicle data
-    struct VehicleMonitoringResult: Codable, Sendable {
+    struct VehicleMonitoringResult: Codable, Sendable, Equatable, Hashable {
         /// Unix timestamp of the response
         let responseTimestamp: TimeInterval
         /// Producer reference identifier

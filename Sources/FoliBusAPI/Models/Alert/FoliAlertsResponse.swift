@@ -2,7 +2,7 @@ import Foundation
 
 /// Response from the alerts endpoint
 public extension Foli {
-    struct AlertsResponse: Codable, Sendable {
+    struct AlertsResponse: Codable, Sendable, Equatable, Hashable {
         /// Unix timestamp when the response was generated
         public let serverTime: TimeInterval
         /// System-wide global message (if any)

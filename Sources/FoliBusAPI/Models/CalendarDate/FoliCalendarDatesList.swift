@@ -4,7 +4,7 @@ import Foundation
 extension Foli {
     /// Response containing all calendar date exceptions (GTFS calendar_dates.txt)
     /// The API returns a dictionary where keys are service IDs and values are arrays of date exceptions
-    struct CalendarDatesList: Codable, Sendable {
+    struct CalendarDatesList: Codable, Sendable, Equatable, Hashable {
         /// Array of all calendar date exceptions across all services
         let calendarDates: [Foli.CalendarDate]
 

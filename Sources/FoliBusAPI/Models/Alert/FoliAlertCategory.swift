@@ -2,7 +2,7 @@ import Foundation
 
 /// Alert category description
 public extension Foli {
-    struct AlertCategory: Codable, Sendable, Identifiable, Equatable {
+    struct AlertCategory: Codable, Sendable, Identifiable, Equatable, Hashable {
         /// Category ID
         public let catId: Int
         /// Category code (e.g., "TIMETABLE_CHANGES")

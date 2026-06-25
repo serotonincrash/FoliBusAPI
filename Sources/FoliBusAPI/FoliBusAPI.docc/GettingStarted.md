@@ -36,6 +36,16 @@ let routes = try await FoliBusAPI.fetchRoutes()
 let arrivals = try await FoliBusAPI.fetchArrivals(for: "1000")
 ```
 
+The facade backs onto a configurable provider. Replace it at launch or reset it for testing:
+
+```swift
+// Configure with a custom provider at app launch
+FoliBusAPI.configure(MyCustomProvider())
+
+// Reset between test cases
+FoliBusAPI.reset()
+```
+
 ## Choose a cache behavior
 
 For GTFS-backed resources, cache behavior is configured when creating the client.
@@ -59,7 +69,7 @@ If you're integrating into SwiftUI, inject a client provider and use the ``FoliS
 
 ```swift
 import SwiftUI
-import FoliBusAPI
+import FoliBusUI
 
 @main
 struct DemoApp: App {
@@ -80,6 +90,9 @@ struct DemoApp: App {
 ## Inject an explicit client into SwiftUI
 
 ```swift
+import SwiftUI
+import FoliBusUI
+
 struct ContentView: View {
     let client = FoliClient(cacheBehavior: .cachedOrFetch)
     @FoliService(client: client) var foliService

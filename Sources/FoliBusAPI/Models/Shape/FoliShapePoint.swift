@@ -3,7 +3,7 @@ import Foundation
 // MARK: - Shape Point Model
 /// A route geometry point from GTFS shapes.txt
 public extension Foli {
-    struct ShapePoint: Codable, Sendable, Identifiable, Equatable {
+    struct ShapePoint: Codable, Sendable, Identifiable, Equatable, Hashable {
         /// GTFS `shape_id` for the polyline this point belongs to.
         public let shapeId: String
         /// Latitude in WGS-84.

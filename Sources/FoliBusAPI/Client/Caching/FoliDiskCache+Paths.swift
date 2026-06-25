@@ -37,8 +37,6 @@ extension Foli.DiskCache {
             filename = "geojson_poi_\(category).json"
         case .geoJSONBounds(let resolution, let format):
             filename = "geojson_bounds_\(resolution)_\(format).json"
-        default:
-            throw Foli.CacheError.resourceNotCacheable(type)
         }
 
         return cacheDirectory.appendingPathComponent(filename)

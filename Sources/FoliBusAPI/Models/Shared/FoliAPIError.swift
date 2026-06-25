@@ -14,8 +14,8 @@ public extension Foli {
         case decodingError(any Error)
         /// The server returned an application-level error payload.
         case serverError(String)
-        /// A requested cached value was unavailable.
-        case noData
+        /// A fetch succeeded but no entity matched the requested identifier.
+        case notFound
 
         public var errorDescription: String? {
             switch self {
@@ -29,8 +29,8 @@ public extension Foli {
                 return "Failed to decode response: \(error.localizedDescription)"
             case .serverError(let message):
                 return "Server error: \(message)"
-            case .noData:
-                return "No data available"
+            case .notFound:
+                return "No entity matched the requested identifier"
             }
         }
     }

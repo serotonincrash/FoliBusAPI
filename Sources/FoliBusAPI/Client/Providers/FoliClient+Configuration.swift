@@ -59,9 +59,3 @@ public final class DefaultFoliClientProvider: FoliClientProviding {
         sharedClient
     }
 }
-
-@available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
-extension DefaultFoliClientProvider {
-    /// Shared default provider used by convenience entry points.
-    static let shared = DefaultFoliClientProvider()
-}

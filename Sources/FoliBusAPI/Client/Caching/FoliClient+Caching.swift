@@ -54,25 +54,87 @@ public extension FoliClient {
     }
 
     /// Starts a best-effort stale-while-revalidate refresh and removes its bookkeeping entry once the task finishes.
-    internal func refreshCacheInBackground<T: Sendable>(for type: Foli.Resource, fetch: @escaping @Sendable () async throws -> T, save: @escaping @Sendable (T) async throws -> Void) {
-        cancelBackgroundRefreshTask(for: type)
+    internal func refreshCacheInBackground<T: Sendable>(for type: Foli.Resource, fetch: @escaping @Sendable () async throws -> T, save: @escaping @Sendable (T) async throws -> Void) async {
+        await refreshTracker.cancelTask(for: type)
 
         let task = Task { [weak self] in
             guard let self else { return }
             await self.runBackgroundRefresh(for: type, fetch: fetch, save: save)
         }
 
-        setBackgroundRefreshTask(task, for: type)
+        await refreshTracker.setTask(task, for: type)
+    }
+
+    /// Resolves a cacheable GTFS resource according to the client's configured ``Foli.CacheBehavior``,
+    /// centralizing the cached-or-fetch / stale-while-revalidate / force-refresh / cached-only / no-cache
+    /// policy that was previously duplicated across every data-retrieval call site.
+    ///
+    /// - Parameters:
+    ///   - resource: The cache resource key used for background refresh bookkeeping.
+    ///   - load: Loads a fresh cached value, or nil if absent/expired.
+    ///   - loadStale: Loads a stale cached value regardless of freshness, or nil if absent.
+    ///   - save: Persists a freshly fetched value to the cache.
+    ///   - fetch: Fetches the value from the network.
+    ///   - rebuildIndex: Optional callback to rebuild in-memory lookup indexes from the value.
+    /// - Returns: The resolved value according to `cacheBehavior`.
+    internal func resolveCached<T: Sendable>(
+        for resource: Foli.Resource,
+        load: @escaping @Sendable () async throws -> T?,
+        loadStale: @escaping @Sendable () async throws -> T?,
+        save: @escaping @Sendable (T) async throws -> Void,
+        fetch: @escaping @Sendable () async throws -> T,
+        rebuildIndex: (@Sendable (T) async -> Void)? = nil
+    ) async throws -> T {
+        switch self.cacheBehavior {
+        case .cachedOrFetch:
+            if let cached = try await load() {
+                if let rebuildIndex { await rebuildIndex(cached) }
+                return cached
+            }
+            fallthrough
+
+        case .staleWhileRevalidate:
+            if let staleCached = try await loadStale() {
+                if let rebuildIndex { await rebuildIndex(staleCached) }
+                await refreshCacheInBackground(
+                    for: resource,
+                    fetch: fetch,
+                    save: save
+                )
+                return staleCached
+            }
+            fallthrough
+
+        case .forceRefresh:
+            let fresh = try await fetch()
+            if let rebuildIndex { await rebuildIndex(fresh) }
+            try? await save(fresh)
+            return fresh
+
+        case .cachedOnly:
+            guard let cached = try await load() else {
+                throw Foli.CacheError.cacheMiss(resource)
+            }
+            if let rebuildIndex { await rebuildIndex(cached) }
+            return cached
+
+        case .noCache:
+            let fresh = try await fetch()
+            if let rebuildIndex { await rebuildIndex(fresh) }
+            return fresh
+        }
     }
 
     private func runBackgroundRefresh<T: Sendable>(for type: Foli.Resource, fetch: @escaping @Sendable () async throws -> T, save: @escaping @Sendable (T) async throws -> Void) async {
         // Get the current task reference for proper cleanup
-        let currentTask = backgroundRefreshTasks[type]
-        
+        let currentTask = await refreshTracker.currentTask(for: type)
+
         defer {
             // Only clear if this is still the registered task (prevents clearing a newer task)
             if let currentTask {
-                clearBackgroundRefreshTask(for: type, matching: currentTask)
+                Task { [weak self] in
+                    await self?.refreshTracker.clearTask(for: type, matching: currentTask)
+                }
             }
         }
 

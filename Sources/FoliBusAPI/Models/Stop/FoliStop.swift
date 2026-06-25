@@ -3,7 +3,7 @@ import Foundation
 // MARK: - Foli.Stop Model
 /// Information about a single stop (GTFS-compliant)
 public extension Foli {
-    struct Stop: Codable, Sendable, Identifiable, Equatable {
+    struct Stop: Codable, Sendable, Identifiable, Equatable, Hashable {
         /// The unique identifier for the stop (GTFS `stop_id`)
         public let id: String
         /// The human-readable name of the stop (GTFS `stop_name`)
