@@ -19,14 +19,14 @@ public extension FoliClient {
         switch self.cacheBehavior {
         case .cachedOrFetch:
             if let cached = try await cache?.loadAgencies() {
-                rebuildAgencyIndex(using: cached)
+                await rebuildAgencyIndex(using: cached)
                 return cached
             }
             fallthrough
 
         case .staleWhileRevalidate:
             if let staleCached = try await cache?.loadStaleAgencies() {
-                rebuildAgencyIndex(using: staleCached)
+                await rebuildAgencyIndex(using: staleCached)
                 refreshCacheInBackground(
                     for: .agencies,
                     fetch: { [self] in try await fetchAgenciesFromNetwork() },
@@ -38,7 +38,7 @@ public extension FoliClient {
 
         case .forceRefresh:
             let agencies = try await fetchAgenciesFromNetwork()
-            rebuildAgencyIndex(using: agencies)
+            await rebuildAgencyIndex(using: agencies)
             try? await cache?.saveAgencies(agencies)
             return agencies
 
@@ -46,12 +46,12 @@ public extension FoliClient {
             guard let cached = try await cache?.loadAgencies() else {
                 throw Foli.APIError.noData
             }
-            rebuildAgencyIndex(using: cached)
+            await rebuildAgencyIndex(using: cached)
             return cached
 
         case .noCache:
             let agencies = try await fetchAgenciesFromNetwork()
-            rebuildAgencyIndex(using: agencies)
+            await rebuildAgencyIndex(using: agencies)
             return agencies
         }
     }
@@ -61,6 +61,6 @@ public extension FoliClient {
     /// - Returns: The agency if found.
     func fetchAgency(id agencyID: String) async throws -> Foli.Agency? {
         _ = try await fetchAgencies()
-        return indexedAgency(for: agencyID)
+        return await indexedAgency(for: agencyID)
     }
 }

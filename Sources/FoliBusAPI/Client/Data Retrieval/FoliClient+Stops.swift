@@ -26,7 +26,7 @@ public extension FoliClient {
     /// - Returns: The stop if found
     func fetchStop(for stopId: String) async throws -> Foli.Stop? {
         _ = try await fetchStops()
-        return indexedStop(for: stopId)
+        return await indexedStop(for: stopId)
     }
     
     // MARK: - Stops with Caching
@@ -37,7 +37,7 @@ public extension FoliClient {
         switch self.cacheBehavior {
         case .cachedOrFetch:
             if let cached = try await cache?.loadStops() {
-                rebuildStopIndex(using: cached)
+                await rebuildStopIndex(using: cached)
                 return cached
             }
             // fallthrough to fetch
@@ -45,7 +45,7 @@ public extension FoliClient {
 
         case .staleWhileRevalidate:
             if let staleCached = try await cache?.loadStaleStops() {
-                rebuildStopIndex(using: staleCached)
+                await rebuildStopIndex(using: staleCached)
                 refreshCacheInBackground(
                     for: .stops,
                     fetch: { [self] in try await fetchStopsFromNetwork() },
@@ -57,7 +57,7 @@ public extension FoliClient {
             
         case .forceRefresh:
             let stops = try await fetchStopsFromNetwork()
-            rebuildStopIndex(using: stops)
+            await rebuildStopIndex(using: stops)
             try? await cache?.saveStops(stops)
             return stops
             
@@ -65,12 +65,12 @@ public extension FoliClient {
             guard let cached = try await cache?.loadStops() else {
                 throw Foli.APIError.noData
             }
-            rebuildStopIndex(using: cached)
+            await rebuildStopIndex(using: cached)
             return cached
             
         case .noCache:
             let stops = try await fetchStopsFromNetwork()
-            rebuildStopIndex(using: stops)
+            await rebuildStopIndex(using: stops)
             return stops
         }
     }

@@ -34,7 +34,7 @@ public extension FoliClient {
     /// - Returns: The trip if found
     func fetchTrip(tripId: String) async throws -> Foli.Trip? {
         _ = try await fetchTrips()
-        return indexedTrip(for: tripId)
+        return await indexedTrip(for: tripId)
     }
     
     // MARK: - Trips with Caching
@@ -45,7 +45,7 @@ public extension FoliClient {
         switch self.cacheBehavior {
         case .cachedOrFetch:
             if let cached = try await cache?.loadTrips() {
-                rebuildTripIndex(using: cached)
+                await rebuildTripIndex(using: cached)
                 return cached
             }
             // fallthrough to fetch
@@ -53,7 +53,7 @@ public extension FoliClient {
 
         case .staleWhileRevalidate:
             if let staleCached = try await cache?.loadStaleTrips() {
-                rebuildTripIndex(using: staleCached)
+                await rebuildTripIndex(using: staleCached)
                 refreshCacheInBackground(
                     for: .trips,
                     fetch: { [self] in try await fetchTripsFromNetwork() },
@@ -65,7 +65,7 @@ public extension FoliClient {
             
         case .forceRefresh:
             let trips = try await fetchTripsFromNetwork()
-            rebuildTripIndex(using: trips)
+            await rebuildTripIndex(using: trips)
             try? await cache?.saveTrips(trips)
             return trips
             
@@ -73,12 +73,12 @@ public extension FoliClient {
             guard let cached = try await cache?.loadTrips() else {
                 throw Foli.APIError.noData
             }
-            rebuildTripIndex(using: cached)
+            await rebuildTripIndex(using: cached)
             return cached
             
         case .noCache:
             let trips = try await fetchTripsFromNetwork()
-            rebuildTripIndex(using: trips)
+            await rebuildTripIndex(using: trips)
             return trips
         }
     }
@@ -90,7 +90,7 @@ public extension FoliClient {
         switch self.cacheBehavior {
         case .cachedOrFetch:
             if let cached = try await cache?.loadTrips(forRoute: routeId) {
-                rebuildTripIndex(using: cached)
+                await rebuildTripIndex(using: cached)
                 return cached
             }
             // fallthrough to fetch
@@ -98,7 +98,7 @@ public extension FoliClient {
 
         case .staleWhileRevalidate:
             if let staleCached = try await cache?.loadStaleTrips(forRoute: routeId) {
-                rebuildTripIndex(using: staleCached)
+                await rebuildTripIndex(using: staleCached)
                 refreshCacheInBackground(
                     for: .tripsForRoute(routeId),
                     fetch: { [self] in try await fetchTripsFromNetwork(forRoute: routeId) },
@@ -110,7 +110,7 @@ public extension FoliClient {
             
         case .forceRefresh:
             let trips = try await fetchTripsFromNetwork(forRoute: routeId)
-            rebuildTripIndex(using: trips)
+            await rebuildTripIndex(using: trips)
             try? await cache?.saveTrips(trips, forRoute: routeId)
             return trips
             
@@ -118,12 +118,12 @@ public extension FoliClient {
             guard let cached = try await cache?.loadTrips(forRoute: routeId) else {
                 throw Foli.APIError.noData
             }
-            rebuildTripIndex(using: cached)
+            await rebuildTripIndex(using: cached)
             return cached
             
         case .noCache:
             let trips = try await fetchTripsFromNetwork(forRoute: routeId)
-            rebuildTripIndex(using: trips)
+            await rebuildTripIndex(using: trips)
             return trips
         }
     }
