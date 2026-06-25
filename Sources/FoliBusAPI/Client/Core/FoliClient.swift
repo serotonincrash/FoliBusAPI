@@ -43,20 +43,11 @@ import Foundation
 /// ```
 @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
 public actor FoliClient {
-    /// Base URL for the Foli API
-    internal let baseURL = "https://data.foli.fi/siri"
-
-    /// Base URL for the Foli GTFS API
-    internal let gtfsBaseURL = "https://data.foli.fi/gtfs"
-
-    /// Base URL for the Foli Alerts API
-    internal let alertsBaseURL = "https://data.foli.fi"
-
-    /// Base URL for the Foli GeoJSON API
-    internal let geoJSONBaseURL = "https://data.foli.fi"
-
-    /// Transport used for making network requests
-    internal let transport: any FoliTransport
+    /// Transport, decoder, base URLs, and request execution.
+    ///
+    /// Extracted into a separate ``Sendable`` value type so that JSON decoding
+    /// for large GTFS payloads does not block the actor's executor.
+    internal let requester: FoliRequester
 
     /// Cache for GTFS data (optional - set to enable caching)
     internal var cache: (any Foli.Cache)?
@@ -64,8 +55,6 @@ public actor FoliClient {
     /// Whether this client should cache its static GTFS data
     internal var cacheBehavior: Foli.CacheBehavior = .cachedOrFetch
 
-    /// Shared decoder for API responses.
-    internal let decoder = JSONDecoder()
     internal let indexes = FoliIndexes()
 
     /// Deduplicates concurrent in-flight requests for the same resource.
@@ -93,7 +82,7 @@ public actor FoliClient {
     ///   - cacheBehavior: The cache behavior to apply to cacheable GTFS resources.
     ///   - cacheTimeout: The disk-cache freshness policy.
     public init(session: URLSession = .shared, cacheBehavior: Foli.CacheBehavior = .cachedOrFetch, cacheTimeout: Foli.CacheTimeout = .default) {
-        self.transport = URLSessionTransport(session: session)
+        self.requester = FoliRequester(transport: URLSessionTransport(session: session))
         self.cacheBehavior = cacheBehavior
 
         do {
@@ -115,7 +104,7 @@ public actor FoliClient {
     ///   - cacheBehavior: The cache behavior to apply to cacheable GTFS resources.
     ///   - cacheTimeout: The disk-cache freshness policy.
     public init(transport: any FoliTransport, cacheBehavior: Foli.CacheBehavior = .cachedOrFetch, cacheTimeout: Foli.CacheTimeout = .default) {
-        self.transport = transport
+        self.requester = FoliRequester(transport: transport)
         self.cacheBehavior = cacheBehavior
 
         do {
