@@ -17,6 +17,10 @@ let package = Package(
             name: "FoliBusAPI",
             targets: ["FoliBusAPI"]
         ),
+        .library(
+            name: "FoliBusUI",
+            targets: ["FoliBusUI"]
+        ),
     ],
     targets: [
         // Targets are the basic building blocks of a package, defining a module or a test suite.
@@ -24,9 +28,13 @@ let package = Package(
         .target(
             name: "FoliBusAPI"
         ),
+        .target(
+            name: "FoliBusUI",
+            dependencies: ["FoliBusAPI"]
+        ),
         .testTarget(
             name: "FoliBusAPITests",
-            dependencies: ["FoliBusAPI"]
+            dependencies: ["FoliBusAPI", "FoliBusUI"]
         ),
     ]
     

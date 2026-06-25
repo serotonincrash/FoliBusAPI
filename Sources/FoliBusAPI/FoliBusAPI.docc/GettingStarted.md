@@ -59,7 +59,7 @@ If you're integrating into SwiftUI, inject a client provider and use the ``FoliS
 
 ```swift
 import SwiftUI
-import FoliBusAPI
+import FoliBusUI
 
 @main
 struct DemoApp: App {
@@ -80,6 +80,9 @@ struct DemoApp: App {
 ## Inject an explicit client into SwiftUI
 
 ```swift
+import SwiftUI
+import FoliBusUI
+
 struct ContentView: View {
     let client = FoliClient(cacheBehavior: .cachedOrFetch)
     @FoliService(client: client) var foliService

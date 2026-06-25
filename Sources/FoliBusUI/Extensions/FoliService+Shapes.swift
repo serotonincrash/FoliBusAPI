@@ -1,4 +1,5 @@
 import Foundation
+import FoliBusAPI
 
 // MARK: - Shapes API
 
