@@ -14,11 +14,20 @@ public extension Foli {
         /// This error indicates a programming error where disk cache methods were called
         /// with incompatible resource types.
         case resourceNotCacheable(Resource)
-        
+
+        /// No cached value is available for the requested resource.
+        ///
+        /// Thrown when cache behavior is `.cachedOnly` and the cache does not contain
+        /// a usable entry for the resource. Distinct from `Foli.APIError` cases, which
+        /// represent network/transport/decoding failures.
+        case cacheMiss(Resource)
+
         public var errorDescription: String? {
             switch self {
             case .resourceNotCacheable(let resource):
                 return "Resource '\(resource)' is not cacheable. Real-time data types use deduplication only and cannot be persisted to disk."
+            case .cacheMiss(let resource):
+                return "No cached value available for '\(resource)'."
             }
         }
     }

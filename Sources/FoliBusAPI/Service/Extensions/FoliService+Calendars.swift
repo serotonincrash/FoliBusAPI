@@ -15,7 +15,7 @@ public extension FoliService {
     /// - Returns: The calendar if found.
     func fetchCalendar(forServiceId serviceId: String) async throws -> Foli.Calendar {
         guard let calendar = try await client.fetchCalendar(forServiceId: serviceId) else {
-            throw Foli.APIError.noData
+            throw Foli.APIError.notFound
         }
         return calendar
     }

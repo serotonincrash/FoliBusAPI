@@ -113,7 +113,7 @@ public extension FoliClient {
 
         case .cachedOnly:
             guard let cached = try await load() else {
-                throw Foli.APIError.noData
+                throw Foli.CacheError.cacheMiss(resource)
             }
             if let rebuildIndex { await rebuildIndex(cached) }
             return cached
