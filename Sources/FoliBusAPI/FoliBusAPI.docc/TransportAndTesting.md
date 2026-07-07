@@ -36,7 +36,7 @@ A minimal test double looks like this:
 
 ```swift
 actor MockTransport: FoliTransport {
-    let handler: @Sendable (URLRequest) throws -> (HTTPURLResponse, Data)
+    private let handler: @Sendable (URLRequest) throws -> (HTTPURLResponse, Data)
     private(set) var requests: [URLRequest] = []
 
     init(handler: @escaping @Sendable (URLRequest) throws -> (HTTPURLResponse, Data)) {
@@ -72,3 +72,13 @@ let routes = try await client.fetchRoutes()
 ## Why this design
 
 This transport seam is intentionally narrow. `FoliClient` only needs one capability from a networking layer: execute a `URLRequest` and return `(Data, URLResponse)`. Modeling that capability directly makes the package easier to test and evolve.
+
+## FoliRequester
+
+Request construction, response validation, and JSON decoding live in ``FoliRequester``, a `Sendable` value type that owns the transport, decoder, and four base URLs. Because `FoliRequester` is not actor-isolated, JSON decoding for large GTFS payloads (routes, stops, trips) runs on the cooperative thread pool rather than blocking `FoliClient`'s executor. `FoliClient` holds a `requester` reference and forwards its request methods.
+
+The request methods accept an optional `headers` parameter for per-call request customization. For example, the alerts endpoint declares `Accept-Encoding: gzip` via this parameter rather than hard-coding it in the transport layer.
+
+## Testing framework
+
+Tests use the [swift-testing](https://developer.apple.com/xcode/testing/) framework (`import Testing`), where `#require` is the equivalent of `XCTUnwrap` and `#expect` is the equivalent of `XCTAssertEqual`. The mock examples above use swift-testing syntax.
