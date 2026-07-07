@@ -26,7 +26,7 @@ public extension FoliClient {
     /// - Returns: The stop if found
     func fetchStop(for stopId: String) async throws -> Foli.Stop? {
         _ = try await fetchStops()
-        return await indexedStop(for: stopId)
+        return await indexes.stop(for: stopId)
     }
     
     // MARK: - Stops with Caching
@@ -40,7 +40,7 @@ public extension FoliClient {
             loadStale: { [cache] in try await cache?.loadStaleStops() },
             save: { [cache] stops in try await cache?.saveStops(stops) },
             fetch: { [self] in try await fetchStopsFromNetwork() },
-            rebuildIndex: { [self] stops in await rebuildStopIndex(using: stops) }
+            rebuildIndex: { [self] stops in await indexes.rebuildStops(using: stops) }
         )
     }
     

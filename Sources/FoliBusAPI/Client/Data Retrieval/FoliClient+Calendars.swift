@@ -22,7 +22,7 @@ public extension FoliClient {
             loadStale: { [cache] in try await cache?.loadStaleCalendars() },
             save: { [cache] calendars in try await cache?.saveCalendars(calendars) },
             fetch: { [self] in try await fetchCalendarsFromNetwork() },
-            rebuildIndex: { [self] calendars in await rebuildCalendarIndex(using: calendars) }
+            rebuildIndex: { [self] calendars in await indexes.rebuildCalendars(using: calendars) }
         )
     }
 
@@ -31,6 +31,6 @@ public extension FoliClient {
     /// - Returns: The calendar if found.
     func fetchCalendar(forServiceId serviceId: String) async throws -> Foli.Calendar? {
         _ = try await fetchCalendars()
-        return await indexedCalendar(for: serviceId)
+        return await indexes.calendar(for: serviceId)
     }
 }

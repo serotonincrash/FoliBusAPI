@@ -22,7 +22,7 @@ public extension FoliClient {
             loadStale: { [cache] in try await cache?.loadStaleAgencies() },
             save: { [cache] agencies in try await cache?.saveAgencies(agencies) },
             fetch: { [self] in try await fetchAgenciesFromNetwork() },
-            rebuildIndex: { [self] agencies in await rebuildAgencyIndex(using: agencies) }
+            rebuildIndex: { [self] agencies in await indexes.rebuildAgencies(using: agencies) }
         )
     }
 
@@ -31,6 +31,6 @@ public extension FoliClient {
     /// - Returns: The agency if found.
     func fetchAgency(id agencyID: String) async throws -> Foli.Agency? {
         _ = try await fetchAgencies()
-        return await indexedAgency(for: agencyID)
+        return await indexes.agency(for: agencyID)
     }
 }

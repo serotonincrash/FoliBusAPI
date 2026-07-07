@@ -27,7 +27,7 @@ public extension FoliClient {
     /// - Returns: The route if found
     func fetchRoute(id routeID: String) async throws -> Foli.Route? {
         _ = try await fetchRoutes()
-        return await indexedRoute(for: routeID)
+        return await indexes.route(for: routeID)
     }
     
     /// Fetch routes that match a given line reference (e.g., "15")
@@ -35,7 +35,7 @@ public extension FoliClient {
     /// - Returns: Array of matching routes
     func fetchRoutes(for lineRef: String) async throws -> [Foli.Route] {
         _ = try await fetchRoutes()
-        return await indexedRoutes(forShortName: lineRef)
+        return await indexes.routes(forShortName: lineRef)
     }
     
     // MARK: - Routes with Caching
@@ -49,7 +49,7 @@ public extension FoliClient {
             loadStale: { [cache] in try await cache?.loadStaleRoutes() },
             save: { [cache] routes in try await cache?.saveRoutes(routes) },
             fetch: { [self] in try await fetchRoutesFromNetwork() },
-            rebuildIndex: { [self] routes in await rebuildRouteIndexes(using: routes) }
+            rebuildIndex: { [self] routes in await indexes.rebuildRoutes(using: routes) }
         )
     }
 }

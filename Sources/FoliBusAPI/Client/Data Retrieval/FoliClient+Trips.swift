@@ -34,7 +34,7 @@ public extension FoliClient {
     /// - Returns: The trip if found
     func fetchTrip(tripId: String) async throws -> Foli.Trip? {
         _ = try await fetchTrips()
-        return await indexedTrip(for: tripId)
+        return await indexes.trip(for: tripId)
     }
     
     // MARK: - Trips with Caching
@@ -48,10 +48,10 @@ public extension FoliClient {
             loadStale: { [cache] in try await cache?.loadStaleTrips() },
             save: { [cache] trips in try await cache?.saveTrips(trips) },
             fetch: { [self] in try await fetchTripsFromNetwork() },
-            rebuildIndex: { [self] trips in await rebuildTripIndex(using: trips) }
+            rebuildIndex: { [self] trips in await indexes.rebuildTrips(using: trips) }
         )
     }
-    
+
     /// Fetch trips for a specific route using the client's configured caching behavior.
     /// - Parameter routeId: The ID of the route to fetch trips for.
     /// - Returns: Array of Trip objects belonging to the specified route.
@@ -62,7 +62,7 @@ public extension FoliClient {
             loadStale: { [cache] in try await cache?.loadStaleTrips(forRoute: routeId) },
             save: { [cache] trips in try await cache?.saveTrips(trips, forRoute: routeId) },
             fetch: { [self] in try await fetchTripsFromNetwork(forRoute: routeId) },
-            rebuildIndex: { [self] trips in await rebuildTripIndex(using: trips) }
+            rebuildIndex: { [self] trips in await indexes.rebuildTrips(using: trips) }
         )
     }
 }
