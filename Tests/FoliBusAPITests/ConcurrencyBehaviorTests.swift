@@ -68,47 +68,15 @@ private actor ControlledCache: Foli.Cache {
         get async throws { nil }
     }
 
-    func loadRoutes() async throws -> [Foli.Route]? { nil }
-    func saveRoutes(_ routes: [Foli.Route]) async throws {}
-    func loadStops() async throws -> [Foli.Stop]? { nil }
-    func saveStops(_ stops: [Foli.Stop]) async throws {}
-    func loadTrips() async throws -> [Foli.Trip]? { nil }
-    func saveTrips(_ trips: [Foli.Trip]) async throws {}
-    func loadTrips(forRoute routeId: String) async throws -> [Foli.Trip]? { nil }
-    func saveTrips(_ trips: [Foli.Trip], forRoute routeId: String) async throws {}
-    func loadStopTimes() async throws -> [Foli.StopTime]? { nil }
-    func saveStopTimes(_ stopTimes: [Foli.StopTime]) async throws {}
-    func loadStopTimes(forTrip tripId: String) async throws -> [Foli.StopTime]? { nil }
-    func saveStopTimes(_ stopTimes: [Foli.StopTime], forTrip tripId: String) async throws {}
-    func loadStopTimes(forStop stopId: String) async throws -> [Foli.StopTime]? { nil }
-    func saveStopTimes(_ stopTimes: [Foli.StopTime], forStop stopId: String) async throws {}
-    func loadCalendarDates() async throws -> [Foli.CalendarDate]? { nil }
-    func saveCalendarDates(_ calendarDates: [Foli.CalendarDate]) async throws {}
-    func loadAgencies() async throws -> [Foli.Agency]? { nil }
-    func saveAgencies(_ agencies: [Foli.Agency]) async throws {}
-    func loadCalendars() async throws -> [Foli.Calendar]? { nil }
-    func saveCalendars(_ calendars: [Foli.Calendar]) async throws {}
-    func loadShapeRouteIds() async throws -> [String]? { nil }
-    func saveShapeRouteIds(_ routeIds: [String]) async throws {}
-    func loadShapePoints(forShape shapeId: String) async throws -> [Foli.ShapePoint]? { nil }
-    func saveShapePoints(_ shapePoints: [Foli.ShapePoint], forShape shapeId: String) async throws {}
+    func loadResource<T: Codable & Sendable>(_ type: T.Type, forKey key: Foli.Resource) async throws -> T? { nil }
+    func loadStaleResource<T: Codable & Sendable>(_ type: T.Type, forKey key: Foli.Resource) async throws -> T? { nil }
+    func saveResource<T: Codable & Sendable>(_ value: T, forKey key: Foli.Resource) async throws {}
+
     func clearAllCache() async throws {}
     func clearCache(for type: Foli.Resource) async throws {}
     func hasValidCache(for type: Foli.Resource) async -> Bool { false }
     func cacheAge(for type: Foli.Resource) async -> TimeInterval? { nil }
     func currentDatasetId(for type: Foli.Resource?) async throws -> String? { nil }
-    func loadStaleRoutes() async throws -> [Foli.Route]? { nil }
-    func loadStaleStops() async throws -> [Foli.Stop]? { nil }
-    func loadStaleTrips() async throws -> [Foli.Trip]? { nil }
-    func loadStaleTrips(forRoute routeId: String) async throws -> [Foli.Trip]? { nil }
-    func loadStaleStopTimes() async throws -> [Foli.StopTime]? { nil }
-    func loadStaleStopTimes(forTrip tripId: String) async throws -> [Foli.StopTime]? { nil }
-    func loadStaleStopTimes(forStop stopId: String) async throws -> [Foli.StopTime]? { nil }
-    func loadStaleCalendarDates() async throws -> [Foli.CalendarDate]? { nil }
-    func loadStaleAgencies() async throws -> [Foli.Agency]? { nil }
-    func loadStaleCalendars() async throws -> [Foli.Calendar]? { nil }
-    func loadStaleShapeRouteIds() async throws -> [String]? { nil }
-    func loadStaleShapePoints(forShape shapeId: String) async throws -> [Foli.ShapePoint]? { nil }
     func revalidateCache(for type: Foli.Resource) async throws -> Bool { revalidationResult }
 
     func recordSavedRoutes(_ routes: [String]) {
