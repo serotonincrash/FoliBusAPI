@@ -1,46 +1,35 @@
 import Foundation
 
-/// Main client for interacting with the Foli public transport API
+/// Main client for interacting with the Foli public transport API.
 ///
-/// To configure client behavior for SwiftUI, inject a configured provider via the environment
-/// at your app's root, or pass a client explicitly to views that need it.
+/// `FoliClient` is an actor that coordinates request execution, caching, in-flight
+/// deduplication, and in-memory lookup indexes. It delegates the concrete work to
+/// dedicated extracted types:
 ///
-/// ## Environment Setup
+/// - ``requester`` (``FoliRequester``) owns transport, JSON decoding, and URL construction.
+/// - ``dedup`` (``FoliDedup``) coalesces concurrent identical requests.
+/// - ``indexes`` (``FoliIndexes``) maintains O(1) entity lookup dictionaries.
+/// - ``refreshTracker`` (``FoliRefreshTracker``) tracks background stale-while-revalidate tasks.
+///
+/// ## Direct usage
 /// ```swift
-/// @main
-/// struct MyApp: App {
-///     var body: some Scene {
-///         WindowGroup {
-///             ContentView()
-///                 .environment(
-///                     \.foliClientProvider,
-///                     DefaultFoliClientProvider(
-///                         configuration: FoliClientConfiguration(cacheBehavior: .forceRefresh)
-///                     )
-///                 )
-///         }
-///     }
-/// }
+/// let client = FoliClient(
+///     cacheBehavior: .forceRefresh,
+///     cacheTimeout: .default
+/// )
+/// let routes = try await client.fetchRoutes()
 /// ```
 ///
-/// ## SwiftUI usage through the environment
+/// ## Convenience facade
+/// For simple one-off access without managing a client instance, use the ``FoliBusAPI``
+/// static facade, which routes through a configurable provider:
 /// ```swift
-/// struct MyView: View {
-///     @FoliService var foliService
-///
-///     // rest of the view...
-/// }
+/// let routes = try await FoliBusAPI.fetchRoutes()
 /// ```
 ///
-/// ## SwiftUI usage with an explicit client
-/// ```swift
-/// struct MyView: View {
-///     let client: FoliClient = .configured(cacheBehavior: .forceRefresh)
-///     @FoliService(client: client) var foliService
-///
-///     // rest of the view...
-/// }
-/// ```
+/// ## SwiftUI integration
+/// SwiftUI integration (the `@FoliService` property wrapper and environment provider)
+/// lives in the separate `FoliBusUI` target. See that target's documentation for details.
 @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
 public actor FoliClient {
     /// Transport, decoder, base URLs, and request execution.

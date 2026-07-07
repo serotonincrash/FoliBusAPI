@@ -1,5 +1,13 @@
 import Foundation
 
+// MARK: - Typed Convenience Access
+//
+// Default-implemented shortcuts that delegate to the three generic
+// `loadResource` / `loadStaleResource` / `saveResource` requirements.
+// Call sites use these typed methods (`cache?.loadRoutes()` etc.) so
+// that adding a new resource type is a one-line change here, not a
+// protocol requirement + conformor method + mock stub.
+
 @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
 extension Foli.Cache {
     // MARK: - Routes

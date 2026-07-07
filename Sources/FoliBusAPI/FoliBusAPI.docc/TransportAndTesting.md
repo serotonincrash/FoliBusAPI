@@ -6,7 +6,7 @@
 
 - production code can use the `FoliClient(session:cacheBehavior:cacheTimeout:)` convenience initializer that injects a `URLSession` for regular networking
 - tests inject a lightweight mock transport
-- request construction, response validation, and decoding stay inside ``FoliClient``
+- request construction, response validation, and decoding live in ``FoliRequester``, which ``FoliClient`` delegates to
 
 ## Production usage
 

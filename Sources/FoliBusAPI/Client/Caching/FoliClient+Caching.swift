@@ -67,7 +67,7 @@ public extension FoliClient {
 
     /// Resolves a cacheable GTFS resource according to the client's configured ``Foli.CacheBehavior``,
     /// centralizing the cached-or-fetch / stale-while-revalidate / force-refresh / cached-only / no-cache
-    /// policy that was previously duplicated across every data-retrieval call site.
+    /// policy across all data-retrieval call sites.
     ///
     /// - Parameters:
     ///   - resource: The cache resource key used for background refresh bookkeeping.

@@ -19,9 +19,10 @@ public extension FoliService {
         return try await client.fetchStops()
     }
     
-    /// Fetch a specific stop by ID
-    /// - Parameter stopId: The stop ID to fetch
-    /// - Returns: The stop if found
+    /// Fetch a specific stop by ID.
+    /// - Parameter stopId: The stop ID to fetch.
+    /// - Returns: The stop if found.
+    /// - Throws: ``Foli/APIError/notFound`` if no stop matches the ID.
     func fetchStop(id stopId: String) async throws -> Foli.Stop {
         guard let stop = try await client.fetchStop(for: stopId) else {
             throw Foli.APIError.notFound

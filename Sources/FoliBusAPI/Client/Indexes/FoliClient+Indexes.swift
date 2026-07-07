@@ -1,5 +1,11 @@
 import Foundation
 
+// MARK: - Index Access
+//
+// Thin forwarders to `indexes` (``FoliIndexes``). Rebuild methods are called
+// from `resolveCached`'s `rebuildIndex` closure; lookup methods are called
+// from the public `fetchX(id:)` helpers.
+
 @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
 extension FoliClient {
     internal func rebuildStopIndex(using stops: [Foli.Stop]) async {
