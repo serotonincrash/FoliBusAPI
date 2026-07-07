@@ -10,13 +10,22 @@ import Foundation
 /// and reset between test cases via ``reset()``.
 @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
 public final class FoliBusAPI {
-    /// The provider backing the static convenience methods.
+    /// Internal actor that protects the facade's provider from concurrent access.
+    private actor ProviderBox {
+        var provider: any FoliClientProviding
+        init(_ provider: any FoliClientProviding) { self.provider = provider }
+        func set(_ provider: any FoliClientProviding) { self.provider = provider }
+        func client() -> FoliClient { provider.client() }
+    }
+
+    /// The provider backing the static convenience methods, protected by an actor
+    /// to make concurrent reads and writes provably safe.
     ///
     /// Defaults to a ``DefaultFoliClientProvider`` with ``FoliClientConfiguration/default``.
     /// Replace it at app launch via ``configure(_:)`` to route the convenience API through
     /// a custom provider (e.g., one using a test transport or a specific cache configuration).
     /// Reset it between test cases via ``reset()``.
-    private static nonisolated(unsafe) var provider: any FoliClientProviding = DefaultFoliClientProvider()
+    private static let provider = ProviderBox(DefaultFoliClientProvider())
 
     /// Configures the provider backing the static convenience methods.
     ///
@@ -25,7 +34,7 @@ public final class FoliBusAPI {
     ///
     /// - Parameter provider: The provider to use for all subsequent static fetch calls.
     public static func configure(_ provider: any FoliClientProviding) {
-        Self.provider = provider
+        Task { await Self.provider.set(provider) }
     }
 
     /// Resets the provider to a fresh ``DefaultFoliClientProvider`` with default configuration.
@@ -33,11 +42,11 @@ public final class FoliBusAPI {
     /// Call this between test cases to ensure the static convenience methods don't share
     /// cache state across tests.
     public static func reset() {
-        Self.provider = DefaultFoliClientProvider()
+        Task { await Self.provider.set(DefaultFoliClientProvider()) }
     }
 
-    private static func defaultClient() -> FoliClient {
-        provider.client()
+    private static func defaultClient() async -> FoliClient {
+        await provider.client()
     }
     
     // MARK: - Convenience Methods - Real-Time Data
@@ -47,7 +56,7 @@ public final class FoliBusAPI {
     /// - Returns: Alerts response containing messages, cancellations, and special alerts.
     /// - Throws: `Foli.APIError` if the request fails.
     public static func fetchAlerts() async throws -> Foli.AlertsResponse {
-        let client = defaultClient()
+        let client = await defaultClient()
         return try await client.fetchAlerts()
     }
     
@@ -56,7 +65,7 @@ public final class FoliBusAPI {
     /// - Returns: Array of alert messages.
     /// - Throws: `Foli.APIError` if the request fails.
     public static func fetchAlertMessages() async throws -> [Foli.Alert] {
-        let client = defaultClient()
+        let client = await defaultClient()
         return try await client.fetchAlertMessages()
     }
     
@@ -65,7 +74,7 @@ public final class FoliBusAPI {
     /// - Returns: Array of trip cancellations.
     /// - Throws: `Foli.APIError` if the request fails.
     public static func fetchCancellations() async throws -> [Foli.TripCancellation] {
-        let client = defaultClient()
+        let client = await defaultClient()
         return try await client.fetchCancellations()
     }
     
@@ -74,7 +83,7 @@ public final class FoliBusAPI {
     /// - Returns: Array of alert categories.
     /// - Throws: `Foli.APIError` if the request fails.
     public static func fetchAlertCategories() async throws -> [Foli.AlertCategory] {
-        let client = defaultClient()
+        let client = await defaultClient()
         return try await client.fetchAlertCategories()
     }
     
@@ -85,7 +94,7 @@ public final class FoliBusAPI {
     ///
     /// - Note: The VM endpoint returns a large response. Minimum polling interval: 3 seconds.
     public static func fetchVehicleLocations() async throws -> [Foli.VehicleLocation] {
-        let client = defaultClient()
+        let client = await defaultClient()
         return try await client.fetchVehicleLocations()
     }
     
@@ -95,7 +104,7 @@ public final class FoliBusAPI {
     /// - Returns: Array of vehicle locations for the specified line.
     /// - Throws: `Foli.APIError` if the request fails or the server returns an error status.
     public static func fetchVehicleLocations(for lineRef: String) async throws -> [Foli.VehicleLocation] {
-        let client = defaultClient()
+        let client = await defaultClient()
         return try await client.fetchVehicleLocations(for: lineRef)
     }
     
@@ -105,7 +114,7 @@ public final class FoliBusAPI {
     /// - Returns: Array of vehicle locations matching any of the specified lines.
     /// - Throws: `Foli.APIError` if the request fails or the server returns an error status.
     public static func fetchVehicleLocations(for lineRefs: [String]) async throws -> [Foli.VehicleLocation] {
-        let client = defaultClient()
+        let client = await defaultClient()
         return try await client.fetchVehicleLocations(for: lineRefs)
     }
     
@@ -113,7 +122,7 @@ public final class FoliBusAPI {
     /// - Parameter stopId: The stop ID to monitor.
     /// - Returns: Array of vehicle arrivals.
     public static func fetchArrivals(for stopId: String) async throws -> [Foli.Arrival] {
-        let client = defaultClient()
+        let client = await defaultClient()
         return try await client.fetchArrivals(for: stopId)
     }
     
@@ -121,7 +130,7 @@ public final class FoliBusAPI {
     /// - Parameter stop: The stop to monitor.
     /// - Returns: Array of vehicle arrivals.
     public static func fetchArrivals(for stop: Foli.Stop) async throws -> [Foli.Arrival] {
-        let client = defaultClient()
+        let client = await defaultClient()
         return try await client.fetchArrivals(for: stop.id)
     }
     
@@ -130,7 +139,7 @@ public final class FoliBusAPI {
     /// Fetch the complete list of stops
     /// - Returns: Array of all stops
     public static func fetchStops() async throws -> [Foli.Stop] {
-        let client = defaultClient()
+        let client = await defaultClient()
         return try await client.fetchStops()
     }
     
@@ -139,7 +148,7 @@ public final class FoliBusAPI {
     /// Fetch the complete list of all routes from GTFS
     /// - Returns: Array of all routes
     public static func fetchRoutes() async throws -> [Foli.Route] {
-        let client = defaultClient()
+        let client = await defaultClient()
         return try await client.fetchRoutes()
     }
     
@@ -147,7 +156,7 @@ public final class FoliBusAPI {
     /// - Parameter routeId: The ID of the route to fetch
     /// - Returns: The route if found
     public static func fetchRoute(byId routeId: String) async throws -> Foli.Route? {
-        let client = defaultClient()
+        let client = await defaultClient()
         return try await client.fetchRoute(id: routeId)
     }
     
@@ -155,7 +164,7 @@ public final class FoliBusAPI {
     /// - Parameter lineRef: The line reference to search for
     /// - Returns: Array of matching routes
     public static func fetchRoutes(byLineRef lineRef: String) async throws -> [Foli.Route] {
-        let client = defaultClient()
+        let client = await defaultClient()
         return try await client.fetchRoutes(for: lineRef)
     }
     
@@ -163,7 +172,7 @@ public final class FoliBusAPI {
     /// - Parameter routeType: The GTFS route type (0=Tram, 3=Bus, etc.)
     /// - Returns: Array of routes matching the type
     public static func fetchRoutes(ofType routeType: Int) async throws -> [Foli.Route] {
-        let client = defaultClient()
+        let client = await defaultClient()
         let allRoutes = try await client.fetchRoutes()
         return allRoutes.filter { $0.type == routeType }
     }
@@ -185,7 +194,7 @@ public final class FoliBusAPI {
     /// Fetch all calendar date exceptions from GTFS
     /// - Returns: Array of calendar date exceptions
     public static func fetchCalendarDates() async throws -> [Foli.CalendarDate] {
-        let client = defaultClient()
+        let client = await defaultClient()
         return try await client.fetchCalendarDates()
     }
     
@@ -194,7 +203,7 @@ public final class FoliBusAPI {
     /// Fetch all agencies from GTFS
     /// - Returns: Array of all agencies
     public static func fetchAgencies() async throws -> [Foli.Agency] {
-        let client = defaultClient()
+        let client = await defaultClient()
         return try await client.fetchAgencies()
     }
     
@@ -202,7 +211,7 @@ public final class FoliBusAPI {
     /// - Parameter agencyId: The ID of the agency to fetch
     /// - Returns: The agency if found
     public static func fetchAgency(byId agencyId: String) async throws -> Foli.Agency? {
-        let client = defaultClient()
+        let client = await defaultClient()
         return try await client.fetchAgency(id: agencyId)
     }
     
@@ -211,7 +220,7 @@ public final class FoliBusAPI {
     /// Fetch all calendars from GTFS
     /// - Returns: Array of all calendars
     public static func fetchCalendars() async throws -> [Foli.Calendar] {
-        let client = defaultClient()
+        let client = await defaultClient()
         return try await client.fetchCalendars()
     }
     
@@ -219,7 +228,7 @@ public final class FoliBusAPI {
     /// - Parameter serviceId: The service ID of the calendar to fetch
     /// - Returns: The calendar if found
     public static func fetchCalendar(forServiceId serviceId: String) async throws -> Foli.Calendar? {
-        let client = defaultClient()
+        let client = await defaultClient()
         return try await client.fetchCalendar(forServiceId: serviceId)
     }
     
@@ -228,7 +237,7 @@ public final class FoliBusAPI {
     /// Fetch all trips from GTFS
     /// - Returns: Array of all trips
     public static func fetchTrips() async throws -> [Foli.Trip] {
-        let client = defaultClient()
+        let client = await defaultClient()
         return try await client.fetchTrips()
     }
     
@@ -236,7 +245,7 @@ public final class FoliBusAPI {
     /// - Parameter routeId: The ID of the route to fetch trips for
     /// - Returns: Array of trips for the specified route
     public static func fetchTrips(forRoute routeId: String) async throws -> [Foli.Trip] {
-        let client = defaultClient()
+        let client = await defaultClient()
         return try await client.fetchTrips(forRoute: routeId)
     }
     
@@ -244,7 +253,7 @@ public final class FoliBusAPI {
     /// - Parameter tripId: The ID of the trip to fetch
     /// - Returns: The trip if found
     public static func fetchTrip(byId tripId: String) async throws -> Foli.Trip? {
-        let client = defaultClient()
+        let client = await defaultClient()
         return try await client.fetchTrip(tripId: tripId)
     }
     
@@ -254,7 +263,7 @@ public final class FoliBusAPI {
     /// - Returns: Array of all stop times
     /// - Note: Not recommended for general use due to the large dataset size
     public static func fetchStopTimes() async throws -> [Foli.StopTime] {
-        let client = defaultClient()
+        let client = await defaultClient()
         return try await client.fetchStopTimes()
     }
     
@@ -262,7 +271,7 @@ public final class FoliBusAPI {
     /// - Parameter tripId: The ID of the trip to fetch stop times for
     /// - Returns: Array of stop times for the specified trip
     public static func fetchStopTimes(forTrip tripId: String) async throws -> [Foli.StopTime] {
-        let client = defaultClient()
+        let client = await defaultClient()
         return try await client.fetchStopTimes(forTrip: tripId)
     }
     
@@ -270,7 +279,7 @@ public final class FoliBusAPI {
     /// - Parameter stopId: The ID of the stop to fetch stop times for
     /// - Returns: Array of stop times for the specified stop
     public static func fetchStopTimes(forStop stopId: String) async throws -> [Foli.StopTime] {
-        let client = defaultClient()
+        let client = await defaultClient()
         return try await client.fetchStopTimes(forStop: stopId)
     }
     
@@ -279,7 +288,7 @@ public final class FoliBusAPI {
     /// Fetch all route IDs that have shape points available
     /// - Returns: Array of route IDs that have at least one available shape
     public static func fetchShapeRouteIDs() async throws -> [String] {
-        let client = defaultClient()
+        let client = await defaultClient()
         return try await client.fetchShapeRouteIDs()
     }
     
@@ -287,7 +296,7 @@ public final class FoliBusAPI {
     /// - Parameter routeId: The route identifier to fetch shapes for
     /// - Returns: Shape points ordered by sequence
     public static func fetchShapePoints(forRouteId routeId: String) async throws -> [Foli.ShapePoint] {
-        let client = defaultClient()
+        let client = await defaultClient()
         return try await client.fetchShapePoints(forRouteId: routeId)
     }
     
@@ -298,7 +307,7 @@ public final class FoliBusAPI {
     /// - Returns: Array of available map layers.
     /// - Throws: `Foli.APIError` if the request fails.
     public static func fetchGeoJSONLayers() async throws -> [Foli.GeoJSONLayer] {
-        let client = defaultClient()
+        let client = await defaultClient()
         return try await client.fetchGeoJSONLayers()
     }
     
@@ -307,7 +316,7 @@ public final class FoliBusAPI {
     /// - Returns: GeoJSON feature collection of all POIs.
     /// - Throws: `Foli.APIError` if the request fails.
     public static func fetchPointsOfInterest() async throws -> Foli.FeatureCollection {
-        let client = defaultClient()
+        let client = await defaultClient()
         return try await client.fetchPointsOfInterest()
     }
     
@@ -317,7 +326,7 @@ public final class FoliBusAPI {
     /// - Returns: GeoJSON feature collection.
     /// - Throws: `Foli.APIError` if the request fails.
     public static func fetchPointsOfInterest(category: String) async throws -> Foli.FeatureCollection {
-        let client = defaultClient()
+        let client = await defaultClient()
         return try await client.fetchPointsOfInterest(category: category)
     }
     
@@ -329,7 +338,7 @@ public final class FoliBusAPI {
     /// - Returns: GeoJSON feature collection with boundary geometry.
     /// - Throws: `Foli.APIError` if the request fails.
     public static func fetchServiceBounds(resolution: FoliClient.BoundsResolution = .normal, format: FoliClient.BoundsFormat = .multiPolygon) async throws -> Foli.FeatureCollection {
-        let client = defaultClient()
+        let client = await defaultClient()
         return try await client.fetchServiceBounds(resolution: resolution, format: format)
     }
 }
