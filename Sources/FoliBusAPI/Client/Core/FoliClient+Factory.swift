@@ -7,18 +7,18 @@ extension FoliClient {
     /// Creates a configured client backed by a `URLSession` transport.
     /// - Parameters:
     ///   - cacheBehavior: The cache behavior to use for cacheable GTFS resources.
-    ///   - cacheTimeout: The freshness policy applied by the disk cache.
+    ///   - cacheTTL: The freshness policy applied by the disk cache.
     ///   - session: The session whose configuration should be used for request execution.
     /// - Returns: A configured ``FoliClient`` instance.
-    public static func configured(
+    public static func makeConfigured(
         cacheBehavior: Foli.CacheBehavior = .cachedOrFetch,
-        cacheTimeout: Foli.CacheTimeout = .default,
+        cacheTTL: Foli.CacheTTL = .default,
         session: URLSession = .shared
     ) -> FoliClient {
         FoliClient(
             transport: URLSessionTransport(session: session),
             cacheBehavior: cacheBehavior,
-            cacheTimeout: cacheTimeout
+            cacheTTL: cacheTTL
         )
     }
 }

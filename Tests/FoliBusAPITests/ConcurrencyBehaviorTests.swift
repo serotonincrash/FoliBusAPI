@@ -56,7 +56,7 @@ struct ConcurrencyBehaviorTests {
 }
 
 private actor ControlledCache: Foli.Cache {
-    let timeoutDuration: Foli.CacheTimeout = .default
+    let timeoutDuration: Foli.CacheTTL = .default
     private let revalidationResult: Bool
     private(set) var savedRoutes: [[String]] = []
 

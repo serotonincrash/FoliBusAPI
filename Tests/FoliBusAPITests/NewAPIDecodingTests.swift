@@ -239,7 +239,7 @@ struct AlertsDecodingTests {
 
         #expect(categories.count == 2)
         #expect(categories[0].category == "TIMETABLE_CHANGES")
-        #expect(categories[0].descrEn == "Timetable changes")
+        #expect(categories[0].descriptionEn == "Timetable changes")
         #expect(categories[1].category == "TICKETS_AND_FARES")
     }
 

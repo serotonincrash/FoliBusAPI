@@ -15,7 +15,7 @@ public extension FoliClient {
     /// Fetch shape points for one shape ID directly from GTFS.
     /// - Parameter routeId: The route identifier to fetch shapes for.
     /// - Returns: Shape points ordered by sequence.
-    internal func fetchShapePointsFromNetwork(forRouteId routeId: String) async throws -> [Foli.ShapePoint] {
+    internal func fetchShapePointsFromNetwork(forRoute routeId: String) async throws -> [Foli.ShapePoint] {
         try await dedup.performDeduplicated(.shapePointsForShape(routeId)) { [self] in
             let shapePointList = try await requestGTFS("/shapes/\(routeId)", as: Foli.ShapePointList.self)
             return shapePointList.shapePoints
@@ -48,13 +48,13 @@ public extension FoliClient {
     /// Fetch shape points for one shape ID.
     /// - Parameter routeId: The route identifier to fetch shapes for.
     /// - Returns: Shape points ordered by sequence.
-    func fetchShapePoints(forRouteId routeId: String) async throws -> [Foli.ShapePoint] {
+    func fetchShapePoints(forRoute routeId: String) async throws -> [Foli.ShapePoint] {
         try await resolveCached(
             for: .shapePointsForShape(routeId),
             load: { [cache] in try await cache?.loadShapePoints(forShape: routeId) },
             loadStale: { [cache] in try await cache?.loadStaleShapePoints(forShape: routeId) },
             save: { [cache] shapePoints in try await cache?.saveShapePoints(shapePoints, forShape: routeId) },
-            fetch: { [self] in try await fetchShapePointsFromNetwork(forRouteId: routeId) }
+            fetch: { [self] in try await fetchShapePointsFromNetwork(forRoute: routeId) }
         )
     }
     

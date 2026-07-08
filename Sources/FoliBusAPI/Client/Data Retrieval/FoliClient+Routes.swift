@@ -26,7 +26,7 @@ public extension FoliClient {
     /// - Parameter routeId: The ID of route to fetch.
     /// - Returns: The route if found
     /// - Throws: `Foli.APIError` if the network request or decoding fails.
-    func fetchRoute(id routeId: String) async throws -> Foli.Route? {
+    func route(for routeId: String) async throws -> Foli.Route? {
         _ = try await fetchRoutes()
         return await indexes.route(for: routeId)
     }

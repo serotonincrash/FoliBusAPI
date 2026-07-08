@@ -33,7 +33,7 @@ public extension FoliClient {
     /// - Parameter tripId: The ID of the trip to fetch
     /// - Returns: The trip if found
     /// - Throws: `Foli.APIError` if the network request or decoding fails.
-    func fetchTrip(tripId: String) async throws -> Foli.Trip? {
+    func trip(for tripId: String) async throws -> Foli.Trip? {
         _ = try await fetchTrips()
         return await indexes.trip(for: tripId)
     }

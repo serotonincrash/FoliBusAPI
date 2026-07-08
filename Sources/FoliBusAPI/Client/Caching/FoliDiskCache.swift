@@ -9,7 +9,7 @@ extension Foli {
     actor DiskCache: Foli.Cache {
         internal let fileManager: FileManager
         internal let cacheDirectory: URL
-        let timeoutDuration: Foli.CacheTimeout
+        let timeoutDuration: Foli.CacheTTL
         internal let baseURL: String = "https://data.foli.fi/gtfs/v0"
         internal let session: URLSession
 
@@ -18,7 +18,7 @@ extension Foli {
         ///   - timeout: The freshness policy applied to cached resources.
         ///   - fileManager: The file manager used to create and access cache files.
         init(
-            timeout: Foli.CacheTimeout = .default,
+            timeout: Foli.CacheTTL = .default,
             fileManager: FileManager = .default
         ) throws {
             self.timeoutDuration = timeout

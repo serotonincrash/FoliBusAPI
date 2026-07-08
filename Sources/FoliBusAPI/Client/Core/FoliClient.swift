@@ -15,7 +15,7 @@ import Foundation
 /// ```swift
 /// let client = FoliClient(
 ///     cacheBehavior: .forceRefresh,
-///     cacheTimeout: .default
+///     cacheTTL: .default
 /// )
 /// let routes = try await client.fetchRoutes()
 /// ```
@@ -69,13 +69,13 @@ public actor FoliClient {
     /// - Parameters:
     ///   - session: The session used for network requests.
     ///   - cacheBehavior: The cache behavior to apply to cacheable GTFS resources.
-    ///   - cacheTimeout: The disk-cache freshness policy.
-    public init(session: URLSession = .shared, cacheBehavior: Foli.CacheBehavior = .cachedOrFetch, cacheTimeout: Foli.CacheTimeout = .default) {
+    ///   - cacheTTL: The disk-cache freshness policy.
+    public init(session: URLSession = .shared, cacheBehavior: Foli.CacheBehavior = .cachedOrFetch, cacheTTL: Foli.CacheTTL = .default) {
         self.requester = FoliRequester(transport: URLSessionTransport(session: session))
         self.cacheBehavior = cacheBehavior
 
         do {
-            self.cache = try Foli.DiskCache(timeout: cacheTimeout)
+            self.cache = try Foli.DiskCache(timeout: cacheTTL)
         } catch {
             // Cache initialization failed - fall back to no-cache mode
             // This is expected when disk access is unavailable
@@ -91,13 +91,13 @@ public actor FoliClient {
     /// - Parameters:
     ///   - transport: The transport used to execute requests.
     ///   - cacheBehavior: The cache behavior to apply to cacheable GTFS resources.
-    ///   - cacheTimeout: The disk-cache freshness policy.
-    public init(transport: any FoliTransport, cacheBehavior: Foli.CacheBehavior = .cachedOrFetch, cacheTimeout: Foli.CacheTimeout = .default) {
+    ///   - cacheTTL: The disk-cache freshness policy.
+    public init(transport: any FoliTransport, cacheBehavior: Foli.CacheBehavior = .cachedOrFetch, cacheTTL: Foli.CacheTTL = .default) {
         self.requester = FoliRequester(transport: transport)
         self.cacheBehavior = cacheBehavior
 
         do {
-            self.cache = try Foli.DiskCache(timeout: cacheTimeout)
+            self.cache = try Foli.DiskCache(timeout: cacheTTL)
         } catch {
             // Cache initialization failed - fall back to no-cache mode
             // This is expected when disk access is unavailable

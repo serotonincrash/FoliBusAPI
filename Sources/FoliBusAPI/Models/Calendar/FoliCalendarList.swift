@@ -16,8 +16,8 @@ extension Foli {
             let friday: Bool
             let saturday: Bool
             let sunday: Bool
-            let startDate: String
-            let endDate: String
+            let startDateCode: String
+            let endDateCode: String
             
             init(calendar: Foli.Calendar) {
                 self.monday = calendar.monday
@@ -27,8 +27,8 @@ extension Foli {
                 self.friday = calendar.friday
                 self.saturday = calendar.saturday
                 self.sunday = calendar.sunday
-                self.startDate = calendar.startDate
-                self.endDate = calendar.endDate
+                self.startDateCode = calendar.startDateCode
+                self.endDateCode = calendar.endDateCode
             }
             
             private enum CodingKeys: String, CodingKey {
@@ -39,8 +39,8 @@ extension Foli {
                 case friday
                 case saturday
                 case sunday
-                case startDate = "start_date"
-                case endDate = "end_date"
+                case startDateCode = "start_date"
+                case endDateCode = "end_date"
             }
         }
         
@@ -64,8 +64,8 @@ extension Foli {
                             friday: entry.friday,
                             saturday: entry.saturday,
                             sunday: entry.sunday,
-                            startDate: entry.startDate,
-                            endDate: entry.endDate
+                            startDateCode: entry.startDateCode,
+                            endDateCode: entry.endDateCode
                         )
                     }
                     .sorted { $0.id < $1.id }

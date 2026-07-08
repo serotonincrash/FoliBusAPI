@@ -6,7 +6,7 @@ public extension Foli {
         /// Unique message identifier
         public let messageId: Int
         /// Icon recommendation (e.g., "BUS", "BOAT", "BIKE", "NONE", or combinations like "BUS_BIKE")
-        public let icon: String
+        public let icon: Icon
         /// GTFS-RT cause code for the service disruption
         public let cause: String
         /// GTFS-RT effect code describing the impact
@@ -42,6 +42,49 @@ public extension Foli {
         public let channelGtfsrt: Bool?
         
         public var id: Int { messageId }
+
+        /// Icon recommendation for an alert.
+        public enum Icon: RawRepresentable, Codable, Sendable, Equatable, Hashable {
+            case bus
+            case boat
+            case bike
+            case none
+            case busBike
+            case unknown(String)
+
+            public var rawValue: String {
+                switch self {
+                case .bus: return "BUS"
+                case .boat: return "BOAT"
+                case .bike: return "BIKE"
+                case .none: return "NONE"
+                case .busBike: return "BUS_BIKE"
+                case .unknown(let value): return value
+                }
+            }
+
+            public init(rawValue: String) {
+                switch rawValue {
+                case "BUS": self = .bus
+                case "BOAT": self = .boat
+                case "BIKE": self = .bike
+                case "NONE": self = .none
+                case "BUS_BIKE": self = .busBike
+                default: self = .unknown(rawValue)
+                }
+            }
+
+            public init(from decoder: Decoder) throws {
+                let container = try decoder.singleValueContainer()
+                let rawValue = try container.decode(String.self)
+                self.init(rawValue: rawValue)
+            }
+
+            public func encode(to encoder: Encoder) throws {
+                var container = encoder.singleValueContainer()
+                try container.encode(rawValue)
+            }
+        }
         
         private enum CodingKeys: String, CodingKey {
             case messageId = "message_id"
@@ -70,7 +113,7 @@ public extension Foli {
         ///
         /// - Parameters:
         ///   - messageId: Unique identifier for the alert message.
-        ///   - icon: Icon recommendation (e.g., "BUS", "BOAT", "BIKE", "NONE").
+        ///   - icon: Icon recommendation.
         ///   - cause: GTFS-RT cause code for the service disruption.
         ///   - effect: GTFS-RT effect code describing the impact.
         ///   - header: Optional message header (max 64 characters).
@@ -91,7 +134,7 @@ public extension Foli {
         ///   - channelGtfsrt: Whether to show on GTFS-RT channel.
         public init(
             messageId: Int,
-            icon: String,
+            icon: Icon,
             cause: String,
             effect: String,
             header: String? = nil,

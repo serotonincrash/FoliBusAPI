@@ -30,8 +30,8 @@ public extension Foli {
         /// Delay in seconds (optional, may not always be present)
         public let delay: Int?
 
-        /// A deterministic stable identifier derived from `lineRef` and `aimedArrivalTime`.
-        public var id: String { "\(lineRef):\(aimedArrivalTime)" }
+        /// A deterministic stable identifier derived from `lineRef`, `originAimedDepartureTime`, and `aimedArrivalTime`.
+        public var id: String { "\(lineRef):\(originAimedDepartureTime):\(aimedArrivalTime)" }
 
         /// Creates an arrival or departure snapshot.
         /// - Parameters:

@@ -157,7 +157,7 @@ public final class FoliBusAPI {
     /// - Returns: The route if found
     public static func fetchRoute(byId routeId: String) async throws -> Foli.Route? {
         let client = await defaultClient()
-        return try await client.fetchRoute(id: routeId)
+        return try await client.route(for: routeId)
     }
     
     /// Fetch routes that match a given line reference (e.g., "15")
@@ -212,7 +212,7 @@ public final class FoliBusAPI {
     /// - Returns: The agency if found
     public static func fetchAgency(byId agencyId: String) async throws -> Foli.Agency? {
         let client = await defaultClient()
-        return try await client.fetchAgency(id: agencyId)
+        return try await client.agency(for: agencyId)
     }
     
     // MARK: - Convenience Methods - Calendars (GTFS)
@@ -254,7 +254,7 @@ public final class FoliBusAPI {
     /// - Returns: The trip if found
     public static func fetchTrip(byId tripId: String) async throws -> Foli.Trip? {
         let client = await defaultClient()
-        return try await client.fetchTrip(tripId: tripId)
+        return try await client.trip(for: tripId)
     }
     
     // MARK: - Convenience Methods - Stop Times (GTFS)
@@ -297,7 +297,7 @@ public final class FoliBusAPI {
     /// - Returns: Shape points ordered by sequence
     public static func fetchShapePoints(forRouteId routeId: String) async throws -> [Foli.ShapePoint] {
         let client = await defaultClient()
-        return try await client.fetchShapePoints(forRouteId: routeId)
+        return try await client.fetchShapePoints(forRoute: routeId)
     }
     
     // MARK: - Convenience Methods - GeoJSON
@@ -327,7 +327,7 @@ public final class FoliBusAPI {
     /// - Throws: `Foli.APIError` if the request fails.
     public static func fetchPointsOfInterest(category: String) async throws -> Foli.FeatureCollection {
         let client = await defaultClient()
-        return try await client.fetchPointsOfInterest(category: category)
+        return try await client.fetchPointsOfInterest(inCategory: category)
     }
     
     /// Fetch Föli service area boundaries.

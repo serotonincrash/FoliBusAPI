@@ -15,7 +15,7 @@ public extension FoliService {
     /// - Parameter routeId: The route identifier to fetch shapes for.
     /// - Returns: Array of shape points ordered by sequence.
     func fetchShapePoints(forRouteId routeId: String) async throws -> [Foli.ShapePoint] {
-        try await client.fetchShapePoints(forRouteId: routeId)
+        try await client.fetchShapePoints(forRoute: routeId)
     }
     
     // MARK: - Shape Discovery Helpers

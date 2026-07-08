@@ -22,9 +22,15 @@ public extension Foli {
         /// Whether the service is active on Sundays.
         public let sunday: Bool
         /// The first service date in `YYYYMMDD` format.
-        public let startDate: String
+        public let startDateCode: String
         /// The last service date in `YYYYMMDD` format.
-        public let endDate: String
+        public let endDateCode: String
+
+        /// Parsed start date, if the code is a valid YYYYMMDD string.
+        public var startDate: Date? { Self.parseDateCode(startDateCode) }
+
+        /// Parsed end date, if the code is a valid YYYYMMDD string.
+        public var endDate: Date? { Self.parseDateCode(endDateCode) }
 
         /// Creates a weekly service calendar record.
         public init(
@@ -36,8 +42,8 @@ public extension Foli {
             friday: Bool,
             saturday: Bool,
             sunday: Bool,
-            startDate: String,
-            endDate: String
+            startDateCode: String,
+            endDateCode: String
         ) {
             self.id = id
             self.monday = monday
@@ -47,8 +53,8 @@ public extension Foli {
             self.friday = friday
             self.saturday = saturday
             self.sunday = sunday
-            self.startDate = startDate
-            self.endDate = endDate
+            self.startDateCode = startDateCode
+            self.endDateCode = endDateCode
         }
 
         public init(from decoder: Decoder) throws {
@@ -61,8 +67,8 @@ public extension Foli {
             friday = try Self.decodeFlag(from: container, forKey: .friday)
             saturday = try Self.decodeFlag(from: container, forKey: .saturday)
             sunday = try Self.decodeFlag(from: container, forKey: .sunday)
-            startDate = try container.decode(String.self, forKey: .startDate)
-            endDate = try container.decode(String.self, forKey: .endDate)
+            startDateCode = try container.decode(String.self, forKey: .startDateCode)
+            endDateCode = try container.decode(String.self, forKey: .endDateCode)
         }
 
         public func encode(to encoder: Encoder) throws {
@@ -75,8 +81,8 @@ public extension Foli {
             try container.encode(friday, forKey: .friday)
             try container.encode(saturday, forKey: .saturday)
             try container.encode(sunday, forKey: .sunday)
-            try container.encode(startDate, forKey: .startDate)
-            try container.encode(endDate, forKey: .endDate)
+            try container.encode(startDateCode, forKey: .startDateCode)
+            try container.encode(endDateCode, forKey: .endDateCode)
         }
 
         private enum CodingKeys: String, CodingKey {
@@ -88,8 +94,16 @@ public extension Foli {
             case friday
             case saturday
             case sunday
-            case startDate = "start_date"
-            case endDate = "end_date"
+            case startDateCode = "start_date"
+            case endDateCode = "end_date"
+        }
+
+        /// Parse a `YYYYMMDD` date code string into a `Date`, using the same pattern as `Foli.CalendarDate.date`.
+        private static func parseDateCode(_ code: String) -> Date? {
+            let formatter = DateFormatter()
+            formatter.dateFormat = "yyyyMMdd"
+            formatter.calendar = Foundation.Calendar(identifier: .gregorian)
+            return formatter.date(from: code)
         }
 
         private static func decodeFlag(

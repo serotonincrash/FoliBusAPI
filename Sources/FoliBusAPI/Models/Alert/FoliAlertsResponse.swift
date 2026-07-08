@@ -52,20 +52,28 @@ public extension Foli {
             messages = try container.decode([Alert].self, forKey: .messages)
             
             // Handle empty objects being returned as {} instead of null
-            globalMessage = Self.decodeOptionalAlert(from: container, forKey: .globalMessage)
-            emergencyMessage = Self.decodeOptionalAlert(from: container, forKey: .emergencyMessage)
+            globalMessage = try Self.decodeOptionalAlert(from: container, forKey: .globalMessage)
+            emergencyMessage = try Self.decodeOptionalAlert(from: container, forKey: .emergencyMessage)
         }
         
         /// Decode an optional Alert, treating empty objects as nil
+        /// and rethrowing genuine decoding errors.
         private static func decodeOptionalAlert(
             from container: KeyedDecodingContainer<CodingKeys>,
             forKey key: CodingKeys
-        ) -> Alert? {
-            // Try to decode as Alert; if it fails (e.g. empty object {}), return nil
+        ) throws -> Alert? {
             do {
                 return try container.decodeIfPresent(Alert.self, forKey: key)
-            } catch {
-                return nil
+            } catch let error as DecodingError {
+                // Expected: empty object {} from server
+                // Decoding {} as Alert fails with keyNotFound (no message_id in empty dict),
+                // dataCorrupted, or typeMismatch. Any other DecodingError is unexpected.
+                switch error {
+                case .keyNotFound, .dataCorrupted, .typeMismatch:
+                    return nil
+                default:
+                    throw error
+                }
             }
         }
         

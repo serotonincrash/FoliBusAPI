@@ -35,7 +35,7 @@ public extension FoliService {
     /// - Returns: GeoJSON feature collection of POIs in the category.
     /// - Throws: `Foli.APIError` if the request fails.
     func fetchPointsOfInterest(category: String) async throws -> Foli.FeatureCollection {
-        return try await client.fetchPointsOfInterest(category: category)
+        return try await client.fetchPointsOfInterest(inCategory: category)
     }
     
     /// Fetch Föli service area boundaries.

@@ -6,7 +6,7 @@ public extension Foli {
         /// Line reference (e.g., "2A")
         public let line: String
         /// Icon recommendation
-        public let icon: String
+        public let icon: Icon
         /// GTFS-RT cause code for the cancellation
         public let cause: String
         /// Planned departure time from origin
@@ -20,7 +20,7 @@ public extension Foli {
         
         public init(
             line: String,
-            icon: String,
+            icon: Icon,
             cause: String,
             departure: TimeInterval,
             stops: [CancelledStop],
@@ -33,7 +33,38 @@ public extension Foli {
             self.stops = stops
             self.priority = priority
         }
-        
+
+        /// Icon recommendation for a trip cancellation.
+        public enum Icon: RawRepresentable, Codable, Sendable, Equatable, Hashable {
+            case cancel
+            case unknown(String)
+
+            public var rawValue: String {
+                switch self {
+                case .cancel: return "cancel"
+                case .unknown(let value): return value
+                }
+            }
+
+            public init(rawValue: String) {
+                switch rawValue {
+                case "cancel": self = .cancel
+                default: self = .unknown(rawValue)
+                }
+            }
+
+            public init(from decoder: Decoder) throws {
+                let container = try decoder.singleValueContainer()
+                let rawValue = try container.decode(String.self)
+                self.init(rawValue: rawValue)
+            }
+
+            public func encode(to encoder: Encoder) throws {
+                var container = encoder.singleValueContainer()
+                try container.encode(rawValue)
+            }
+        }
+
         // MARK: - Computed Properties
         
         /// Departure time as Date
@@ -63,7 +94,7 @@ public extension Foli {
         /// Whether to display stop-specific alert now
         public let isActive: Bool
         
-        public var id: String { stop }
+        public var id: String { "\(stop):\(arrival)" }
         
         private enum CodingKeys: String, CodingKey {
             case stop

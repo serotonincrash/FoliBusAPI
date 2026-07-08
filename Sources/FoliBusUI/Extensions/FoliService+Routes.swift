@@ -24,7 +24,7 @@ public extension FoliService {
     /// - Returns: The route if found.
     /// - Throws: ``Foli/APIError/notFound`` if no route matches the ID.
     func fetchRoute(id routeId: String) async throws -> Foli.Route {
-        guard let route = try await client.fetchRoute(id: routeId) else {
+        guard let route = try await client.route(for: routeId) else {
             throw Foli.APIError.notFound
         }
         return route

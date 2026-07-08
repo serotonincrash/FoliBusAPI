@@ -9,8 +9,9 @@ public extension Foli {
         public let validUntilTime: TimeInterval
         /// Distance along the route in meters
         public let linkDistance: Double?
-        /// Percentage completion of the current route segment
-        public let percentage: Double?
+        /// How far along the current link (segment between stops) the vehicle has progressed.
+        /// SIRI `PercentageOfLink` — a value between 0 and 1 (or nil when unknown).
+        public let segmentProgress: Double?
         /// Line reference (e.g., "14", "2A")
         public let lineRef: String
         /// Direction reference (typically "1" or "2")
@@ -129,7 +130,7 @@ public extension Foli {
             case recordedAtTime = "recordedattime"
             case validUntilTime = "validuntiltime"
             case linkDistance = "linkdistance"
-            case percentage
+            case segmentProgress = "percentage"
             case lineRef = "lineref"
             case directionRef = "directionref"
             case publishedLineName = "publishedlinename"
@@ -165,7 +166,7 @@ public extension Foli {
         ///   - recordedAtTime: Unix timestamp when this location was recorded.
         ///   - validUntilTime: Unix timestamp until which this data is valid.
         ///   - linkDistance: Distance along the route in meters.
-        ///   - percentage: Percentage completion of the current route segment.
+        ///   - segmentProgress: How far along the current link the vehicle has progressed (0–1).
         ///   - lineRef: Line reference (e.g., "14", "2A").
         ///   - directionRef: Direction reference (typically "1" or "2").
         ///   - publishedLineName: Published line name displayed to passengers.
@@ -197,7 +198,7 @@ public extension Foli {
             recordedAtTime: TimeInterval,
             validUntilTime: TimeInterval,
             linkDistance: Double? = nil,
-            percentage: Double? = nil,
+            segmentProgress: Double? = nil,
             lineRef: String,
             directionRef: String,
             publishedLineName: String,
@@ -229,7 +230,7 @@ public extension Foli {
             self.recordedAtTime = recordedAtTime
             self.validUntilTime = validUntilTime
             self.linkDistance = linkDistance
-            self.percentage = percentage
+            self.segmentProgress = segmentProgress
             self.lineRef = lineRef
             self.directionRef = directionRef
             self.publishedLineName = publishedLineName

@@ -16,7 +16,7 @@ public extension FoliService {
     /// - Returns: The agency if found.
     /// - Throws: ``Foli/APIError/notFound`` if no agency matches the ID.
     func fetchAgency(id agencyId: String) async throws -> Foli.Agency {
-        guard let agency = try await client.fetchAgency(id: agencyId) else {
+        guard let agency = try await client.agency(for: agencyId) else {
             throw Foli.APIError.notFound
         }
         return agency

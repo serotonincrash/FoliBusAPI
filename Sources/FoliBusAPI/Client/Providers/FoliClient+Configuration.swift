@@ -9,22 +9,22 @@ public struct FoliClientConfiguration: Sendable {
     /// The cache strategy used for cacheable GTFS resources.
     public let cacheBehavior: Foli.CacheBehavior
     /// The freshness policy used by the disk cache.
-    public let cacheTimeout: Foli.CacheTimeout
+    public let cacheTTL: Foli.CacheTTL
     /// The session used by the default transport when constructing clients from this configuration.
     public let session: URLSession
 
     /// Creates a client configuration.
     /// - Parameters:
     ///   - cacheBehavior: The cache strategy used for GTFS-backed resources.
-    ///   - cacheTimeout: The freshness policy used by the disk cache.
+    ///   - cacheTTL: The freshness policy used by the disk cache.
     ///   - session: The session used for request execution.
     public init(
         cacheBehavior: Foli.CacheBehavior = .cachedOrFetch,
-        cacheTimeout: Foli.CacheTimeout = .default,
+        cacheTTL: Foli.CacheTTL = .default,
         session: URLSession = .shared
     ) {
         self.cacheBehavior = cacheBehavior
-        self.cacheTimeout = cacheTimeout
+        self.cacheTTL = cacheTTL
         self.session = session
     }
 
@@ -50,7 +50,7 @@ public final class DefaultFoliClientProvider: FoliClientProviding {
         self.sharedClient = FoliClient(
             session: configuration.session,
             cacheBehavior: configuration.cacheBehavior,
-            cacheTimeout: configuration.cacheTimeout
+            cacheTTL: configuration.cacheTTL
         )
     }
 

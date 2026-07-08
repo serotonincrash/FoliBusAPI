@@ -38,7 +38,7 @@ public extension FoliClient {
     /// - Parameter category: Category name (e.g., "service_points", "loading_points").
     /// - Returns: GeoJSON feature collection of POIs in the category.
     /// - Throws: `Foli.APIError` if the request fails.
-    func fetchPointsOfInterest(category: String) async throws -> Foli.FeatureCollection {
+    func fetchPointsOfInterest(inCategory category: String) async throws -> Foli.FeatureCollection {
         try await dedup.performDeduplicated(.geoJSONPOICategory(category)) { [self] in
             try await requestGeoJSON("/geojson/poi/\(category)", as: Foli.FeatureCollection.self)
         }

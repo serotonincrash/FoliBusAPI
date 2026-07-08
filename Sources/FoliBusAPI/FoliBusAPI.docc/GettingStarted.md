@@ -13,7 +13,7 @@ import FoliBusAPI
 
 let client = FoliClient(
     cacheBehavior: .forceRefresh,
-    cacheTimeout: .default
+    cacheTTL: .default
 )
 ```
 

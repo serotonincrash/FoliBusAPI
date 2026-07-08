@@ -34,7 +34,7 @@ Import `FoliBusAPI` for non-UI usage (server-side, CLI, tests), `FoliBusUI` for 
 ### Caching
 
 - ``Foli/CacheBehavior``
-- ``Foli/CacheTimeout``
+- ``Foli/CacheTTL``
 - ``Foli/Resource``
 
 ### Transport and requests

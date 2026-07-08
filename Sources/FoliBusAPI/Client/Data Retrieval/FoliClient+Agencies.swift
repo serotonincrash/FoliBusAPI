@@ -31,7 +31,7 @@ public extension FoliClient {
     /// - Parameter agencyId: The ID of the agency.
     /// - Returns: The agency if found.
     /// - Throws: `Foli.APIError` if the network request or decoding fails.
-    func fetchAgency(id agencyId: String) async throws -> Foli.Agency? {
+    func agency(for agencyId: String) async throws -> Foli.Agency? {
         _ = try await fetchAgencies()
         return await indexes.agency(for: agencyId)
     }
