@@ -15,6 +15,14 @@ internal actor FoliRefreshTracker {
         tasks[resource] = task
     }
 
+    /// Registers a task only if no task is already registered for the resource.
+    /// Returns `true` if the task was registered, `false` if a task already exists.
+    func setTaskIfAbsent(_ task: Task<Void, Never>, for resource: Foli.Resource) -> Bool {
+        guard tasks[resource] == nil else { return false }
+        tasks[resource] = task
+        return true
+    }
+
     /// Removes a background refresh task if it is still the task currently registered for the resource.
     func clearTask(for resource: Foli.Resource, matching task: Task<Void, Never>) {
         guard let currentTask = tasks[resource], currentTask == task else {

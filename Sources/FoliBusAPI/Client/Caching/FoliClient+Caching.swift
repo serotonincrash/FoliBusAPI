@@ -11,8 +11,15 @@ import Foundation
 
 /// Holds a reference to a background refresh task so the task body can reference itself.
 ///
-/// ``@unchecked Sendable`` is safe here because the reference is assigned once
-/// (before any suspension point) and only read by the task body after that assignment.
+/// ``@unchecked Sendable`` is safe here because:
+/// 1. `ref.task = task` runs synchronously on the `FoliClient` actor *before* the
+///    `Task {}` closure begins executing, because `Task {}` inherits the actor's
+///    isolation and cannot start until the actor yields.
+/// 2. The closure reads `ref.task` only after the assignment has completed.
+///
+/// **Do not** change the `Task {}` to `Task.detached` or move this code to a
+/// `nonisolated` context — that would break the ordering guarantee and introduce
+/// a data race.
 private final class TaskReference: @unchecked Sendable {
     var task: Task<Void, Never>?
 }
@@ -72,7 +79,10 @@ public extension FoliClient {
         }
         ref.task = task
 
-        await refreshTracker.setTask(task, for: type)
+        if await !refreshTracker.setTaskIfAbsent(task, for: type) {
+            task.cancel()
+            return
+        }
     }
 
     /// Resolves a cacheable GTFS resource according to the client's configured ``Foli.CacheBehavior``,

@@ -31,6 +31,7 @@ extension Foli.DiskCache {
         do {
             return try await revalidateCache(for: type)
         } catch {
+            if Task.isCancelled { return false }
             return true
         }
     }
@@ -51,11 +52,11 @@ extension Foli.DiskCache {
 
     @discardableResult
     func revalidateCache(for type: Foli.Resource) async throws -> Bool {
+        let latestDatasetId = try await fetchLatestDatasetId()
+
         guard let metadata = try await loadMetadata(for: type) else {
             return false
         }
-
-        let latestDatasetId = try await fetchLatestDatasetId()
 
         if latestDatasetId == metadata.datasetId {
             try? await refreshMetadataTimestamp(for: type)
