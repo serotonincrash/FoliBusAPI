@@ -71,7 +71,7 @@ public extension Foli {
             self.wheelchairBoarding = wheelchairBoarding
         }
 
-        enum CodingKeys: String, CodingKey {
+        private enum CodingKeys: String, CodingKey {
             case id
             case name = "stop_name"
             case code = "stop_code"

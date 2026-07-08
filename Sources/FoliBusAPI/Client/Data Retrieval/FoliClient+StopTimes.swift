@@ -46,6 +46,7 @@ public extension FoliClient {
     
     /// Fetch all stop times using the client's configured caching behavior.
     /// - Returns: Array of StopTime objects.
+    /// - Throws: `Foli.APIError` if the network request or decoding fails.
     func fetchStopTimes() async throws -> [Foli.StopTime] {
         try await resolveCached(
             for: .stopTimes,
@@ -60,6 +61,7 @@ public extension FoliClient {
     /// - Parameters:
     ///   - tripId: The ID of the trip
     /// - Returns: Array of StopTime objects associated with the trip
+    /// - Throws: `Foli.APIError` if the network request or decoding fails.
     func fetchStopTimes(forTrip tripId: String) async throws -> [Foli.StopTime] {
         try await resolveCached(
             for: .stopTimesForTrip(tripId),
@@ -73,6 +75,7 @@ public extension FoliClient {
     /// Fetch stop times for a stop using the client's configured caching behavior.
     /// - Parameter stopId: The ID of the stop.
     /// - Returns: Array of StopTime objects associated with the stop.
+    /// - Throws: `Foli.APIError` if the network request or decoding fails.
     func fetchStopTimes(forStop stopId: String) async throws -> [Foli.StopTime] {
         try await resolveCached(
             for: .stopTimesForStop(stopId),

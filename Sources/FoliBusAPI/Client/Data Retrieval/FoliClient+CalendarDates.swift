@@ -25,6 +25,7 @@ public extension FoliClient {
     
     /// Fetch calendar dates using the client's configured caching behavior.
     /// - Returns: Array of CalendarDate objects.
+    /// - Throws: `Foli.APIError` if the network request or decoding fails.
     func fetchCalendarDates() async throws -> [Foli.CalendarDate] {
         try await resolveCached(
             for: .calendarDates,

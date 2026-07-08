@@ -24,6 +24,7 @@ public extension FoliClient {
     /// Fetch a specific stop by its ID via GTFS API
     /// - Parameter stopId: The ID of the stop to fetch
     /// - Returns: The stop if found
+    /// - Throws: `Foli.APIError` if the network request or decoding fails.
     func fetchStop(for stopId: String) async throws -> Foli.Stop? {
         _ = try await fetchStops()
         return await indexes.stop(for: stopId)
@@ -33,6 +34,7 @@ public extension FoliClient {
     
     /// Fetch stops using the client's configured caching behavior.
     /// - Returns: Array of Stop objects.
+    /// - Throws: `Foli.APIError` if the network request or decoding fails.
     func fetchStops() async throws -> [Foli.Stop] {
         try await resolveCached(
             for: .stops,

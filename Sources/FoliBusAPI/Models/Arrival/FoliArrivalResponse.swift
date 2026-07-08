@@ -7,30 +7,30 @@ extension Foli {
         // MARK: - Known Status Values
 
         /// Named constants for the well-known status strings returned by the stop monitoring endpoint.
-        enum Status {
+        enum Status: String, Codable {
             /// The request succeeded and `result` contains arrivals.
-            static let ok = "OK"
+            case ok = "OK"
             /// The backend has no SIRI data for this stop at the time of the request.
-            static let noData = "NO_SIRI_DATA"
+            case noData = "NO_SIRI_DATA"
         }
 
         /// System identifier ("SM" for stop monitoring)
         let sys: String
         /// Status of the response
-        let status: String
+        let status: Status
         /// Unix timestamp when the response was generated
         let serverTime: TimeInterval
         /// Array of vehicle arrivals/departures in order of arrival
         let result: [Foli.Arrival]
 
-        init(sys: String, status: String, serverTime: TimeInterval, result: [Foli.Arrival]) {
+        init(sys: String, status: Status, serverTime: TimeInterval, result: [Foli.Arrival]) {
             self.sys = sys
             self.status = status
             self.serverTime = serverTime
             self.result = result
         }
 
-        enum CodingKeys: String, CodingKey {
+        private enum CodingKeys: String, CodingKey {
             case sys
             case status
             case serverTime = "servertime"
@@ -39,7 +39,7 @@ extension Foli {
 
         /// Computed property to check if the response is valid
         var isValid: Bool {
-            status == Foli.ArrivalResponse.Status.ok
+            status == .ok
         }
 
         /// Convert server time to Date

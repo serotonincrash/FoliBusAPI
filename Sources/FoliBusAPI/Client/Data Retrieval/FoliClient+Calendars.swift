@@ -15,6 +15,7 @@ public extension FoliClient {
 
     /// Fetch the complete list of weekly service calendars from GTFS.
     /// - Returns: An array of all calendar records.
+    /// - Throws: `Foli.APIError` if the network request or decoding fails.
     func fetchCalendars() async throws -> [Foli.Calendar] {
         try await resolveCached(
             for: .calendars,
@@ -29,6 +30,7 @@ public extension FoliClient {
     /// Fetch a specific calendar by service ID.
     /// - Parameter serviceId: The service ID to fetch.
     /// - Returns: The calendar if found.
+    /// - Throws: `Foli.APIError` if the network request or decoding fails.
     func fetchCalendar(forServiceId serviceId: String) async throws -> Foli.Calendar? {
         _ = try await fetchCalendars()
         return await indexes.calendar(for: serviceId)

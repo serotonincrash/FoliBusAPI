@@ -78,7 +78,7 @@ public extension Foli {
             self.delay = delay
         }
 
-        enum CodingKeys: String, CodingKey {
+        private enum CodingKeys: String, CodingKey {
             case recordedAtTime = "recordedattime"
             case lineRef = "lineref"
             case monitored

@@ -34,7 +34,7 @@ public extension Foli {
             "\(shapeId)-\(sequence)"
         }
 
-        enum CodingKeys: String, CodingKey {
+        private enum CodingKeys: String, CodingKey {
             case shapeId = "shape_id"
             case latitude = "shape_pt_lat"
             case longitude = "shape_pt_lon"

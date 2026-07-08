@@ -43,7 +43,7 @@ public extension Foli {
         
         public var id: Int { messageId }
         
-        enum CodingKeys: String, CodingKey {
+        private enum CodingKeys: String, CodingKey {
             case messageId = "message_id"
             case icon
             case cause
@@ -66,6 +66,29 @@ public extension Foli {
             case channelGtfsrt = "channel_gtfsrt"
         }
         
+        /// Creates a new alert with the specified properties.
+        ///
+        /// - Parameters:
+        ///   - messageId: Unique identifier for the alert message.
+        ///   - icon: Icon recommendation (e.g., "BUS", "BOAT", "BIKE", "NONE").
+        ///   - cause: GTFS-RT cause code for the service disruption.
+        ///   - effect: GTFS-RT effect code describing the impact.
+        ///   - header: Optional message header (max 64 characters).
+        ///   - message: Main message content (max 300 characters).
+        ///   - information: Additional information that complements the message.
+        ///   - translations: Translations of header, message, and information in other languages.
+        ///   - images: Images associated with this alert.
+        ///   - repeat: Time periods when this alert is valid as [[start, end]] Unix timestamps.
+        ///   - isActive: Whether the alert should be displayed now.
+        ///   - priority: Priority level (lower number = higher priority, ≤100 considered important).
+        ///   - affectedRoutes: Route IDs from GTFS affected by this alert.
+        ///   - affectedStops: Stop IDs from GTFS affected by this alert.
+        ///   - categories: Category tags for this alert.
+        ///   - channelWeb: Whether to show on web channel.
+        ///   - channelStops: Whether to show on stops channel.
+        ///   - channelMobile: Whether to show on mobile channel.
+        ///   - channelTicker: Whether to show on ticker channel.
+        ///   - channelGtfsrt: Whether to show on GTFS-RT channel.
         public init(
             messageId: Int,
             icon: String,
@@ -118,11 +141,13 @@ public extension Foli {
         }
         
         /// Whether this alert affects a specific route
+        /// - Complexity: O(N) where N is the number of affected routes.
         public func affects(route routeId: String) -> Bool {
             affectedRoutes.contains(routeId)
         }
         
         /// Whether this alert affects a specific stop
+        /// - Complexity: O(N) where N is the number of affected stops.
         public func affects(stop stopId: String) -> Bool {
             affectedStops.contains(stopId)
         }
@@ -136,6 +161,7 @@ public extension Foli {
         }
         
         /// Active time periods as Date ranges
+        /// - Complexity: O(N) where N is the number of repeat periods.
         public var activePeriods: [(start: Date, end: Date)] {
             `repeat`.compactMap { period in
                 guard period.count == 2 else { return nil }
@@ -144,6 +170,7 @@ public extension Foli {
         }
         
         /// Time until alert becomes active (or nil if already active or expired)
+        /// - Complexity: O(N) where N is the number of repeat periods.
         public func timeUntilActive(from date: Date = Date()) -> TimeInterval? {
             let timestamp = date.timeIntervalSince1970
             for period in `repeat` where period.count == 2 {
@@ -155,6 +182,7 @@ public extension Foli {
         }
         
         /// Time until alert expires (or nil if not active or already expired)
+        /// - Complexity: O(N) where N is the number of repeat periods.
         public func timeUntilExpiry(from date: Date = Date()) -> TimeInterval? {
             let timestamp = date.timeIntervalSince1970
             for period in `repeat` where period.count == 2 {
@@ -168,8 +196,11 @@ public extension Foli {
     
     /// Translation of an alert in a specific language
     struct AlertTranslation: Codable, Sendable, Equatable, Hashable {
+        /// The alert header text for this language.
         public let header: String?
+        /// The full alert message body for this language.
         public let message: String
+        /// Additional informational text for this language.
         public let information: String?
         
         public init(header: String? = nil, message: String, information: String? = nil) {

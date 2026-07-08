@@ -31,7 +31,7 @@ extension Foli {
                 self.endDate = calendar.endDate
             }
             
-            enum CodingKeys: String, CodingKey {
+            private enum CodingKeys: String, CodingKey {
                 case monday
                 case tuesday
                 case wednesday

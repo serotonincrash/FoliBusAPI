@@ -42,11 +42,13 @@ public extension Foli {
         }
         
         /// Currently active cancelled stops (isActive = true)
+        /// - Complexity: O(N) where N is the number of cancelled stops.
         public var activeStops: [CancelledStop] {
             stops.filter { $0.isActive }
         }
         
         /// Whether this cancellation affects a specific stop
+        /// - Complexity: O(N) where N is the number of cancelled stops.
         public func affects(stop stopId: String) -> Bool {
             stops.contains { $0.stop == stopId }
         }
@@ -63,7 +65,7 @@ public extension Foli {
         
         public var id: String { stop }
         
-        enum CodingKeys: String, CodingKey {
+        private enum CodingKeys: String, CodingKey {
             case stop
             case arrival
             case isActive = "isactive"

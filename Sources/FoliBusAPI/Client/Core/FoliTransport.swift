@@ -11,7 +11,7 @@ public protocol FoliTransport: Sendable {
     /// Executes the given request and returns the raw response payload and metadata.
     /// - Parameter request: The fully constructed request to execute.
     /// - Returns: The response body data and its associated URL response.
-    func data(for request: URLRequest) async throws -> (Data, URLResponse)
+    func data(for request: URLRequest) async throws -> (data: Data, response: URLResponse)
 }
 
 /// A ``FoliTransport`` implementation backed by `URLSession`.
@@ -31,7 +31,7 @@ internal struct URLSessionTransport: FoliTransport {
     /// Executes a request using the configured `URLSession`.
     /// - Parameter request: The request to execute.
     /// - Returns: The response body data and its associated URL response.
-    func data(for request: URLRequest) async throws -> (Data, URLResponse) {
+    func data(for request: URLRequest) async throws -> (data: Data, response: URLResponse) {
         try await session.data(for: request)
     }
 }

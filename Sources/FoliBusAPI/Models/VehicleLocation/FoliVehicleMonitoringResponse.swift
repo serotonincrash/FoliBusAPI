@@ -22,7 +22,7 @@ extension Foli {
             self.result = result
         }
         
-        enum CodingKeys: String, CodingKey {
+        private enum CodingKeys: String, CodingKey {
             case sys
             case status
             case serverTime = "servertime"
@@ -53,18 +53,18 @@ extension Foli {
         let producerRef: String
         /// Response message identifier
         let responseMessageIdentifier: String
-        /// Status flag
-        let status: Bool
+        /// Whether the monitoring request succeeded
+        let isSuccess: Bool
         /// Whether there is more data available
         let moreData: Bool
         /// Dictionary of vehicles keyed by vehicle reference ID
         let vehicles: [String: Foli.VehicleLocation]
         
-        enum CodingKeys: String, CodingKey {
+        private enum CodingKeys: String, CodingKey {
             case responseTimestamp = "responsetimestamp"
             case producerRef = "producerref"
             case responseMessageIdentifier = "responsemessageidentifier"
-            case status
+            case isSuccess = "status"
             case moreData = "moredata"
             case vehicles
         }
@@ -73,14 +73,14 @@ extension Foli {
             responseTimestamp: TimeInterval,
             producerRef: String,
             responseMessageIdentifier: String,
-            status: Bool,
+            isSuccess: Bool,
             moreData: Bool,
             vehicles: [String: Foli.VehicleLocation]
         ) {
             self.responseTimestamp = responseTimestamp
             self.producerRef = producerRef
             self.responseMessageIdentifier = responseMessageIdentifier
-            self.status = status
+            self.isSuccess = isSuccess
             self.moreData = moreData
             self.vehicles = vehicles
         }

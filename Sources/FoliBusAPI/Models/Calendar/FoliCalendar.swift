@@ -79,7 +79,7 @@ public extension Foli {
             try container.encode(endDate, forKey: .endDate)
         }
 
-        enum CodingKeys: String, CodingKey {
+        private enum CodingKeys: String, CodingKey {
             case id = "service_id"
             case monday
             case tuesday

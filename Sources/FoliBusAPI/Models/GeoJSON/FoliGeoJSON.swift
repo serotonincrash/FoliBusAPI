@@ -81,7 +81,7 @@ public extension Foli {
         /// Multiple line strings for routes or linear boundaries.
         case multiLineString([[[Double]]])
         
-        enum CodingKeys: String, CodingKey {
+        private enum CodingKeys: String, CodingKey {
             case type
             case coordinates
         }
@@ -157,7 +157,7 @@ public extension Foli {
         /// Icon definition for map display.
         public let icon: GeoJSONIcon?
         
-        enum CodingKeys: String, CodingKey {
+        private enum CodingKeys: String, CodingKey {
             case category
             case name
             case nameFi = "name_fi"

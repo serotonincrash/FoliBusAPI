@@ -15,6 +15,7 @@ public extension FoliClient {
 
     /// Fetch the complete list of agencies from GTFS.
     /// - Returns: An array of all agencies.
+    /// - Throws: `Foli.APIError` if the network request or decoding fails.
     func fetchAgencies() async throws -> [Foli.Agency] {
         try await resolveCached(
             for: .agencies,
@@ -27,10 +28,11 @@ public extension FoliClient {
     }
 
     /// Fetch a specific agency by its ID.
-    /// - Parameter agencyID: The ID of the agency.
+    /// - Parameter agencyId: The ID of the agency.
     /// - Returns: The agency if found.
-    func fetchAgency(id agencyID: String) async throws -> Foli.Agency? {
+    /// - Throws: `Foli.APIError` if the network request or decoding fails.
+    func fetchAgency(id agencyId: String) async throws -> Foli.Agency? {
         _ = try await fetchAgencies()
-        return await indexes.agency(for: agencyID)
+        return await indexes.agency(for: agencyId)
     }
 }

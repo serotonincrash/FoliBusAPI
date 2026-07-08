@@ -23,16 +23,18 @@ public extension FoliClient {
     }
     
     /// Fetch a specific route by its ID
-    /// - Parameter routeID: The ID of route to fetch.
+    /// - Parameter routeId: The ID of route to fetch.
     /// - Returns: The route if found
-    func fetchRoute(id routeID: String) async throws -> Foli.Route? {
+    /// - Throws: `Foli.APIError` if the network request or decoding fails.
+    func fetchRoute(id routeId: String) async throws -> Foli.Route? {
         _ = try await fetchRoutes()
-        return await indexes.route(for: routeID)
+        return await indexes.route(for: routeId)
     }
     
     /// Fetch routes that match a given line reference (e.g., "15")
     /// - Parameter lineRef: The line reference to search for
     /// - Returns: Array of matching routes
+    /// - Throws: `Foli.APIError` if the network request or decoding fails.
     func fetchRoutes(for lineRef: String) async throws -> [Foli.Route] {
         _ = try await fetchRoutes()
         return await indexes.routes(forShortName: lineRef)
@@ -42,6 +44,7 @@ public extension FoliClient {
     
     /// Fetch routes using the client's configured caching behavior.
     /// - Returns: Array of Route objects.
+    /// - Throws: `Foli.APIError` if the network request or decoding fails.
     func fetchRoutes() async throws -> [Foli.Route] {
         try await resolveCached(
             for: .routes,

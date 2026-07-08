@@ -49,7 +49,7 @@ public extension Foli {
             self.agencyFareUrl = agencyFareUrl
         }
 
-        enum CodingKeys: String, CodingKey {
+        private enum CodingKeys: String, CodingKey {
             case id = "agency_id"
             case name = "agency_name"
             case url = "agency_url"

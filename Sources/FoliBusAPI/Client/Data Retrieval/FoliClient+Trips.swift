@@ -32,6 +32,7 @@ public extension FoliClient {
     /// Fetch GTFS trip metadata for a specific trip ID
     /// - Parameter tripId: The ID of the trip to fetch
     /// - Returns: The trip if found
+    /// - Throws: `Foli.APIError` if the network request or decoding fails.
     func fetchTrip(tripId: String) async throws -> Foli.Trip? {
         _ = try await fetchTrips()
         return await indexes.trip(for: tripId)
@@ -41,6 +42,7 @@ public extension FoliClient {
     
     /// Fetch all trips using the client's configured caching behavior.
     /// - Returns: Array of Trip objects.
+    /// - Throws: `Foli.APIError` if the network request or decoding fails.
     func fetchTrips() async throws -> [Foli.Trip] {
         try await resolveCached(
             for: .trips,
@@ -55,6 +57,7 @@ public extension FoliClient {
     /// Fetch trips for a specific route using the client's configured caching behavior.
     /// - Parameter routeId: The ID of the route to fetch trips for.
     /// - Returns: Array of Trip objects belonging to the specified route.
+    /// - Throws: `Foli.APIError` if the network request or decoding fails.
     func fetchTrips(forRoute routeId: String) async throws -> [Foli.Trip] {
         try await resolveCached(
             for: .tripsForRoute(routeId),

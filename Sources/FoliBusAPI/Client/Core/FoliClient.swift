@@ -63,7 +63,7 @@ public actor FoliClient {
     ///     logger.error("Background refresh failed for \(resource): \(error)")
     /// }
     /// ```
-    public var onBackgroundRefreshError: (@Sendable (Foli.Resource, Error) -> Void)?
+    public var onBackgroundRefreshError: (@Sendable (_ resource: Foli.Resource, _ error: Error) -> Void)?
 
     /// Creates a client that executes requests through a `URLSession`.
     /// - Parameters:

@@ -14,7 +14,7 @@ public extension Foli {
         /// List of informational messages and alerts
         public let messages: [Alert]
         
-        enum CodingKeys: String, CodingKey {
+        private enum CodingKeys: String, CodingKey {
             case serverTime = "servertime"
             case globalMessage = "global_message"
             case emergencyMessage = "emergency_message"
@@ -22,6 +22,14 @@ public extension Foli {
             case messages
         }
         
+        /// Creates a new alerts response.
+        ///
+        /// - Parameters:
+        ///   - serverTime: Unix timestamp when the response was generated.
+        ///   - globalMessage: System-wide global message, if any.
+        ///   - emergencyMessage: Emergency message that should override all other messages.
+        ///   - cancellations: List of trip cancellations.
+        ///   - messages: List of informational messages and alerts.
         public init(
             serverTime: TimeInterval,
             globalMessage: Alert? = nil,

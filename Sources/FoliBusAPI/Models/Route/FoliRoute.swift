@@ -56,7 +56,7 @@ public extension Foli {
             self.agencyId = agencyId
         }
 
-        enum CodingKeys: String, CodingKey {
+        private enum CodingKeys: String, CodingKey {
             case id = "route_id"
             case shortName = "route_short_name"
             case longName = "route_long_name"

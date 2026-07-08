@@ -19,7 +19,7 @@ extension Foli {
             let stop_timezone: String?
             let wheelchair_boarding: Int?
             
-            enum CodingKeys: String, CodingKey {
+            private enum CodingKeys: String, CodingKey {
                 case stop_name, stop_code, stop_desc, stop_lat, stop_lon, zone_id
                 case stop_url, location_type, parent_station, stop_timezone, wheelchair_boarding
             }

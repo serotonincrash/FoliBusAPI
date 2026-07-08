@@ -16,7 +16,7 @@ public extension Foli {
         
         public var id: Int { catId }
         
-        enum CodingKeys: String, CodingKey {
+        private enum CodingKeys: String, CodingKey {
             case catId = "catid"
             case category
             case descrFi = "descr_fi"

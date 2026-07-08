@@ -11,7 +11,7 @@ actor MockTransport: FoliTransport {
         self.handler = handler
     }
 
-    func data(for request: URLRequest) async throws -> (Data, URLResponse) {
+    func data(for request: URLRequest) async throws -> (data: Data, response: URLResponse) {
         recordedRequests.append(request)
         let (response, data) = try handler(request)
         return (data, response)

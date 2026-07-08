@@ -10,7 +10,7 @@ extension Foli.DiskCache {
         let latest: String
         let datasets: [String]
 
-        enum CodingKeys: String, CodingKey {
+        private enum CodingKeys: String, CodingKey {
             case latest
             case datasets
         }
