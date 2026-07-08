@@ -33,16 +33,16 @@ public final class FoliBusAPI {
     /// provider. This replaces the previous provider entirely.
     ///
     /// - Parameter provider: The provider to use for all subsequent static fetch calls.
-    public static func configure(_ provider: any FoliClientProviding) {
-        Task { await Self.provider.set(provider) }
+    public static func configure(_ provider: any FoliClientProviding) async {
+        await Self.provider.set(provider)
     }
 
     /// Resets the provider to a fresh ``DefaultFoliClientProvider`` with default configuration.
     ///
     /// Call this between test cases to ensure the static convenience methods don't share
     /// cache state across tests.
-    public static func reset() {
-        Task { await Self.provider.set(DefaultFoliClientProvider()) }
+    public static func reset() async {
+        await Self.provider.set(DefaultFoliClientProvider())
     }
 
     private static func defaultClient() async -> FoliClient {

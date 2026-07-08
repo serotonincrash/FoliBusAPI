@@ -42,10 +42,10 @@ The facade backs onto a configurable provider. Replace it at launch or reset it 
 
 ```swift
 // Configure with a custom provider at app launch
-FoliBusAPI.configure(MyCustomProvider())
+await FoliBusAPI.configure(MyCustomProvider())
 
 // Reset between test cases
-FoliBusAPI.reset()
+await FoliBusAPI.reset()
 ```
 
 ## Choose a cache behavior
