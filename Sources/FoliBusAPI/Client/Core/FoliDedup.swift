@@ -43,6 +43,12 @@ internal actor FoliDedup {
     /// returns the result of the existing request instead of starting a new one.
     /// This prevents duplicate network requests when multiple callers request the same data simultaneously.
     ///
+    /// > Important: Dedup correctness for hung operations depends on the transport layer
+    /// > timing out (e.g., `URLSessionConfiguration.timeoutIntervalForRequest`). A
+    /// > never-completing operation blocks every caller sharing the same key until the
+    /// > transport gives up. Configure timeouts at the transport or caller level rather
+    /// > than adding timeout logic here.
+    ///
     /// - Parameters:
     ///   - key: The deduplication key identifying this request type.
     ///   - operation: The async operation to execute if no request is in flight.
@@ -58,13 +64,7 @@ internal actor FoliDedup {
         let task = Task { try await operation() }
         inFlightRequests[key] = AnyInFlightTask(task)
 
-        do {
-            let result = try await task.value
-            inFlightRequests[key] = nil
-            return result
-        } catch {
-            inFlightRequests[key] = nil
-            throw error
-        }
+        defer { inFlightRequests[key] = nil }
+        return try await task.value
     }
 }
