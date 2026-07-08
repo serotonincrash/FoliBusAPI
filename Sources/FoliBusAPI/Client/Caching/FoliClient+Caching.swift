@@ -9,6 +9,14 @@ import Foundation
 
 // MARK: - Caching
 
+/// Holds a reference to a background refresh task so the task body can reference itself.
+///
+/// ``@unchecked Sendable`` is safe here because the reference is assigned once
+/// (before any suspension point) and only read by the task body after that assignment.
+private final class TaskReference: @unchecked Sendable {
+    var task: Task<Void, Never>?
+}
+
 @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
 public extension FoliClient {
     
@@ -57,10 +65,12 @@ public extension FoliClient {
     internal func refreshCacheInBackground<T: Sendable>(for type: Foli.Resource, fetch: @escaping @Sendable () async throws -> T, save: @escaping @Sendable (T) async throws -> Void) async {
         await refreshTracker.cancelTask(for: type)
 
-        let task = Task { [weak self] in
-            guard let self else { return }
-            await self.runBackgroundRefresh(for: type, fetch: fetch, save: save)
+        let ref = TaskReference()
+        let task = Task { [weak self, ref] in
+            guard let self, let task = ref.task else { return }
+            await self.runBackgroundRefresh(for: type, task: task, fetch: fetch, save: save)
         }
+        ref.task = task
 
         await refreshTracker.setTask(task, for: type)
     }
@@ -125,27 +135,27 @@ public extension FoliClient {
         }
     }
 
-    private func runBackgroundRefresh<T: Sendable>(for type: Foli.Resource, fetch: @escaping @Sendable () async throws -> T, save: @escaping @Sendable (T) async throws -> Void) async {
-        // Get the current task reference for proper cleanup
-        let currentTask = await refreshTracker.currentTask(for: type)
-
-        defer {
-            // Only clear if this is still the registered task (prevents clearing a newer task)
-            if let currentTask {
-                Task { [weak self] in
-                    await self?.refreshTracker.clearTask(for: type, matching: currentTask)
-                }
-            }
-        }
-
+    private func runBackgroundRefresh<T: Sendable>(
+        for type: Foli.Resource,
+        task: Task<Void, Never>,
+        fetch: @escaping @Sendable () async throws -> T,
+        save: @escaping @Sendable (T) async throws -> Void
+    ) async {
         do {
             let cacheStillCurrent = try await revalidateCache(for: type)
-            guard !cacheStillCurrent else { return }
+            guard !cacheStillCurrent else {
+                await refreshTracker.clearTask(for: type, matching: task)
+                return
+            }
+            try Task.checkCancellation()
             let freshValue = try await fetch()
+            try Task.checkCancellation()
             try await save(freshValue)
+            await refreshTracker.clearTask(for: type, matching: task)
         } catch is CancellationError {
-            // Task was cancelled - this is expected lifecycle behavior, not an error
+            await refreshTracker.clearTask(for: type, matching: task)
         } catch {
+            await refreshTracker.clearTask(for: type, matching: task)
             notifyBackgroundRefreshError(type, error: error)
         }
     }
