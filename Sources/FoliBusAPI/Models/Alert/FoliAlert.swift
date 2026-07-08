@@ -22,7 +22,7 @@ public extension Foli {
         /// Images associated with this alert
         public let images: [AlertImage]?
         /// Time periods when this alert is valid [[start, end]]
-        public let `repeat`: [[TimeInterval]]
+        public let repeatIntervals: [[TimeInterval]]
         /// Whether the alert should be displayed now
         public let isActive: Bool
         /// Priority (lower number = higher priority, ≤100 considered important)
@@ -53,7 +53,7 @@ public extension Foli {
             case information
             case translations
             case images
-            case `repeat`
+            case repeatIntervals = "repeat"
             case isActive = "isactive"
             case priority
             case affectedRoutes = "affected_routes"
@@ -78,7 +78,7 @@ public extension Foli {
         ///   - information: Additional information that complements the message.
         ///   - translations: Translations of header, message, and information in other languages.
         ///   - images: Images associated with this alert.
-        ///   - repeat: Time periods when this alert is valid as [[start, end]] Unix timestamps.
+        ///   - repeatIntervals: Time periods when this alert is valid as [[start, end]] Unix timestamps.
         ///   - isActive: Whether the alert should be displayed now.
         ///   - priority: Priority level (lower number = higher priority, ≤100 considered important).
         ///   - affectedRoutes: Route IDs from GTFS affected by this alert.
@@ -99,7 +99,7 @@ public extension Foli {
             information: String? = nil,
             translations: [String: AlertTranslation]? = nil,
             images: [AlertImage]? = nil,
-            repeat: [[TimeInterval]],
+            repeatIntervals: [[TimeInterval]],
             isActive: Bool,
             priority: Int,
             affectedRoutes: [String] = [],
@@ -120,7 +120,7 @@ public extension Foli {
             self.information = information
             self.translations = translations
             self.images = images
-            self.repeat = `repeat`
+            self.repeatIntervals = repeatIntervals
             self.isActive = isActive
             self.priority = priority
             self.affectedRoutes = affectedRoutes
@@ -163,7 +163,7 @@ public extension Foli {
         /// Active time periods as Date ranges
         /// - Complexity: O(N) where N is the number of repeat periods.
         public var activePeriods: [(start: Date, end: Date)] {
-            `repeat`.compactMap { period in
+            repeatIntervals.compactMap { period in
                 guard period.count == 2 else { return nil }
                 return (Date(timeIntervalSince1970: period[0]), Date(timeIntervalSince1970: period[1]))
             }
@@ -173,7 +173,7 @@ public extension Foli {
         /// - Complexity: O(N) where N is the number of repeat periods.
         public func timeUntilActive(from date: Date = Date()) -> TimeInterval? {
             let timestamp = date.timeIntervalSince1970
-            for period in `repeat` where period.count == 2 {
+            for period in repeatIntervals where period.count == 2 {
                 if timestamp < period[0] {
                     return period[0] - timestamp
                 }
@@ -185,7 +185,7 @@ public extension Foli {
         /// - Complexity: O(N) where N is the number of repeat periods.
         public func timeUntilExpiry(from date: Date = Date()) -> TimeInterval? {
             let timestamp = date.timeIntervalSince1970
-            for period in `repeat` where period.count == 2 {
+            for period in repeatIntervals where period.count == 2 {
                 if timestamp >= period[0] && timestamp < period[1] {
                     return period[1] - timestamp
                 }
