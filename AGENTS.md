@@ -34,6 +34,7 @@ This catches false positives and surfaces issues that any single model would mis
 - `opencode-go/deepseek-v4-flash` — fast, cheap, good for execution and verification
 - `opencode-go/deepseek-v4-pro` — stronger reasoning
 - `opencode-go/kimi-k2.7-code` — code-focused
+- `opencode-go/mimo-v2.5-pro` — current default, balanced for analysis and execution
 - `opencode-go/qwen3.7-max` — expensive, strong for analysis/writing, **avoid for pure execution**
 
 ---
