@@ -3,6 +3,8 @@ import Foundation
 // MARK: - Agency Model
 /// Information about a transit agency (GTFS agency.txt).
 ///
+/// - SeeAlso: ``Foli/Route``
+///
 /// Agencies operate one or more routes and provide contact information
 /// and service details for passengers.
 public extension Foli {

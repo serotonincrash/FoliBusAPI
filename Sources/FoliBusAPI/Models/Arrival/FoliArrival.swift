@@ -1,6 +1,8 @@
 import Foundation
 
 /// Information about a vehicle arrival or departure
+///
+/// - SeeAlso: ``Foli/Stop``, ``Foli/VehicleLocation``
 public extension Foli {
     struct Arrival: Codable, Sendable, Identifiable, Equatable, Hashable {
         /// Unix timestamp representing the last update from the vehicle

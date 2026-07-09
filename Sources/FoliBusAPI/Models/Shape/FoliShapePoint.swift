@@ -2,6 +2,8 @@ import Foundation
 
 // MARK: - Shape Point Model
 /// A route geometry point from GTFS shapes.txt
+///
+/// - SeeAlso: ``Foli/Route``, ``Foli/Trip``
 public extension Foli {
     struct ShapePoint: Codable, Sendable, Identifiable, Equatable, Hashable {
         /// GTFS `shape_id` for the polyline this point belongs to.

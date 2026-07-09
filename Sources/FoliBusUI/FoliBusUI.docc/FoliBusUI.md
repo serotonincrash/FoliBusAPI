@@ -61,3 +61,6 @@ struct StopsView: View {
 
 - ``Foli/Route/color``
 - ``Foli/Route/textColor``
+
+### Articles
+- <doc:SwiftUIIntegration>

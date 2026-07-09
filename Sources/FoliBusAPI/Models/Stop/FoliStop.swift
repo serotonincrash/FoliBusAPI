@@ -2,6 +2,8 @@ import Foundation
 
 // MARK: - Foli.Stop Model
 /// Information about a single stop (GTFS-compliant)
+///
+/// - SeeAlso: ``Foli/StopTime``, ``Foli/Arrival``
 public extension Foli {
     struct Stop: Codable, Sendable, Identifiable, Equatable, Hashable {
         /// The unique identifier for the stop (GTFS `stop_id`)

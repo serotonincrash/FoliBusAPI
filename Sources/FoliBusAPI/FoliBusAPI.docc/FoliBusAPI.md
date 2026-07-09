@@ -49,7 +49,55 @@ Import `FoliBusAPI` for non-UI usage (server-side, CLI, tests), `FoliBusUI` for 
 - ``Foli/CacheError``
 - ``Foli/DedupeKey``
 
+### Stops and stations
+- ``Foli/Stop``
+- ``Foli/Coordinate``
+
+### Routes and trips
+- ``Foli/Route``
+- ``Foli/Trip``
+- ``Foli/StopTime``
+- ``Foli/ShapePoint``
+
+### Schedules
+- ``Foli/Calendar``
+- ``Foli/CalendarDate``
+
+### Real-time data
+- ``Foli/Arrival``
+- ``Foli/VehicleLocation``
+- ``Foli/VehicleLocation/StopCall``
+
+### Alerts
+- ``Foli/Alert``
+- ``Foli/AlertTranslation``
+- ``Foli/AlertImage``
+- ``Foli/AlertCategory``
+- ``Foli/AlertsResponse``
+- ``Foli/TripCancellation``
+- ``Foli/CancelledStop``
+
+### Geographic data
+- ``Foli/FeatureCollection``
+- ``Foli/Feature``
+- ``Foli/Geometry``
+- ``Foli/FeatureProperties``
+- ``Foli/GeoJSONIcon``
+- ``Foli/GeoJSONLayer``
+- ``Foli/GeoJSONLayersResponse``
+
+### Agencies
+- ``Foli/Agency``
+
+### Providers
+- ``DefaultFoliClientProvider``
+
 ### Articles
 
 - <doc:GettingStarted>
 - <doc:TransportAndTesting>
+- <doc:GTFSDataModel>
+- <doc:GeoJSONAndMaps>
+- <doc:CachingStrategies>
+- <doc:RealTimeData>
+- <doc:GTFSDataModel>

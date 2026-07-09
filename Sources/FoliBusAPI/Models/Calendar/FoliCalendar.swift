@@ -2,6 +2,8 @@ import Foundation
 
 // MARK: - Calendar Model
 /// Weekly service calendar record (GTFS calendar.txt)
+///
+/// - SeeAlso: ``Foli/CalendarDate``, ``Foli/Trip``
 public extension Foli {
     /// Weekly service schedule metadata keyed by GTFS `service_id`.
     struct Calendar: Codable, Sendable, Identifiable, Equatable, Hashable {

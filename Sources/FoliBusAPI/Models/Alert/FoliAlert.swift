@@ -1,6 +1,8 @@
 import Foundation
 
 /// Real-time transit service alert or announcement
+///
+/// - SeeAlso: ``Foli/TripCancellation``, ``Foli/AlertCategory``
 public extension Foli {
     struct Alert: Codable, Sendable, Identifiable, Equatable, Hashable {
         /// Unique message identifier

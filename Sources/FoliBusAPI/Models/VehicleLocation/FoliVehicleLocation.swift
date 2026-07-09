@@ -1,6 +1,8 @@
 import Foundation
 
 /// Real-time location and status information for a vehicle
+///
+/// - SeeAlso: ``Foli/Arrival``, ``Foli/Route``
 public extension Foli {
     struct VehicleLocation: Codable, Sendable, Identifiable, Equatable, Hashable {
         /// Unix timestamp representing when this location was recorded

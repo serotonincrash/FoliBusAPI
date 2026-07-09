@@ -2,6 +2,8 @@ import Foundation
 
 // MARK: - Foli.Route Model
 /// Information about a transit route (GTFS-compliant)
+///
+/// - SeeAlso: ``Foli/Trip``, ``Foli/Agency``, ``Foli/ShapePoint``
 public extension Foli {
     struct Route: Codable, Sendable, Identifiable, Equatable, Hashable {
         /// The unique identifier for the route (GTFS route_id)

@@ -9,6 +9,8 @@ public extension Foli {
     // MARK: - FeatureCollection
     /// A GeoJSON Feature Collection containing multiple features.
     ///
+    /// - SeeAlso: ``Foli/Feature``, ``Foli/GeoJSONLayer``
+    ///
     /// Feature collections are the top-level response type for all geographic data endpoints.
     struct FeatureCollection: Codable, Sendable, Equatable, Hashable {
         /// GeoJSON type identifier (always "FeatureCollection").
