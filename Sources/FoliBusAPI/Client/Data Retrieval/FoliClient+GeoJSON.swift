@@ -17,7 +17,7 @@ public extension FoliClient {
     /// - Returns: Array of available map layers with metadata.
     /// - Throws: `Foli.APIError` if the request fails.
     func fetchGeoJSONLayers() async throws -> [Foli.GeoJSONLayer] {
-        try await dedup.performDeduplicated(.geoJSONLayers) { [self] in
+        try await dedup.performDeduplicated(forKey: .resource(.geoJSONLayers)) { [self] in
             let response = try await requestGeoJSON("/geojson/layers", as: Foli.GeoJSONLayersResponse.self)
             return response.geojson.layers
         }
@@ -28,7 +28,7 @@ public extension FoliClient {
     /// - Returns: GeoJSON feature collection of all POIs.
     /// - Throws: `Foli.APIError` if the request fails.
     func fetchPointsOfInterest() async throws -> Foli.FeatureCollection {
-        try await dedup.performDeduplicated(.geoJSONPOI) { [self] in
+        try await dedup.performDeduplicated(forKey: .resource(.geoJSONPOI)) { [self] in
             try await requestGeoJSON("/geojson/poi", as: Foli.FeatureCollection.self)
         }
     }
@@ -39,7 +39,7 @@ public extension FoliClient {
     /// - Returns: GeoJSON feature collection of POIs in the category.
     /// - Throws: `Foli.APIError` if the request fails.
     func fetchPointsOfInterest(inCategory category: String) async throws -> Foli.FeatureCollection {
-        try await dedup.performDeduplicated(.geoJSONPOICategory(category)) { [self] in
+        try await dedup.performDeduplicated(forKey: .resource(.geoJSONPOICategory(category))) { [self] in
             try await requestGeoJSON("/geojson/poi/\(category)", as: Foli.FeatureCollection.self)
         }
     }
@@ -59,7 +59,7 @@ public extension FoliClient {
         }
         let formatKey = format == .multiLineString ? "ml" : "mp"
         
-        return try await dedup.performDeduplicated(.geoJSONBounds(resolution: resolutionKey, format: formatKey)) { [self] in
+        return try await dedup.performDeduplicated(forKey: .resource(.geoJSONBounds(resolution: resolutionKey, format: formatKey))) { [self] in
             var path = "/geojson/bounds"
             
             switch resolution {

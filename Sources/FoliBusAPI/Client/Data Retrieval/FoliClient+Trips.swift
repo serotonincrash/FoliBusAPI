@@ -15,7 +15,7 @@ public extension FoliClient {
     /// Fetch all GTFS trips
     /// - Returns: Array of Trip objects
     internal func fetchTripsFromNetwork() async throws -> [Foli.Trip] {
-        try await dedup.performDeduplicated(.trips) { [self] in
+        try await dedup.performDeduplicated(forKey: .resource(.trips)) { [self] in
             try await requestGTFS("/trips/all", as: [Foli.Trip].self)
         }
     }
@@ -24,7 +24,7 @@ public extension FoliClient {
     /// - Parameter routeId: The ID of the route to fetch trips for
     /// - Returns: Array of Trip objects belonging to the specified route
     internal func fetchTripsFromNetwork(forRoute routeId: String) async throws -> [Foli.Trip] {
-        try await dedup.performDeduplicated(.tripsForRoute(routeId)) { [self] in
+        try await dedup.performDeduplicated(forKey: .resource(.tripsForRoute(routeId))) { [self] in
             try await requestGTFS("/trips/route/\(routeId)", as: [Foli.Trip].self)
         }
     }

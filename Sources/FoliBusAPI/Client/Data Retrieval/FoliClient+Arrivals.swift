@@ -41,7 +41,7 @@ extension FoliClient {
     /// - Returns: A stop-monitoring response containing arrivals and departures.
     /// - Note: This is an internal method. Use `fetchArrivals(for:)` for the public API.
     internal func fetchStopMonitoring(for stopId: String) async throws -> Foli.ArrivalResponse {
-        try await dedup.performDeduplicated(.stopMonitoring(stopId)) { [self] in
+        try await dedup.performDeduplicated(forKey: .stopMonitoring(stopId)) { [self] in
             try await requestSIRI("/sm/\(stopId)", as: Foli.ArrivalResponse.self)
         }
     }

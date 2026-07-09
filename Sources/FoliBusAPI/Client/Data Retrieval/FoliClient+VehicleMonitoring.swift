@@ -70,7 +70,7 @@ extension FoliClient {
     /// - Note: This is an internal method. Use ``fetchVehicleLocations()`` for the public API.
     ///         Request is deduplicated to prevent concurrent duplicate requests.
     internal func fetchVehicleMonitoring() async throws -> Foli.VehicleMonitoringResponse {
-        try await dedup.performDeduplicated(.vehicleMonitoring) { [self] in
+        try await dedup.performDeduplicated(forKey: .vehicleMonitoring) { [self] in
             try await requestSIRI("/vm", as: Foli.VehicleMonitoringResponse.self)
         }
     }

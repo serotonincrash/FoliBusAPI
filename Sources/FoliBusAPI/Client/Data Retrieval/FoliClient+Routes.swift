@@ -16,13 +16,18 @@ public extension FoliClient {
     /// Fetch the complete list of all known routes from GTFS
     /// - Returns: An array of all routes
     internal func fetchRoutesFromNetwork() async throws -> [Foli.Route] {
-        try await dedup.performDeduplicated(.routes) { [self] in
+        try await dedup.performDeduplicated(forKey: .resource(.routes)) { [self] in
             let routeList = try await requestGTFS("/routes", as: Foli.RouteList.self)
             return routeList.routes
         }
     }
     
-    /// Fetch a specific route by its ID
+    /// Fetch a specific route by its ID.
+    ///
+    /// The Foli API does not support individual route lookups — this method fetches all routes
+    /// (cached) and performs an O(1) dictionary lookup.
+    /// The first call populates the cache; subsequent calls are instant.
+    ///
     /// - Parameter routeId: The ID of route to fetch.
     /// - Returns: The route if found
     /// - Throws: `Foli.APIError` if the network request or decoding fails.

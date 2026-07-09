@@ -15,13 +15,18 @@ public extension FoliClient {
     /// Fetch the complete list of all known stops via GTFS API
     /// - Returns: An array of all stops
     internal func fetchStopsFromNetwork() async throws -> [Foli.Stop] {
-        try await dedup.performDeduplicated(.stops) { [self] in
+        try await dedup.performDeduplicated(forKey: .resource(.stops)) { [self] in
             let stopList = try await requestGTFS("/stops", as: Foli.StopList.self)
             return stopList.stops
         }
     }
     
-    /// Fetch a specific stop by its ID via GTFS API
+    /// Fetch a specific stop by its ID via GTFS API.
+    ///
+    /// The Foli API does not support individual stop lookups — this method fetches all stops
+    /// (cached) and performs an O(1) dictionary lookup.
+    /// The first call populates the cache; subsequent calls are instant.
+    ///
     /// - Parameter stopId: The ID of the stop to fetch
     /// - Returns: The stop if found
     /// - Throws: `Foli.APIError` if the network request or decoding fails.

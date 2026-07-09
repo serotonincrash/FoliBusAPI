@@ -7,7 +7,7 @@ public extension FoliClient {
     /// Fetch the complete list of weekly service calendars from GTFS.
     /// - Returns: An array of all calendar records.
     internal func fetchCalendarsFromNetwork() async throws -> [Foli.Calendar] {
-        try await dedup.performDeduplicated(.calendars) { [self] in
+        try await dedup.performDeduplicated(forKey: .resource(.calendars)) { [self] in
             let calendarList = try await requestGTFS("/calendar", as: Foli.CalendarList.self)
             return calendarList.calendars
         }
