@@ -23,6 +23,8 @@ extension Foli.DiskCache {
         // Stale — try revalidation via network; if that fails, return nil.
         do {
             return try await revalidateCache(for: key) ? cachedData.data : nil
+        } catch is CancellationError {
+            throw CancellationError()
         } catch {
             return nil
         }
