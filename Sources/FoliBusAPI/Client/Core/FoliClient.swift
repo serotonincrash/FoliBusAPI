@@ -79,11 +79,12 @@ public actor FoliClient {
     ///   - cacheBehavior: The cache behavior to apply to cacheable GTFS resources.
     ///   - cacheTTL: The disk-cache freshness policy.
     public init(session: URLSession = .shared, cacheBehavior: Foli.CacheBehavior = .cachedOrFetch, cacheTTL: Foli.CacheTTL = .default) {
-        self.requester = FoliRequester(transport: URLSessionTransport(session: session))
+        let requester = FoliRequester(transport: URLSessionTransport(session: session))
+        self.requester = requester
         self.cacheBehavior = cacheBehavior
 
         do {
-            self.cache = try Foli.DiskCache(timeout: cacheTTL)
+            self.cache = try Foli.DiskCache(timeout: cacheTTL, datasetIdFetcher: Self.makeDatasetIdFetcher(requester: requester))
         } catch {
             // Cache initialization failed - fall back to no-cache mode
             // This is expected when disk access is unavailable
@@ -101,15 +102,24 @@ public actor FoliClient {
     ///   - cacheBehavior: The cache behavior to apply to cacheable GTFS resources.
     ///   - cacheTTL: The disk-cache freshness policy.
     public init(transport: any FoliTransport, cacheBehavior: Foli.CacheBehavior = .cachedOrFetch, cacheTTL: Foli.CacheTTL = .default) {
-        self.requester = FoliRequester(transport: transport)
+        let requester = FoliRequester(transport: transport)
+        self.requester = requester
         self.cacheBehavior = cacheBehavior
 
         do {
-            self.cache = try Foli.DiskCache(timeout: cacheTTL)
+            self.cache = try Foli.DiskCache(timeout: cacheTTL, datasetIdFetcher: Self.makeDatasetIdFetcher(requester: requester))
         } catch {
             // Cache initialization failed - fall back to no-cache mode
             // This is expected when disk access is unavailable
             self.cacheBehavior = .noCache
+        }
+    }
+
+    /// Builds the dataset-ID fetcher handed to ``Foli/DiskCache``, routing the
+    /// cache's revalidation traffic through the client's transport.
+    private static func makeDatasetIdFetcher(requester: FoliRequester) -> @Sendable () async throws -> String {
+        {
+            try await requester.requestGTFS("/v0", as: Foli.DiskCache.GTFSInfoResponse.self).latest
         }
     }
 

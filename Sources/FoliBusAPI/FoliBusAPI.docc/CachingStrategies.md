@@ -15,6 +15,8 @@ Caching is configured along two axes:
 
 The package ships with ``Foli/DiskCache``, an actor-isolated file-based cache that stores serialized resources under the application support directory. The cache is initialized automatically when you create a ``FoliClient`` — if disk access is unavailable (e.g., sandbox restrictions), the client falls back to `.noCache` behavior transparently.
 
+Cache entries that fail to decode — file corruption, or model changes across package updates — are treated as cache misses: the poisoned file is removed and the next fetch re-populates it. All cache network traffic (dataset revalidation) flows through the client's configured transport, so injected mock transports fully isolate tests from the network.
+
 ```swift
 let client = FoliClient(
     cacheBehavior: .cachedOrFetch,
