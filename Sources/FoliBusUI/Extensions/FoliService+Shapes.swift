@@ -3,7 +3,6 @@ import FoliBusAPI
 
 // MARK: - Shapes API
 
-@available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
 public extension FoliService {
     /// Fetch route IDs that have shape points available.
     /// - Returns: Array of route IDs.

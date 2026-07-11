@@ -1,12 +1,11 @@
 import Foundation
 
-/// Tracks background stale-while-revalidate refresh tasks so they can be cancelled
-/// when the client is asked to refresh the same resource again before the previous
-/// refresh completes.
+/// Tracks background stale-while-revalidate refresh tasks so that at most one
+/// refresh is in flight per resource: while a refresh is registered, subsequent
+/// requests to refresh the same resource are no-ops.
 ///
 /// Extracting bookkeeping into a dedicated actor means the task registration and
 /// cleanup dictionary operations no longer block unrelated ``FoliClient`` calls.
-@available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
 internal actor FoliRefreshTracker {
     private var tasks: [Foli.Resource: Task<Void, Never>] = [:]
 
@@ -29,11 +28,6 @@ internal actor FoliRefreshTracker {
             return
         }
         tasks[resource] = nil
-    }
-
-    /// Cancels any in-flight background refresh for the provided resource.
-    func cancelTask(for resource: Foli.Resource) {
-        tasks[resource]?.cancel()
     }
 
     /// Returns the currently registered background refresh task for the given resource, if any.

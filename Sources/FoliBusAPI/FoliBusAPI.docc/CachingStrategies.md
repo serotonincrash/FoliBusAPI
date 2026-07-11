@@ -74,7 +74,7 @@ let routes = try await client.fetchRoutes()
 **Background refresh errors:** Since the refresh runs in the background, errors are not thrown to the caller. Register a handler to observe them:
 
 ```swift
-client.onBackgroundRefreshError = { resource, error in
+await client.setOnBackgroundRefreshError { resource, error in
     logger.error("Background refresh failed for \(resource): \(error)")
 }
 ```

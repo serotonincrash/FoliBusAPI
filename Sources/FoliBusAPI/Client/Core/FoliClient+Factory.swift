@@ -2,7 +2,6 @@ import Foundation
 
 // MARK: - Convenience Factory
 
-@available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
 extension FoliClient {
     /// Creates a configured client backed by a `URLSession` transport.
     /// - Parameters:

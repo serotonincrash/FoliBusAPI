@@ -9,7 +9,6 @@ import Foundation
 
 // MARK: - Alerts
 
-@available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
 public extension FoliClient {
     
     /// Fetch all active alerts (messages and cancellations).

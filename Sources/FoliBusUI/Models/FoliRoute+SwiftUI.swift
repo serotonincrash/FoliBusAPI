@@ -1,7 +1,6 @@
 import SwiftUI
 import FoliBusAPI
 
-@available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
 public extension Foli.Route {
     /// Route color as a SwiftUI `Color` if available.
     var color: Color? {

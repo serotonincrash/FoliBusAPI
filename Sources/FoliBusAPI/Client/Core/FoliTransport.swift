@@ -6,7 +6,6 @@ import Foundation
 /// response validation, and decoding. Production code typically uses
 /// the built-in `URLSession`-backed client initializer, while tests can inject a custom transport that returns
 /// deterministic fixture data.
-@available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
 public protocol FoliTransport: Sendable {
     /// Executes the given request and returns the raw response payload and metadata.
     /// - Parameter request: The fully constructed request to execute.
@@ -18,7 +17,6 @@ public protocol FoliTransport: Sendable {
 ///
 /// Use this transport in production to route ``FoliClient`` requests through a
 /// concrete session configuration.
-@available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
 internal struct URLSessionTransport: FoliTransport {
     private let session: URLSession
 

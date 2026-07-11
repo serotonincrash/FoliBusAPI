@@ -6,7 +6,6 @@ import Foundation
 /// Extracting these into a plain ``Sendable`` value type means JSON decoding
 /// for large GTFS payloads (routes, stops, trips) no longer runs on the
 /// actor's executor and therefore no longer blocks unrelated ``FoliClient`` calls.
-@available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
 internal struct FoliRequester: Sendable {
     internal let transport: any FoliTransport
     internal let decoder = JSONDecoder()

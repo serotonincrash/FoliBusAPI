@@ -2,7 +2,6 @@ import Foundation
 
 // MARK: - Shapes (GTFS)
 
-@available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
 public extension FoliClient {
     /// Fetch route IDs that expose shapes from GTFS.
     /// - Returns: Array of route IDs that have at least one available shape.

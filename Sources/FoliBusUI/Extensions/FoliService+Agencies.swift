@@ -3,7 +3,6 @@ import FoliBusAPI
 
 // MARK: - Agencies API
 
-@available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
 public extension FoliService {
     /// Fetch all agencies from the API.
     /// - Returns: Array of all agencies.

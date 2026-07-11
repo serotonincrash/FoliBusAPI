@@ -9,7 +9,6 @@ import Foundation
 
 // MARK: - Arrivals
 
-@available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
 public extension FoliClient {
     
     /// Fetch arrivals for a stop identified by string ID.
@@ -33,7 +32,6 @@ public extension FoliClient {
     }
 }
 
-@available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
 extension FoliClient {
     
     /// Fetch stop-monitoring data for a stop identified by string ID.

@@ -10,7 +10,6 @@ import FoliBusAPI
 
 // MARK: - Stop Times API
 
-@available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
 public extension FoliService {
     
     /// Fetch all stop times from the GTFS API

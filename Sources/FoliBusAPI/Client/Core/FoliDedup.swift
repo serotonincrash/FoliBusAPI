@@ -6,7 +6,6 @@ import Foundation
 /// (dictionary lookups, task creation, and cleanup) no longer blocks unrelated
 /// ``FoliClient`` calls, since they execute on the dedup actor's executor
 /// rather than the client's.
-@available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
 internal actor FoliDedup {
     /// Type-erased wrapper for in-flight tasks.
     ///

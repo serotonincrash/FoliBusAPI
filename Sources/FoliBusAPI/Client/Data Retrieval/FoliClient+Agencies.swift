@@ -2,7 +2,6 @@ import Foundation
 
 // MARK: - Agencies (GTFS)
 
-@available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
 public extension FoliClient {
     /// Fetch the complete list of agencies from GTFS.
     /// - Returns: An array of all agencies.

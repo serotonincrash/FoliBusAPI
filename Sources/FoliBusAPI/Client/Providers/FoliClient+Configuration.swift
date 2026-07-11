@@ -4,7 +4,6 @@ import Foundation
 ///
 /// Use this type when providing clients through SwiftUI environment integration
 /// or when you want to centralize cache and transport-related defaults.
-@available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
 public struct FoliClientConfiguration: Sendable {
     /// The cache strategy used for cacheable GTFS resources.
     public let cacheBehavior: Foli.CacheBehavior
@@ -33,14 +32,12 @@ public struct FoliClientConfiguration: Sendable {
 }
 
 /// A type that can vend configured ``FoliClient`` instances.
-@available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
 public protocol FoliClientProviding: Sendable {
     /// Returns a client instance suitable for the current environment.
     func client() -> FoliClient
 }
 
 /// Default provider that constructs and reuses a single configured client instance.
-@available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
 public final class DefaultFoliClientProvider: FoliClientProviding {
     private let sharedClient: FoliClient
 

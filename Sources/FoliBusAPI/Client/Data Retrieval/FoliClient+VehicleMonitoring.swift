@@ -9,7 +9,6 @@ import Foundation
 
 // MARK: - Vehicle Monitoring
 
-@available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
 public extension FoliClient {
     
     /// Fetch all current vehicle locations from the SIRI Vehicle Monitoring (VM) endpoint.
@@ -59,7 +58,6 @@ public extension FoliClient {
     }
 }
 
-@available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
 extension FoliClient {
     
     /// Fetch vehicle-monitoring data from the SIRI VM endpoint.

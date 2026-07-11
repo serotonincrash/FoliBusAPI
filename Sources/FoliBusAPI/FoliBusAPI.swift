@@ -8,7 +8,6 @@ import Foundation
 ///
 /// The facade's backing provider can be replaced at app launch via ``configure(_:)``
 /// and reset between test cases via ``reset()``.
-@available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
 public final class FoliBusAPI {
     /// Internal actor that protects the facade's provider from concurrent access.
     private actor ProviderBox {

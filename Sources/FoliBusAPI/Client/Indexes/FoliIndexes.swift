@@ -5,7 +5,6 @@ import Foundation
 /// Extracting these into a dedicated actor means index rebuilds (O(N) CPU work)
 /// no longer block unrelated ``FoliClient`` calls, since they execute on the
 /// indexes actor's executor rather than the client's.
-@available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
 internal actor FoliIndexes {
     private var stopsByID: [String: Foli.Stop] = [:]
     private var routesByID: [String: Foli.Route] = [:]

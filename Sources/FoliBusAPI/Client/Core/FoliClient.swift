@@ -30,7 +30,6 @@ import Foundation
 /// ## SwiftUI integration
 /// SwiftUI integration (the `@FoliService` property wrapper and environment provider)
 /// lives in the separate `FoliBusUI` target. See that target's documentation for details.
-@available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
 public actor FoliClient {
     /// Transport, decoder, base URLs, and request execution.
     ///
@@ -55,15 +54,24 @@ public actor FoliClient {
     /// Called when a background stale-while-revalidate refresh fails.
     ///
     /// The client itself cannot surface errors from background refreshes (they are
-    /// fire-and-observe), so set this handler if you want to log or react to failures.
+    /// fire-and-observe), so register a handler via ``setOnBackgroundRefreshError(_:)``
+    /// if you want to log or react to failures.
     /// The handler is called on the actor's executor.
+    public private(set) var onBackgroundRefreshError: (@Sendable (_ resource: Foli.Resource, _ error: Error) -> Void)?
+
+    /// Registers a handler that is called when a background stale-while-revalidate
+    /// refresh fails.
     ///
     /// ```swift
-    /// client.onBackgroundRefreshError = { resource, error in
+    /// await client.setOnBackgroundRefreshError { resource, error in
     ///     logger.error("Background refresh failed for \(resource): \(error)")
     /// }
     /// ```
-    public var onBackgroundRefreshError: (@Sendable (_ resource: Foli.Resource, _ error: Error) -> Void)?
+    /// - Parameter handler: The handler to invoke on each failure, or `nil` to remove
+    ///   the current handler. Called on the actor's executor.
+    public func setOnBackgroundRefreshError(_ handler: (@Sendable (_ resource: Foli.Resource, _ error: Error) -> Void)?) {
+        onBackgroundRefreshError = handler
+    }
 
     /// Creates a client that executes requests through a `URLSession`.
     /// - Parameters:

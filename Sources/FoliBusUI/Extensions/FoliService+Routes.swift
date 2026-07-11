@@ -10,7 +10,6 @@ import FoliBusAPI
 
 // MARK: - Routes API
 
-@available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
 public extension FoliService {
     
     /// Fetch all routes from the API

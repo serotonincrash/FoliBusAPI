@@ -24,7 +24,6 @@ private final class TaskReference: @unchecked Sendable {
     var task: Task<Void, Never>?
 }
 
-@available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
 public extension FoliClient {
     
     // MARK: - Cache Management
@@ -68,21 +67,29 @@ public extension FoliClient {
         return try await cache.revalidateCache(for: type)
     }
 
-    /// Starts a best-effort stale-while-revalidate refresh and removes its bookkeeping entry once the task finishes.
+    /// Starts a best-effort stale-while-revalidate refresh unless one is already in flight
+    /// for the resource, and removes its bookkeeping entry once the task finishes.
     internal func refreshCacheInBackground<T: Sendable>(for type: Foli.Resource, fetch: @escaping @Sendable () async throws -> T, save: @escaping @Sendable (T) async throws -> Void) async {
-        await refreshTracker.cancelTask(for: type)
+        let (registration, registrationContinuation) = AsyncStream.makeStream(of: Bool.self)
 
         let ref = TaskReference()
         let task = Task { [weak self, ref] in
-            guard let self, let task = ref.task else { return }
+            // Do no work until the registration outcome is known, so the task can neither
+            // race an already-in-flight refresh nor finish before it is registered
+            // (which would strand a dead entry in the tracker).
+            var isRegistered = false
+            for await outcome in registration {
+                isRegistered = outcome
+                break
+            }
+            guard isRegistered, let self, let task = ref.task else { return }
             await self.runBackgroundRefresh(for: type, task: task, fetch: fetch, save: save)
         }
         ref.task = task
 
-        if await !refreshTracker.setTaskIfAbsent(task, for: type) {
-            task.cancel()
-            return
-        }
+        let registered = await refreshTracker.setTaskIfAbsent(task, for: type)
+        registrationContinuation.yield(registered)
+        registrationContinuation.finish()
     }
 
     /// Resolves a cacheable GTFS resource according to the client's configured ``Foli.CacheBehavior``,
