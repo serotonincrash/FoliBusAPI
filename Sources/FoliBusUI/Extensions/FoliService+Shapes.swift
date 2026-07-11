@@ -11,10 +11,11 @@ public extension FoliService {
     }
 
     /// Fetch shape points for a specific shape ID.
-    /// - Parameter routeId: The route identifier to fetch shapes for.
+    /// - Parameter shapeId: The GTFS shape identifier to fetch points for. Obtain shape
+    ///   IDs for a route via ``fetchShapeIds(forRoute:)`` or ``fetchMostCommonShapeId(forRoute:)``.
     /// - Returns: Array of shape points ordered by sequence.
-    func fetchShapePoints(forRouteId routeId: String) async throws -> [Foli.ShapePoint] {
-        try await client.fetchShapePoints(forRoute: routeId)
+    func fetchShapePoints(forShape shapeId: String) async throws -> [Foli.ShapePoint] {
+        try await client.fetchShapePoints(forShape: shapeId)
     }
     
     // MARK: - Shape Discovery Helpers

@@ -312,13 +312,14 @@ public final class FoliBusAPI {
         return try await client.fetchShapeRouteIDs()
     }
     
-    /// Fetch shape points for a specific route
-    /// - Parameter routeId: The route identifier to fetch shapes for
+    /// Fetch shape points for a specific shape
+    /// - Parameter shapeId: The GTFS shape identifier to fetch points for. Obtain shape
+    ///   IDs for a route via `fetchShapeIds(forRoute:)` on `FoliClient`.
     /// - Returns: Shape points ordered by sequence
     /// - Throws: `Foli.APIError` if the request fails.
-    public static func fetchShapePoints(forRouteId routeId: String) async throws -> [Foli.ShapePoint] {
+    public static func fetchShapePoints(forShape shapeId: String) async throws -> [Foli.ShapePoint] {
         let client = await defaultClient()
-        return try await client.fetchShapePoints(forRoute: routeId)
+        return try await client.fetchShapePoints(forShape: shapeId)
     }
     
     // MARK: - Convenience Methods - GeoJSON

@@ -69,6 +69,19 @@ internal actor FoliIndexes {
         tripsByID = Dictionary(uniqueKeysWithValues: trips.map { ($0.id, $0) })
     }
 
+    /// Merges trips into the index without discarding existing entries.
+    ///
+    /// Used by route-scoped fetches, whose partial results must not replace the
+    /// global trips index the way ``rebuildTrips(using:)`` does.
+    func mergeTrips(_ newTrips: [Foli.Trip]) {
+        guard !newTrips.isEmpty else { return }
+        for trip in newTrips {
+            tripsByID[trip.id] = trip
+        }
+        // The index no longer matches any full-rebuild fingerprint.
+        lastTripsFp = nil
+    }
+
     func stop(for id: String) -> Foli.Stop? { stopsByID[id] }
     func route(for id: String) -> Foli.Route? { routesByID[id] }
     func routes(forShortName shortName: String) -> [Foli.Route] { routesByShortName[shortName] ?? [] }

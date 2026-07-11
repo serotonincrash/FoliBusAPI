@@ -282,7 +282,7 @@ struct EndpointCompatibilityTests {
         }
 
         let client = FoliClient(transport: transport, cacheBehavior: .noCache)
-        _ = try await client.fetchShapePoints(forRoute: "0_7")
+        _ = try await client.fetchShapePoints(forShape: "0_7")
         let requests = await transport.requests()
 
         #expect(requests.count == 1)

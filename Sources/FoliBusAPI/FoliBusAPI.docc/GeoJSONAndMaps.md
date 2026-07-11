@@ -159,10 +159,11 @@ func polylines(from feature: Foli.Feature) -> [MKPolyline] {
 
 ## Building polylines from shape points
 
-GTFS shapes are ordered ``Foli/ShapePoint`` values. Convert them into `CLLocationCoordinate2D` and render them as an `MKPolyline`.
+GTFS shapes are ordered ``Foli/ShapePoint`` values, keyed by shape ID. Resolve a route's shape IDs first, then convert the points into `CLLocationCoordinate2D` and render them as an `MKPolyline`.
 
 ```swift
-let points = try await client.fetchShapePoints(forRoute: route.id)
+let shapeIds = try await client.fetchShapeIds(forRoute: route.id)
+let points = try await client.fetchShapePoints(forShape: shapeIds[0])
 
 let coordinates = points.map {
     CLLocationCoordinate2D(latitude: $0.latitude, longitude: $0.longitude)
@@ -174,12 +175,13 @@ let polyline = MKPolyline(coordinates: coordinates, count: coordinates.count)
 To select the most representative shape for a route, use ``FoliClient/fetchMostCommonShapeId(forRoute:)``:
 
 ```swift
-let shapeId = try await client.fetchMostCommonShapeId(forRoute: route.id)
-let points = try await client.fetchShapePoints(forRoute: route.id)
-let coordinates = points.map {
-    CLLocationCoordinate2D(latitude: $0.latitude, longitude: $0.longitude)
+if let shapeId = try await client.fetchMostCommonShapeId(forRoute: route.id) {
+    let points = try await client.fetchShapePoints(forShape: shapeId)
+    let coordinates = points.map {
+        CLLocationCoordinate2D(latitude: $0.latitude, longitude: $0.longitude)
+    }
+    let polyline = MKPolyline(coordinates: coordinates, count: coordinates.count)
 }
-let polyline = MKPolyline(coordinates: coordinates, count: coordinates.count)
 ```
 
 ## Putting it together

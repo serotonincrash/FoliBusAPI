@@ -75,9 +75,10 @@ let inbound = trips.filter { $0.directionId == 1 }
 To find the most representative shape ID for a route, use the helper on ``FoliClient``:
 
 ```swift
-let shapeId = try await client.fetchMostCommonShapeId(forRoute: route.id)
-// Shape points are fetched by route ID.
-let points = try await client.fetchShapePoints(forRoute: route.id)
+// Shape points are fetched by shape ID, not route ID.
+if let shapeId = try await client.fetchMostCommonShapeId(forRoute: route.id) {
+    let points = try await client.fetchShapePoints(forShape: shapeId)
+}
 ```
 
 ## Stop times
@@ -140,23 +141,27 @@ Both ``Foli/Calendar/startDate`` / ``Foli/Calendar/endDate`` and ``Foli/Calendar
 
 ## Shapes and route geometry
 
-Route geometry is stored as ordered ``Foli/ShapePoint`` values grouped by `shapeId`. Use ``FoliClient/fetchShapeRouteIDs()`` to discover which routes have shapes, then fetch the points by route or by shape ID.
+Route geometry is stored as ordered ``Foli/ShapePoint`` values grouped by `shapeId`. Use ``FoliClient/fetchShapeRouteIDs()`` to discover which routes have shapes, resolve each route's shape IDs, then fetch the points by shape ID.
 
 ```swift
 let routesWithShapes = try await client.fetchShapeRouteIDs()
 
 for routeId in routesWithShapes.prefix(5) {
-    let points = try await client.fetchShapePoints(forRoute: routeId)
-    print("Route \(routeId): \(points.count) shape points")
+    let shapeIds = try await client.fetchShapeIds(forRoute: routeId)
+    for shapeId in shapeIds {
+        let points = try await client.fetchShapePoints(forShape: shapeId)
+        print("Route \(routeId), shape \(shapeId): \(points.count) shape points")
+    }
 }
 ```
 
 For a single representative polyline per route, combine the shape helpers:
 
 ```swift
-_ = try await client.fetchMostCommonShapeId(forRoute: route.id)
-let points = try await client.fetchShapePoints(forRoute: route.id)
-let coordinates = points.map { Foli.Coordinate(latitude: $0.latitude, longitude: $0.longitude) }
+if let shapeId = try await client.fetchMostCommonShapeId(forRoute: route.id) {
+    let points = try await client.fetchShapePoints(forShape: shapeId)
+    let coordinates = points.map { Foli.Coordinate(latitude: $0.latitude, longitude: $0.longitude) }
+}
 ```
 
 See <doc:GeoJSONAndMaps> for turning shapes and other geographic data into MapKit annotations and overlays.

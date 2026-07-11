@@ -64,7 +64,7 @@ public extension FoliClient {
             loadStale: { [cache] in try await cache?.loadStaleTrips(forRoute: routeId) },
             save: { [cache] trips in try await cache?.saveTrips(trips, forRoute: routeId) },
             fetch: { [self] in try await fetchTripsFromNetwork(forRoute: routeId) },
-            rebuildIndex: { [self] trips in await indexes.rebuildTrips(using: trips) }
+            rebuildIndex: { [self] trips in await indexes.mergeTrips(trips) }
         )
     }
 }
