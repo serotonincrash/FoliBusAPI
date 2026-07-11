@@ -33,7 +33,7 @@ public extension FoliService {
     /// - Parameter lineRef: The line reference (e.g., "15")
     /// - Returns: Array of matching routes
     func fetchRoutes(byLineRef lineRef: String) async throws -> [Foli.Route] {
-        return try await client.fetchRoutes(for: lineRef)
+        return try await client.routes(forLine: lineRef)
     }
     
 }

@@ -18,6 +18,13 @@ public extension FoliService {
     func fetchArrivals(for stopId: String) async throws -> [Foli.Arrival] {
         return try await client.fetchArrivals(for: stopId)
     }
-    
+
+    /// Fetch arrivals for a specific stop
+    /// - Parameter stopId: The numeric stop ID
+    /// - Returns: Array of arrivals for the stop
+    func fetchArrivals(for stopId: Int) async throws -> [Foli.Arrival] {
+        return try await client.fetchArrivals(for: stopId)
+    }
+
 }
 

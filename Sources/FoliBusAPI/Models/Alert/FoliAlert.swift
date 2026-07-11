@@ -50,7 +50,7 @@ public extension Foli {
             case bus
             case boat
             case bike
-            case none
+            case noIcon
             case busBike
             case unknown(String)
 
@@ -59,7 +59,7 @@ public extension Foli {
                 case .bus: return "BUS"
                 case .boat: return "BOAT"
                 case .bike: return "BIKE"
-                case .none: return "NONE"
+                case .noIcon: return "NONE"
                 case .busBike: return "BUS_BIKE"
                 case .unknown(let value): return value
                 }
@@ -70,7 +70,7 @@ public extension Foli {
                 case "BUS": self = .bus
                 case "BOAT": self = .boat
                 case "BIKE": self = .bike
-                case "NONE": self = .none
+                case "NONE": self = .noIcon
                 case "BUS_BIKE": self = .busBike
                 default: self = .unknown(rawValue)
                 }

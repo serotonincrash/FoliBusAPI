@@ -39,7 +39,7 @@ public extension FoliClient {
     /// - Parameter lineRef: The line reference to search for
     /// - Returns: Array of matching routes
     /// - Throws: `Foli.APIError` if the network request or decoding fails.
-    func fetchRoutes(for lineRef: String) async throws -> [Foli.Route] {
+    func routes(forLine lineRef: String) async throws -> [Foli.Route] {
         _ = try await fetchRoutes()
         return await indexes.routes(forShortName: lineRef)
     }

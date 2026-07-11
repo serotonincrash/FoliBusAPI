@@ -170,7 +170,7 @@ public final class FoliBusAPI {
     /// - Throws: `Foli.APIError` if the request fails.
     public static func fetchRoutes(byLineRef lineRef: String) async throws -> [Foli.Route] {
         let client = await defaultClient()
-        return try await client.fetchRoutes(for: lineRef)
+        return try await client.routes(forLine: lineRef)
     }
     
     /// Fetch routes of a specific type
@@ -242,7 +242,7 @@ public final class FoliBusAPI {
     /// - Throws: `Foli.APIError` if the request fails.
     public static func fetchCalendar(forServiceId serviceId: String) async throws -> Foli.Calendar? {
         let client = await defaultClient()
-        return try await client.fetchCalendar(forServiceId: serviceId)
+        return try await client.calendar(for: serviceId)
     }
     
     // MARK: - Convenience Methods - Trips (GTFS)

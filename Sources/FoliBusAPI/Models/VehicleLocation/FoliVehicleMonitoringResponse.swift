@@ -4,18 +4,56 @@ import Foundation
 extension Foli {
     /// Response from the vehicle monitoring endpoint
     struct VehicleMonitoringResponse: Codable, Sendable, Equatable, Hashable {
+        // MARK: - Known Status Values
+
+        /// Named constants for the well-known status strings returned by the vehicle monitoring endpoint.
+        ///
+        /// Unrecognized status strings decode as ``unknown(_:)`` instead of failing the
+        /// whole response, so a new server-side status surfaces as a server error rather
+        /// than an opaque decoding error.
+        enum Status: RawRepresentable, Codable, Sendable, Equatable, Hashable {
+            /// The request succeeded and `result` contains vehicle data.
+            case ok
+            /// A status string this package version doesn't recognize.
+            case unknown(String)
+
+            var rawValue: String {
+                switch self {
+                case .ok: return "OK"
+                case .unknown(let value): return value
+                }
+            }
+
+            init(rawValue: String) {
+                switch rawValue {
+                case "OK": self = .ok
+                default: self = .unknown(rawValue)
+                }
+            }
+
+            init(from decoder: Decoder) throws {
+                let container = try decoder.singleValueContainer()
+                self.init(rawValue: try container.decode(String.self))
+            }
+
+            func encode(to encoder: Encoder) throws {
+                var container = encoder.singleValueContainer()
+                try container.encode(rawValue)
+            }
+        }
+
         // MARK: - Response Wrapper
-        
+
         /// System identifier ("VM" for vehicle monitoring)
         let sys: String
         /// Status of the response
-        let status: String
+        let status: Status
         /// Unix timestamp when the response was generated
         let serverTime: TimeInterval
         /// Nested result containing vehicle data
         let result: VehicleMonitoringResult
-        
-        init(sys: String, status: String, serverTime: TimeInterval, result: VehicleMonitoringResult) {
+
+        init(sys: String, status: Status, serverTime: TimeInterval, result: VehicleMonitoringResult) {
             self.sys = sys
             self.status = status
             self.serverTime = serverTime
@@ -31,7 +69,7 @@ extension Foli {
         
         /// Computed property to check if the response is valid
         var isValid: Bool {
-            status == "OK"
+            status == .ok
         }
         
         /// Convert server time to Date

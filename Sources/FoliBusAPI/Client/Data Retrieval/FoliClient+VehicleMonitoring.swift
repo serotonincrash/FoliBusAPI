@@ -27,7 +27,7 @@ public extension FoliClient {
     func fetchVehicleLocations() async throws -> [Foli.VehicleLocation] {
         let response = try await fetchVehicleMonitoring()
         guard response.isValid else {
-            throw Foli.APIError.serverError(response.status)
+            throw Foli.APIError.serverError(response.status.rawValue)
         }
         return response.vehicles
     }
