@@ -12,7 +12,7 @@ public extension Foli {
         /// Distance along the route in meters
         public let linkDistance: Double?
         /// How far along the current link (segment between stops) the vehicle has progressed.
-        /// SIRI `PercentageOfLink` — a value between 0 and 1 (or nil when unknown).
+        /// SIRI `PercentageOfLink` — a percentage between 0 and 100 (or nil when unknown).
         public let segmentProgress: Double?
         /// Line reference (e.g., "14", "2A")
         public let lineRef: String
@@ -168,7 +168,7 @@ public extension Foli {
         ///   - recordedAtTime: Unix timestamp when this location was recorded.
         ///   - validUntilTime: Unix timestamp until which this data is valid.
         ///   - linkDistance: Distance along the route in meters.
-        ///   - segmentProgress: How far along the current link the vehicle has progressed (0–1).
+        ///   - segmentProgress: How far along the current link the vehicle has progressed (a percentage, 0–100).
         ///   - lineRef: Line reference (e.g., "14", "2A").
         ///   - directionRef: Direction reference (typically "1" or "2").
         ///   - publishedLineName: Published line name displayed to passengers.

@@ -139,7 +139,9 @@ public extension FoliClient {
             return fresh
 
         case .cachedOnly:
-            guard let cached = try await load() else {
+            // Serve whatever is on disk regardless of freshness: `.cachedOnly` promises
+            // no network access, and load() revalidates expired entries over the network.
+            guard let cached = try await loadStale() else {
                 throw Foli.CacheError.cacheMiss(resource)
             }
             if let rebuildIndex { await rebuildIndex(cached) }

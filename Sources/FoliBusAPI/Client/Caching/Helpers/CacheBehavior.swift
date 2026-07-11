@@ -18,7 +18,7 @@ public extension Foli {
     /// | ``cachedOrFetch`` | ✓ (if valid) | ✓ | Only if needed |
     /// | ``staleWhileRevalidate`` | ✓ (even stale) | ✓ | Background |
     /// | ``forceRefresh`` | ✗ | ✓ | Always |
-    /// | ``cachedOnly`` | ✓ (if valid) | ✗ | Never |
+    /// | ``cachedOnly`` | ✓ (even stale) | ✗ | Never |
     /// | ``noCache`` | ✗ | ✗ | Always |
     ///
     /// ## Example
@@ -49,9 +49,11 @@ public extension Foli {
         /// Use when data freshness is critical, such as after user-initiated refresh actions.
         case forceRefresh
         
-        /// Use only cached data and fail if no valid cached value exists.
+        /// Use only cached data — served regardless of freshness — and fail with
+        /// ``Foli/CacheError`` if nothing is cached.
         ///
-        /// Useful for offline-first scenarios where network access should be avoided.
+        /// Never makes a network call. Useful for offline-first scenarios where
+        /// stale data beats no data.
         case cachedOnly
         
         /// Fetch from the network without reading or writing cache entries.

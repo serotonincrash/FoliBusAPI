@@ -96,7 +96,7 @@ let routes = try await client.fetchRoutes()
 
 ### cachedOnly
 
-Returns cached data if available and valid; throws ``Foli/CacheError/cacheMiss(_:)`` otherwise. Never makes network requests.
+Returns cached data if available — regardless of freshness — and throws ``Foli/CacheError/cacheMiss(_:)`` otherwise. Never makes network requests; stale data beats no data when offline.
 
 ```swift
 let client = FoliClient(cacheBehavior: .cachedOnly)
@@ -131,7 +131,7 @@ let routes = try await client.fetchRoutes()
 | `cachedOrFetch` | Yes (if valid) | Yes | Only if needed |
 | `staleWhileRevalidate` | Yes (even stale) | Yes | Background |
 | `forceRefresh` | No | Yes | Always |
-| `cachedOnly` | Yes (if valid) | No | Never |
+| `cachedOnly` | Yes (even stale) | No | Never |
 | `noCache` | No | No | Always |
 
 ## Cache TTL (time to live)
