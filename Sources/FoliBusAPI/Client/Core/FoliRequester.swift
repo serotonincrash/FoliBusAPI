@@ -113,6 +113,12 @@ internal struct FoliRequester: Sendable {
             }
         } catch let error as Foli.APIError {
             throw error
+        } catch is CancellationError {
+            // Preserve cancellation semantics: a cancelled caller must see
+            // CancellationError, not a spurious network failure.
+            throw CancellationError()
+        } catch let error as URLError where error.code == .cancelled {
+            throw CancellationError()
         } catch {
             throw Foli.APIError.networkError(error)
         }
