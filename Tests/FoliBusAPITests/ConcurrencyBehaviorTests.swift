@@ -53,6 +53,47 @@ struct ConcurrencyBehaviorTests {
         #expect(await !client.refreshTracker.hasActiveTask(for: .routes))
         #expect(await cache.savedRoutes == [["fresh-routes"]])
     }
+
+    @Test("a handler registered via setOnBackgroundRefreshError receives background refresh failures")
+    func backgroundRefreshErrorHandlerReceivesFailure() async throws {
+        struct RefreshFailure: Error {}
+
+        let transport = MockTransport { request in
+            try makeDataResponse(for: request, data: Data("[]".utf8))
+        }
+        let client = try FoliClient(transport: transport, cacheBehavior: .staleWhileRevalidate)
+        await client.installCacheForTesting(ControlledCache(revalidationResult: false))
+
+        let reported = ReportedRefreshErrors()
+        await client.setOnBackgroundRefreshError { resource, error in
+            Task { await reported.record(resource: resource, error: error) }
+        }
+
+        await client.refreshCacheInBackground(
+            for: .routes,
+            fetch: { () async throws -> [String] in throw RefreshFailure() },
+            save: { _, _ in }
+        )
+
+        for _ in 0..<40 {
+            if await !reported.entries.isEmpty {
+                break
+            }
+            try await Task.sleep(for: .milliseconds(25))
+        }
+
+        let entry = try #require(await reported.entries.first)
+        #expect(entry.resource == .routes)
+        #expect(entry.error is RefreshFailure)
+    }
+}
+
+private actor ReportedRefreshErrors {
+    private(set) var entries: [(resource: Foli.Resource, error: Error)] = []
+
+    func record(resource: Foli.Resource, error: Error) {
+        entries.append((resource: resource, error: error))
+    }
 }
 
 private actor ControlledCache: Foli.Cache {

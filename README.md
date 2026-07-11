@@ -88,7 +88,7 @@ import FoliBusUI
 struct DemoApp: App {
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            ContentView(stopId: "1000")
                 .environment(
                     \.foliClientProvider,
                     DefaultFoliClientProvider(

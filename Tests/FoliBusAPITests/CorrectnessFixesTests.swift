@@ -142,3 +142,32 @@ struct ShapeSequenceTests {
         #expect(points[1].sequence == 2)
     }
 }
+
+@Suite("Calendar Date Exception Tests")
+struct CalendarDateExceptionTests {
+    @Test("exception type 1 means service added, per the GTFS spec")
+    func exceptionTypeOneIsServiceAdded() {
+        let added = Foli.CalendarDate(serviceId: "S1", dateString: "20260712", exceptionType: 1)
+
+        #expect(added.isServiceAdded)
+        #expect(!added.isServiceRemoved)
+    }
+
+    @Test("exception type 2 means service removed, per the GTFS spec")
+    func exceptionTypeTwoIsServiceRemoved() {
+        let removed = Foli.CalendarDate(serviceId: "S1", dateString: "20260712", exceptionType: 2)
+
+        #expect(removed.isServiceRemoved)
+        #expect(!removed.isServiceAdded)
+    }
+
+    @Test("non-standard exception types are neither added nor removed")
+    func nonStandardExceptionTypesAreNeither() {
+        for exceptionType in [0, 3, -1] {
+            let other = Foli.CalendarDate(serviceId: "S1", dateString: "20260712", exceptionType: exceptionType)
+
+            #expect(!other.isServiceAdded)
+            #expect(!other.isServiceRemoved)
+        }
+    }
+}
