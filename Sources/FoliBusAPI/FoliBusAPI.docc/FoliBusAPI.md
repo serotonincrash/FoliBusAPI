@@ -9,7 +9,7 @@ A Swift package for working with the Föli public transport APIs.
 - SIRI stop monitoring and arrival data
 - GTFS routes, stops, trips, stop times, and calendar dates
 - Optional local caching for static GTFS resources
-- SwiftUI-oriented service access through ``FoliService`` (in the ``FoliBusUI`` target) and client providers
+- SwiftUI-oriented service access through `FoliService` (in the `FoliBusUI` target) and client providers
 
 The package is built around ``FoliClient``, an actor that coordinates request execution, caching, in-flight deduplication, and in-memory lookup indexes. Rather than owning all of this logic directly, `FoliClient` delegates to dedicated extracted types: ``FoliRequester`` (transport, URL construction, and JSON decoding), ``FoliDedup`` (request coalescing), ``FoliIndexes`` (entity lookup dictionaries), and ``FoliRefreshTracker`` (background refresh bookkeeping). The ``FoliBusAPI`` static facade provides a convenient entry point backed by a configurable provider &mdash; replace it at app launch via ``FoliBusAPI/configure(_:)`` or reset it between tests via ``FoliBusAPI/reset()``.
 
@@ -100,4 +100,3 @@ Import `FoliBusAPI` for non-UI usage (server-side, CLI, tests), `FoliBusUI` for 
 - <doc:GeoJSONAndMaps>
 - <doc:CachingStrategies>
 - <doc:RealTimeData>
-- <doc:GTFSDataModel>

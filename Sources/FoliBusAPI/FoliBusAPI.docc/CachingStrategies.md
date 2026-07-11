@@ -62,7 +62,7 @@ When the TTL has expired, the client revalidates against the latest dataset ID b
 
 - **Dataset unchanged:** the existing entry's freshness timestamp is refreshed and it's served as-is — no refetch.
 - **Dataset changed:** the entry is treated as a miss, and `cachedOrFetch` fetches fresh data from the network **synchronously** before returning — unlike `staleWhileRevalidate`, it never hands back data known to be out of date.
-- **Revalidation inconclusive** (e.g. a transient network error, as opposed to a definitive answer): the stale entry is served rather than failing the call, matching ``FoliClient/hasValidCache(for:)``.
+- **Revalidation inconclusive** (e.g. a transient network error, as opposed to a definitive answer): the stale entry is served rather than failing the call, matching ``FoliClient/hasValidCache(for:)`` — a transient failure does not force a refetch if the data is usable.
 
 **When to use:** General-purpose caching where you want to avoid redundant network calls but ensure data doesn't become too stale.
 
@@ -175,6 +175,10 @@ When using `.staleWhileRevalidate`, the client performs a lightweight metadata c
 ```
 
 This optimization means stale-while-revalidate rarely downloads full datasets when the underlying GTFS data hasn't changed.
+
+## Future work
+
+Cache metadata (like `cacheAge`) currently parses the full resource payload to extract timestamps. A future optimization would move cache metadata to a sidecar file — avoiding expensive full-payload reads when you only need to check cache freshness. This would improve performance on large resources like stop or trip datasets.
 
 ## Cache management
 
