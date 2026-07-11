@@ -96,7 +96,7 @@ struct ArrivalsView: View {
 
     var body: some View {
         List(arrivals) { arrival in
-            Text("\(arrival.lineRef ?? "-") - \(arrival.destinationName ?? "Unknown")")
+            Text("\(arrival.lineRef) - \(arrival.destinationDisplay)")
         }
         .task {
             arrivals = (try? await foliService.fetchArrivals(for: stopId)) ?? []
@@ -148,12 +148,12 @@ struct StopDetailView: View {
     var body: some View {
         List(arrivals) { arrival in
             HStack {
-                Text(arrival.lineRef ?? "-")
+                Text(arrival.lineRef)
                     .font(.headline)
                     .frame(width: 40, alignment: .leading)
-                Text(arrival.destinationName ?? "Unknown destination")
+                Text(arrival.destinationDisplay)
                 Spacer()
-                Text(arrival.formattedTime ?? "")
+                Text(arrival.formattedTimeUntilArrival())
                     .foregroundStyle(.secondary)
             }
         }
@@ -292,13 +292,13 @@ The environment seam makes previews and tests easy. Create a lightweight provide
 
 ```swift
 struct MockFoliClientProvider: FoliClientProviding {
-    let client: FoliClient
+    private let sharedClient: FoliClient
 
     init(transport: FoliTransport) {
-        self.client = FoliClient(transport: transport, cacheBehavior: .noCache)
+        self.sharedClient = FoliClient(transport: transport, cacheBehavior: .noCache)
     }
 
-    func client() -> FoliClient { client }
+    func client() -> FoliClient { sharedClient }
 }
 ```
 

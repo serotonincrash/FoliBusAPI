@@ -120,8 +120,7 @@ import SwiftUI
 import FoliBusUI
 
 struct ContentView: View {
-    let client = FoliClient(cacheBehavior: .cachedOrFetch)
-    @FoliService(client: client) var foliService
+    @FoliService(client: FoliClient(cacheBehavior: .cachedOrFetch)) var foliService
 
     var body: some View {
         Text("Foli service ready")
