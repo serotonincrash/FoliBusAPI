@@ -1,4 +1,4 @@
 version: 1
 builder:
   configs:
-    - documentation_targets: [FoliBusAPI]
+    - documentation_targets: [FoliBusAPI, FoliBusUI]
