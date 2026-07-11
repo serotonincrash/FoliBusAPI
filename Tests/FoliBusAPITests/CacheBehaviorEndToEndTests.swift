@@ -44,7 +44,7 @@ struct CacheBehaviorEndToEndTests {
             directory: directory,
             datasetIdFetcher: { await dataset.current }
         )
-        let client = FoliClient(transport: transport, cacheBehavior: behavior)
+        let client = try FoliClient(transport: transport, cacheBehavior: behavior)
         await client.installCacheForTesting(cache)
         return (client, transport, directory, dataset)
     }
@@ -76,6 +76,62 @@ struct CacheBehaviorEndToEndTests {
 
         #expect(second.count == 1)
         #expect(await transport.requests().count == 1, "unchanged dataset should revalidate, not refetch")
+    }
+
+    @Test("cachedOrFetch synchronously refetches when the dataset changed, rather than serving stale data")
+    func cachedOrFetchRefetchesSynchronouslyOnDatasetChange() async throws {
+        let (client, transport, directory, dataset) = try await makeClient(
+            behavior: .cachedOrFetch,
+            ttl: Foli.CacheTTL(validityDuration: 0.01)
+        )
+        defer { try? FileManager.default.removeItem(at: directory) }
+
+        _ = try await client.fetchRoutes()           // miss → fetch + save (1 request)
+        try await Task.sleep(for: .milliseconds(50))  // entry expires
+        await dataset.set("dataset-2")                // published dataset changes
+
+        let second = try await client.fetchRoutes()   // must refetch synchronously, not serve stale
+
+        #expect(second.count == 1)
+        #expect(await transport.requests().count == 2, "a confirmed dataset change must trigger a synchronous refetch")
+    }
+
+    @Test("cachedOrFetch serves stale data when revalidation is inconclusive (fetcher throws)")
+    func cachedOrFetchServesStaleOnRevalidationError() async throws {
+        struct RevalidationFailure: Error {}
+
+        let directory = FileManager.default.temporaryDirectory
+            .appending(path: "FoliBusAPITests-\(UUID().uuidString)", directoryHint: .isDirectory)
+        defer { try? FileManager.default.removeItem(at: directory) }
+
+        let cache = try Foli.DiskCache(
+            timeout: Foli.CacheTTL(validityDuration: 0.01),
+            directory: directory,
+            datasetIdFetcher: { throw RevalidationFailure() }
+        )
+
+        // Pre-populate an expired entry directly, bypassing the network.
+        let route = try JSONDecoder().decode(Foli.RouteList.self, from: Self.routesPayload).routes[0]
+        let entry = Foli.DiskCache.CachedData(
+            metadata: Foli.DiskCache.DatasetMetadata(datasetId: "dataset-1", cachedAt: Date(timeIntervalSinceNow: -100)),
+            data: [route]
+        )
+        let fileURL = try await cache.fileURL(for: .routes)
+        try JSONEncoder().encode(entry).write(to: fileURL)
+
+        // The transport must never be consulted: revalidation fails before any fetch,
+        // and the stale entry should be served instead of propagating the error.
+        let transport = MockTransport { request in
+            Issue.record("fetch should not occur when the stale entry is served")
+            return try makeDataResponse(for: request, data: Self.routesPayload)
+        }
+        let client = try FoliClient(transport: transport, cacheBehavior: .cachedOrFetch)
+        await client.installCacheForTesting(cache)
+
+        let routes = try await client.fetchRoutes()
+
+        #expect(routes == [route])
+        #expect(await transport.requests().isEmpty, "a transient revalidation error must serve stale data, not crash or refetch")
     }
 
     @Test("staleWhileRevalidate serves stale data and refreshes in the background on dataset change")

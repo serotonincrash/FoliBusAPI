@@ -47,7 +47,7 @@ import FoliBusAPI
 ///
 /// Or inject a custom client directly:
 /// ```swift
-/// let customClient = FoliClient(cacheBehavior: .noCache)
+/// let customClient = try FoliClient(cacheBehavior: .noCache)
 /// @FoliService(client: customClient) var foliService
 /// ```
 @propertyWrapper

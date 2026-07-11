@@ -24,7 +24,7 @@ public extension FoliClient {
     /// - Returns: Array of Trip objects belonging to the specified route
     internal func fetchTripsFromNetwork(forRoute routeId: String) async throws -> [Foli.Trip] {
         try await dedup.performDeduplicated(forKey: .resource(.tripsForRoute(routeId))) { [self] in
-            try await requestGTFS("/trips/route/\(routeId)", as: [Foli.Trip].self)
+            try await requestGTFS("/trips/route/\(FoliRequester.pathComponent(routeId))", as: [Foli.Trip].self)
         }
     }
 
@@ -47,7 +47,7 @@ public extension FoliClient {
             for: .trips,
             load: { [cache] in try await cache?.loadTrips() },
             loadStale: { [cache] in try await cache?.loadStaleTrips() },
-            save: { [cache] trips in try await cache?.saveTrips(trips) },
+            save: { [cache] trips, datasetId in try await cache?.saveTrips(trips, datasetId: datasetId) },
             fetch: { [self] in try await fetchTripsFromNetwork() },
             rebuildIndex: { [self] trips in await indexes.rebuildTrips(using: trips) }
         )
@@ -62,7 +62,7 @@ public extension FoliClient {
             for: .tripsForRoute(routeId),
             load: { [cache] in try await cache?.loadTrips(forRoute: routeId) },
             loadStale: { [cache] in try await cache?.loadStaleTrips(forRoute: routeId) },
-            save: { [cache] trips in try await cache?.saveTrips(trips, forRoute: routeId) },
+            save: { [cache] trips, datasetId in try await cache?.saveTrips(trips, forRoute: routeId, datasetId: datasetId) },
             fetch: { [self] in try await fetchTripsFromNetwork(forRoute: routeId) },
             rebuildIndex: { [self] trips in await indexes.mergeTrips(trips) }
         )

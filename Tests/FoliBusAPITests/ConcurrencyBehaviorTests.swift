@@ -30,13 +30,13 @@ struct ConcurrencyBehaviorTests {
         }
 
         let cache = ControlledCache(revalidationResult: false)
-        let client = FoliClient(transport: transport, cacheBehavior: .staleWhileRevalidate)
+        let client = try FoliClient(transport: transport, cacheBehavior: .staleWhileRevalidate)
         await client.installCacheForTesting(cache)
 
         await client.refreshCacheInBackground(
             for: .routes,
             fetch: { ["fresh-routes"] },
-            save: { routes in
+            save: { routes, _ in
                 await cache.recordSavedRoutes(routes)
             }
         )
@@ -70,7 +70,7 @@ private actor ControlledCache: Foli.Cache {
 
     func loadResource<T: Codable & Sendable>(_ type: T.Type, forKey key: Foli.Resource) async throws -> T? { nil }
     func loadStaleResource<T: Codable & Sendable>(_ type: T.Type, forKey key: Foli.Resource) async throws -> T? { nil }
-    func saveResource<T: Codable & Sendable>(_ value: T, forKey key: Foli.Resource) async throws {}
+    func saveResource<T: Codable & Sendable>(_ value: T, forKey key: Foli.Resource, datasetId: String?) async throws {}
 
     func clearAllCache() async throws {}
     func clearCache(for type: Foli.Resource) async throws {}
@@ -78,6 +78,7 @@ private actor ControlledCache: Foli.Cache {
     func cacheAge(for type: Foli.Resource) async -> TimeInterval? { nil }
     func currentDatasetId(for type: Foli.Resource?) async throws -> String? { nil }
     func revalidateCache(for type: Foli.Resource) async throws -> Bool { revalidationResult }
+    func fetchLatestDatasetId() async throws -> String { "controlled-dataset" }
 
     func recordSavedRoutes(_ routes: [String]) {
         savedRoutes.append(routes)

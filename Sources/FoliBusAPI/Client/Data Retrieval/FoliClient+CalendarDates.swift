@@ -30,7 +30,7 @@ public extension FoliClient {
             for: .calendarDates,
             load: { [cache] in try await cache?.loadCalendarDates() },
             loadStale: { [cache] in try await cache?.loadStaleCalendarDates() },
-            save: { [cache] calendarDates in try await cache?.saveCalendarDates(calendarDates) },
+            save: { [cache] calendarDates, datasetId in try await cache?.saveCalendarDates(calendarDates, datasetId: datasetId) },
             fetch: { [self] in try await fetchCalendarDatesFromNetwork() }
         )
     }

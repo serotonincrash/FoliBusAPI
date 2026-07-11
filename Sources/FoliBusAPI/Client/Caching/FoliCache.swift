@@ -18,7 +18,18 @@ extension Foli {
         func loadStaleResource<T: Codable & Sendable>(_ type: T.Type, forKey key: Foli.Resource) async throws -> T?
 
         /// Save a resource to cache with the current timestamp.
-        func saveResource<T: Codable & Sendable>(_ value: T, forKey key: Foli.Resource) async throws
+        ///
+        /// - Parameters:
+        ///   - value: The value to persist.
+        ///   - key: The resource key to store it under.
+        ///   - datasetId: The dataset ID to tag the saved entry with, captured by the
+        ///     caller *before* the network fetch that produced `value` (fail-safe
+        ///     ordering: a mid-fetch dataset flip yields a stale tag, which the next
+        ///     revalidation detects as a mismatch and refetches — it never gets stuck
+        ///     serving stale-forever). Pass `nil` to fall back to the cache's own
+        ///     `datasetIdFetcher` for revalidation-driven saves that don't have a
+        ///     pre-fetch snapshot available.
+        func saveResource<T: Codable & Sendable>(_ value: T, forKey key: Foli.Resource, datasetId: String?) async throws
 
         // MARK: - Cache Management (unchanged)
 
@@ -48,5 +59,12 @@ extension Foli {
         /// Revalidate cached data for a resource, returning true if the cache remained current.
         @discardableResult
         func revalidateCache(for type: Foli.Resource) async throws -> Bool
+
+        /// Fetches the latest dataset ID over the network (via the injected
+        /// `datasetIdFetcher`), for tagging a save that is about to occur.
+        ///
+        /// Callers should capture this *before* the corresponding network fetch so a
+        /// mid-fetch dataset flip fails safe (see ``saveResource(_:forKey:datasetId:)``).
+        func fetchLatestDatasetId() async throws -> String
     }
 }

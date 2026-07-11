@@ -59,7 +59,7 @@ Then add the products to your target — `FoliBusAPI` for the client, plus `Foli
 ```swift
 import FoliBusAPI
 
-let client = FoliClient(
+let client = try FoliClient(
     cacheBehavior: .forceRefresh,
     cacheTTL: .default
 )
@@ -123,7 +123,7 @@ struct ContentView: View {
 
 ### Inject a custom transport
 
-To use a custom `URLSession`, pass it directly: `FoliClient(session: mySession)`. For full control over request execution — offline fixtures, stubbing in tests — conform to the public `FoliTransport` protocol:
+To use a custom `URLSession`, pass it directly: `try FoliClient(session: mySession)`. For full control over request execution — offline fixtures, stubbing in tests — conform to the public `FoliTransport` protocol:
 
 ```swift
 import Foundation
@@ -138,7 +138,7 @@ struct FixtureTransport: FoliTransport {
     }
 }
 
-let client = FoliClient(
+let client = try FoliClient(
     transport: FixtureTransport(),
     cacheBehavior: .noCache
 )

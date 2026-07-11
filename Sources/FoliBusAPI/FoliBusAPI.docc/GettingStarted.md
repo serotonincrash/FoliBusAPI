@@ -11,7 +11,7 @@ Use ``FoliClient`` when you want direct control over caching and transport behav
 ```swift
 import FoliBusAPI
 
-let client = FoliClient(
+let client = try FoliClient(
     cacheBehavior: .forceRefresh,
     cacheTTL: .default
 )
@@ -53,7 +53,7 @@ await FoliBusAPI.reset()
 For GTFS-backed resources, cache behavior is configured when creating the client.
 
 ```swift
-let client = FoliClient(cacheBehavior: .staleWhileRevalidate)
+let client = try FoliClient(cacheBehavior: .staleWhileRevalidate)
 ```
 
 Common choices:
@@ -120,7 +120,9 @@ import SwiftUI
 import FoliBusUI
 
 struct ContentView: View {
-    @FoliService(client: FoliClient(cacheBehavior: .cachedOrFetch)) var foliService
+    // `try!` is acceptable in this sample; handle the throw explicitly in
+    // production code (e.g. by constructing the client in `init` instead).
+    @FoliService(client: try! FoliClient(cacheBehavior: .cachedOrFetch)) var foliService
 
     var body: some View {
         Text("Foli service ready")

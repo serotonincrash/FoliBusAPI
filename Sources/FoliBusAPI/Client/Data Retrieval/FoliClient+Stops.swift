@@ -44,7 +44,7 @@ public extension FoliClient {
             for: .stops,
             load: { [cache] in try await cache?.loadStops() },
             loadStale: { [cache] in try await cache?.loadStaleStops() },
-            save: { [cache] stops in try await cache?.saveStops(stops) },
+            save: { [cache] stops, datasetId in try await cache?.saveStops(stops, datasetId: datasetId) },
             fetch: { [self] in try await fetchStopsFromNetwork() },
             rebuildIndex: { [self] stops in await indexes.rebuildStops(using: stops) }
         )

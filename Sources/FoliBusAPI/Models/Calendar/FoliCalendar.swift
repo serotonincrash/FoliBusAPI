@@ -102,10 +102,7 @@ public extension Foli {
 
         /// Parse a `YYYYMMDD` date code string into a `Date`, using the same pattern as `Foli.CalendarDate.date`.
         private static func parseDateCode(_ code: String) -> Date? {
-            let formatter = DateFormatter()
-            formatter.dateFormat = "yyyyMMdd"
-            formatter.calendar = Foundation.Calendar(identifier: .gregorian)
-            return formatter.date(from: code)
+            GTFSDateParser.date(from: code)
         }
 
         private static func decodeFlag(

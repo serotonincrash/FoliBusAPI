@@ -30,13 +30,20 @@ extension Foli.DiskCache {
             return cachedData.data
         }
 
-        // Stale — try revalidation via network; if that fails, return nil.
+        // Stale — try revalidation via network.
         do {
-            return try await revalidateCache(for: key) ? cachedData.data : nil
+            let cacheStillCurrent = try await revalidateCache(for: key)
+            // Definitively `false`: revalidation *reached* the server and confirmed the
+            // dataset changed, so the entry really is out of date — the caller should
+            // fetch fresh, not receive stale data disguised as current.
+            return cacheStillCurrent ? cachedData.data : nil
         } catch is CancellationError {
             throw CancellationError()
         } catch {
-            return nil
+            // Inconclusive (a transient network/decoding error, not a definitive
+            // "changed" answer): serve the stale entry rather than forcing every
+            // caller to handle a network hiccup, matching `hasValidCache`'s policy.
+            return cachedData.data
         }
     }
 

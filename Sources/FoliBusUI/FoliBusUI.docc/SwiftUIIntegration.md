@@ -90,7 +90,9 @@ If a view needs a different client (for example, a preview or a screen that alwa
 struct ArrivalsView: View {
     let stopId: String
 
-    @FoliService(client: FoliClient(cacheBehavior: .forceRefresh)) var foliService
+    // `try!` is acceptable in this sample; handle the throw explicitly in
+    // production code (e.g. by constructing the client in `init` instead).
+    @FoliService(client: try! FoliClient(cacheBehavior: .forceRefresh)) var foliService
 
     @State private var arrivals: [Foli.Arrival] = []
 
@@ -295,7 +297,9 @@ struct MockFoliClientProvider: FoliClientProviding {
     private let sharedClient: FoliClient
 
     init(transport: FoliTransport) {
-        self.sharedClient = FoliClient(transport: transport, cacheBehavior: .noCache)
+        // `.noCache` provably cannot throw (no disk-cache init is attempted), so
+        // force-try is safe here.
+        self.sharedClient = try! FoliClient(transport: transport, cacheBehavior: .noCache)
     }
 
     func client() -> FoliClient { sharedClient }

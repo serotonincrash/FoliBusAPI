@@ -13,8 +13,8 @@ extension FoliClient {
         cacheBehavior: Foli.CacheBehavior = .cachedOrFetch,
         cacheTTL: Foli.CacheTTL = .default,
         session: URLSession = .shared
-    ) -> FoliClient {
-        FoliClient(
+    ) throws -> FoliClient {
+        try FoliClient(
             transport: URLSessionTransport(session: session),
             cacheBehavior: cacheBehavior,
             cacheTTL: cacheTTL

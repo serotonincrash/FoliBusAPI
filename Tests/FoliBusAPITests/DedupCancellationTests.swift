@@ -36,7 +36,7 @@ struct DedupCancellationTests {
     @Test("cancelling the sole caller unblocks promptly with CancellationError")
     func cancellingSoleCallerUnblocksPromptly() async throws {
         let transport = HangingTransport()
-        let client = FoliClient(transport: transport, cacheBehavior: .noCache)
+        let client = try FoliClient(transport: transport, cacheBehavior: .noCache)
 
         let fetchTask = Task { try await client.fetchRoutes() }
         try await Task.sleep(for: .milliseconds(100))
@@ -57,7 +57,7 @@ struct DedupCancellationTests {
     @Test("cancelling one of two deduplicated callers leaves the other unaffected")
     func cancellingOneOfTwoCallersLeavesOtherUnaffected() async throws {
         let transport = DelayedTransport()
-        let client = FoliClient(transport: transport, cacheBehavior: .noCache)
+        let client = try FoliClient(transport: transport, cacheBehavior: .noCache)
 
         let first = Task { try await client.fetchRoutes() }
         let second = Task { try await client.fetchRoutes() }
@@ -82,7 +82,7 @@ struct DedupCancellationTests {
     @Test("cancelling every caller cancels the shared network request")
     func cancellingAllCallersCancelsSharedRequest() async throws {
         let transport = HangingTransport()
-        let client = FoliClient(transport: transport, cacheBehavior: .noCache)
+        let client = try FoliClient(transport: transport, cacheBehavior: .noCache)
 
         let first = Task { try await client.fetchRoutes() }
         let second = Task { try await client.fetchRoutes() }
@@ -109,7 +109,7 @@ struct DedupCancellationTests {
     @Test("concurrent identical fetches coalesce into one transport request")
     func concurrentFetchesCoalesce() async throws {
         let transport = DelayedTransport()
-        let client = FoliClient(transport: transport, cacheBehavior: .noCache)
+        let client = try FoliClient(transport: transport, cacheBehavior: .noCache)
 
         let results = try await withThrowingTaskGroup(of: [Foli.Route].self) { group in
             for _ in 0..<5 {

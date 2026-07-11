@@ -21,7 +21,7 @@ Properties carry names in Finnish, Swedish, and English, plus a category, addres
 ```swift
 import FoliBusAPI
 
-let client = FoliClient(cacheBehavior: .cachedOrFetch)
+let client = try FoliClient(cacheBehavior: .cachedOrFetch)
 let poi = try await client.fetchPointsOfInterest()
 
 for feature in poi.features {

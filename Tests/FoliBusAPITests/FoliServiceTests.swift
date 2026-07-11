@@ -52,7 +52,8 @@ struct FoliServiceTests {
             let payload = path.contains("/sm") ? Self.arrivalsPayload : Self.routesPayload
             return try makeDataResponse(for: request, data: Data(payload.utf8))
         }
-        let client = FoliClient(transport: transport, cacheBehavior: .noCache)
+        // `.noCache` provably cannot throw (no disk-cache init is attempted).
+        let client = try! FoliClient(transport: transport, cacheBehavior: .noCache)
         return (FoliService(client: client), transport)
     }
 

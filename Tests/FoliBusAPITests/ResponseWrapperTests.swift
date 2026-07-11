@@ -85,7 +85,7 @@ struct ResponseWrapperTests {
         let transport = MockTransport { request in
             try makeDataResponse(for: request, data: json)
         }
-        let client = FoliClient(transport: transport, cacheBehavior: .noCache)
+        let client = try FoliClient(transport: transport, cacheBehavior: .noCache)
         do {
             _ = try await client.fetchArrivals(for: "1")
             Issue.record("Expected fetchArrivals to throw for an unknown status")

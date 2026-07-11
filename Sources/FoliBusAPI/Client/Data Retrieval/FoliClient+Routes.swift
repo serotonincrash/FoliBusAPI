@@ -54,7 +54,7 @@ public extension FoliClient {
             for: .routes,
             load: { [cache] in try await cache?.loadRoutes() },
             loadStale: { [cache] in try await cache?.loadStaleRoutes() },
-            save: { [cache] routes in try await cache?.saveRoutes(routes) },
+            save: { [cache] routes, datasetId in try await cache?.saveRoutes(routes, datasetId: datasetId) },
             fetch: { [self] in try await fetchRoutesFromNetwork() },
             rebuildIndex: { [self] routes in await indexes.rebuildRoutes(using: routes) }
         )

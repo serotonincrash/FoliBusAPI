@@ -21,7 +21,7 @@ The GTFS feed is relational: entities reference each other by identifier rather 
 ```swift
 import FoliBusAPI
 
-let client = FoliClient(cacheBehavior: .cachedOrFetch)
+let client = try FoliClient(cacheBehavior: .cachedOrFetch)
 
 // 1. Start with the agency.
 let agencies = try await client.fetchAgencies()

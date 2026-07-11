@@ -11,7 +11,7 @@
 ## Production usage
 
 ```swift
-let client = FoliClient(session: .shared, cacheBehavior: .cachedOrFetch)
+let client = try FoliClient(session: .shared, cacheBehavior: .cachedOrFetch)
 ```
 
 ## When to inject a custom transport
@@ -65,7 +65,7 @@ let transport = MockTransport { request in
     return (response, payload)
 }
 
-let client = FoliClient(transport: transport, cacheBehavior: .noCache)
+let client = try FoliClient(transport: transport, cacheBehavior: .noCache)
 let routes = try await client.fetchRoutes()
 ```
 

@@ -13,7 +13,7 @@ import Foundation
 ///
 /// ## Direct usage
 /// ```swift
-/// let client = FoliClient(
+/// let client = try FoliClient(
 ///     cacheBehavior: .forceRefresh,
 ///     cacheTTL: .default
 /// )
@@ -78,17 +78,16 @@ public actor FoliClient {
     ///   - session: The session used for network requests.
     ///   - cacheBehavior: The cache behavior to apply to cacheable GTFS resources.
     ///   - cacheTTL: The disk-cache freshness policy.
-    public init(session: URLSession = .shared, cacheBehavior: Foli.CacheBehavior = .cachedOrFetch, cacheTTL: Foli.CacheTTL = .default) {
+    /// - Throws: The underlying error if disk-cache initialization fails. No error is
+    ///   thrown (and no disk cache is created) when `cacheBehavior == .noCache`, since
+    ///   no cache is needed in that mode.
+    public init(session: URLSession = .shared, cacheBehavior: Foli.CacheBehavior = .cachedOrFetch, cacheTTL: Foli.CacheTTL = .default) throws {
         let requester = FoliRequester(transport: URLSessionTransport(session: session))
         self.requester = requester
         self.cacheBehavior = cacheBehavior
 
-        do {
+        if cacheBehavior != .noCache {
             self.cache = try Foli.DiskCache(timeout: cacheTTL, datasetIdFetcher: Self.makeDatasetIdFetcher(requester: requester))
-        } catch {
-            // Cache initialization failed - fall back to no-cache mode
-            // This is expected when disk access is unavailable
-            self.cacheBehavior = .noCache
         }
     }
 
@@ -101,17 +100,16 @@ public actor FoliClient {
     ///   - transport: The transport used to execute requests.
     ///   - cacheBehavior: The cache behavior to apply to cacheable GTFS resources.
     ///   - cacheTTL: The disk-cache freshness policy.
-    public init(transport: any FoliTransport, cacheBehavior: Foli.CacheBehavior = .cachedOrFetch, cacheTTL: Foli.CacheTTL = .default) {
+    /// - Throws: The underlying error if disk-cache initialization fails. No error is
+    ///   thrown (and no disk cache is created) when `cacheBehavior == .noCache`, since
+    ///   no cache is needed in that mode.
+    public init(transport: any FoliTransport, cacheBehavior: Foli.CacheBehavior = .cachedOrFetch, cacheTTL: Foli.CacheTTL = .default) throws {
         let requester = FoliRequester(transport: transport)
         self.requester = requester
         self.cacheBehavior = cacheBehavior
 
-        do {
+        if cacheBehavior != .noCache {
             self.cache = try Foli.DiskCache(timeout: cacheTTL, datasetIdFetcher: Self.makeDatasetIdFetcher(requester: requester))
-        } catch {
-            // Cache initialization failed - fall back to no-cache mode
-            // This is expected when disk access is unavailable
-            self.cacheBehavior = .noCache
         }
     }
 

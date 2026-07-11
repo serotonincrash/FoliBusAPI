@@ -34,10 +34,7 @@ public extension Foli {
 
         /// The date as a Date object, if the dateString is valid
         public var date: Date? {
-            let formatter = DateFormatter()
-            formatter.dateFormat = "yyyyMMdd"
-            formatter.calendar = Foundation.Calendar(identifier: .gregorian)
-            return formatter.date(from: dateString)
+            GTFSDateParser.date(from: dateString)
         }
 
         /// Whether this exception adds service for this date

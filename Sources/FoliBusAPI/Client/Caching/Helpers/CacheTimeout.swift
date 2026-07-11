@@ -22,10 +22,10 @@ public extension Foli {
     /// ## Example
     /// ```swift
     /// // Use short-lived cache for development
-    /// let client = FoliClient(cacheTTL: .shortLived)
+    /// let client = try FoliClient(cacheTTL: .shortLived)
     ///
     /// // Use long-lived cache for stable environments
-    /// let client = FoliClient(cacheTTL: .longLived)
+    /// let client = try FoliClient(cacheTTL: .longLived)
     /// ```
     struct CacheTTL: Sendable {
         /// Default cache validity duration in seconds (24 hours).

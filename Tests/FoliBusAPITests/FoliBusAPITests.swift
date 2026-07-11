@@ -438,13 +438,28 @@ struct FoliRouteListTests {
         #expect(notFound == nil)
     }
     
-    @Test("SwiftUI.Color hex parsing works correctly")
+    @Test("SwiftUI.Color hex parsing produces expected RGB")
     func colorHexParsing() async throws {
-        _ = SwiftUI.Color(hex: "FF0000")
-        _ = SwiftUI.Color(hex: "00FF00")
-        _ = SwiftUI.Color(hex: "0000FF")
-        _ = SwiftUI.Color(hex: "#007AC3")
+        let maybeRed: SwiftUI.Color? = SwiftUI.Color(hex: "FF0000")
+        let red = try #require(maybeRed)
+        let resolvedRed = red.resolve(in: EnvironmentValues())
+        #expect(abs(resolvedRed.red - 1.0) < 0.01)
+        #expect(abs(resolvedRed.green - 0.0) < 0.01)
+        #expect(abs(resolvedRed.blue - 0.0) < 0.01)
 
-        #expect(Bool(true))
+        let maybeHashPrefixed: SwiftUI.Color? = SwiftUI.Color(hex: "#007AC3")
+        let hashPrefixed = try #require(maybeHashPrefixed)
+        let resolvedHashPrefixed = hashPrefixed.resolve(in: EnvironmentValues())
+        #expect(abs(resolvedHashPrefixed.red - 0.0) < 0.01)
+        #expect(abs(resolvedHashPrefixed.green - 0.478) < 0.01)
+        #expect(abs(resolvedHashPrefixed.blue - 0.765) < 0.01)
+    }
+
+    @Test("SwiftUI.Color hex parsing rejects malformed input")
+    func colorHexParsingRejectsMalformed() async throws {
+        #expect(SwiftUI.Color(hex: "FFF") == nil)
+        #expect(SwiftUI.Color(hex: "") == nil)
+        #expect(SwiftUI.Color(hex: "zzzzzz") == nil)
+        #expect(SwiftUI.Color(hex: "FF00000") == nil)
     }
 }

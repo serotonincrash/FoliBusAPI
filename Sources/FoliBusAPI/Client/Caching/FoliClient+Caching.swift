@@ -69,7 +69,7 @@ public extension FoliClient {
 
     /// Starts a best-effort stale-while-revalidate refresh unless one is already in flight
     /// for the resource, and removes its bookkeeping entry once the task finishes.
-    internal func refreshCacheInBackground<T: Sendable>(for type: Foli.Resource, fetch: @escaping @Sendable () async throws -> T, save: @escaping @Sendable (T) async throws -> Void) async {
+    internal func refreshCacheInBackground<T: Sendable>(for type: Foli.Resource, fetch: @escaping @Sendable () async throws -> T, save: @escaping @Sendable (T, String?) async throws -> Void) async {
         let (registration, registrationContinuation) = AsyncStream.makeStream(of: Bool.self)
 
         let ref = TaskReference()
@@ -100,7 +100,10 @@ public extension FoliClient {
     ///   - resource: The cache resource key used for background refresh bookkeeping.
     ///   - load: Loads a fresh cached value, or nil if absent/expired.
     ///   - loadStale: Loads a stale cached value regardless of freshness, or nil if absent.
-    ///   - save: Persists a freshly fetched value to the cache.
+    ///   - save: Persists a freshly fetched value to the cache, tagged with the
+    ///     dataset ID captured immediately before the fetch that produced it (or `nil`
+    ///     if that capture failed, in which case the cache falls back to its own
+    ///     `datasetIdFetcher`).
     ///   - fetch: Fetches the value from the network.
     ///   - rebuildIndex: Optional callback to rebuild in-memory lookup indexes from the value.
     /// - Returns: The resolved value according to `cacheBehavior`.
@@ -108,7 +111,7 @@ public extension FoliClient {
         for resource: Foli.Resource,
         load: @escaping @Sendable () async throws -> T?,
         loadStale: @escaping @Sendable () async throws -> T?,
-        save: @escaping @Sendable (T) async throws -> Void,
+        save: @escaping @Sendable (T, String?) async throws -> Void,
         fetch: @escaping @Sendable () async throws -> T,
         rebuildIndex: (@Sendable (T) async -> Void)? = nil
     ) async throws -> T {
@@ -118,7 +121,16 @@ public extension FoliClient {
                 if let rebuildIndex { await rebuildIndex(cached) }
                 return cached
             }
-            fallthrough
+            // No fallthrough into `.staleWhileRevalidate`: a cache miss here (nil from
+            // `load()`) means either there's nothing cached, or `loadResource`'s own
+            // revalidation already determined the cached entry is stale/gone. Either
+            // way `.cachedOrFetch` fetches fresh synchronously rather than serving
+            // possibly-stale data from a background refresh.
+            let datasetId = try? await cache?.fetchLatestDatasetId()
+            let fresh = try await fetch()
+            if let rebuildIndex { await rebuildIndex(fresh) }
+            try? await save(fresh, datasetId)
+            return fresh
 
         case .staleWhileRevalidate:
             if let staleCached = try await loadStale() {
@@ -133,9 +145,10 @@ public extension FoliClient {
             fallthrough
 
         case .forceRefresh:
+            let datasetId = try? await cache?.fetchLatestDatasetId()
             let fresh = try await fetch()
             if let rebuildIndex { await rebuildIndex(fresh) }
-            try? await save(fresh)
+            try? await save(fresh, datasetId)
             return fresh
 
         case .cachedOnly:
@@ -158,7 +171,7 @@ public extension FoliClient {
         for type: Foli.Resource,
         task: Task<Void, Never>,
         fetch: @escaping @Sendable () async throws -> T,
-        save: @escaping @Sendable (T) async throws -> Void
+        save: @escaping @Sendable (T, String?) async throws -> Void
     ) async {
         do {
             let cacheStillCurrent = try await revalidateCache(for: type)
@@ -167,9 +180,14 @@ public extension FoliClient {
                 return
             }
             try Task.checkCancellation()
+            // Captured before `fetch()` so a mid-fetch dataset flip fails safe: the
+            // saved entry gets tagged with the pre-fetch ID, which the next
+            // revalidation will detect as stale and refetch (never stuck serving
+            // stale-forever).
+            let datasetId = try? await cache?.fetchLatestDatasetId()
             let freshValue = try await fetch()
             try Task.checkCancellation()
-            try await save(freshValue)
+            try await save(freshValue, datasetId)
             await refreshTracker.clearTask(for: type, matching: task)
         } catch is CancellationError {
             await refreshTracker.clearTask(for: type, matching: task)

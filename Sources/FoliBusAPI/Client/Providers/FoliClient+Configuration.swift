@@ -42,13 +42,21 @@ public final class DefaultFoliClientProvider: FoliClientProviding {
     private let sharedClient: FoliClient
 
     /// Creates a provider backed by the supplied configuration.
+    ///
+    /// This initializer cannot throw (it backs the SwiftUI environment default), so if
+    /// constructing a client with the supplied configuration fails (e.g. disk-cache
+    /// initialization failure), it falls back to a client with `cacheBehavior: .noCache`.
+    /// That fallback construction provably cannot throw: `FoliClient.init` only throws
+    /// when it attempts disk-cache initialization, which it skips entirely for `.noCache`.
     /// - Parameter configuration: The configuration used when the shared client is created.
     public init(configuration: FoliClientConfiguration = .default) {
-        self.sharedClient = FoliClient(
+        let client = try? FoliClient(
             session: configuration.session,
             cacheBehavior: configuration.cacheBehavior,
             cacheTTL: configuration.cacheTTL
         )
+        // swiftlint:disable:next force_try
+        self.sharedClient = client ?? (try! FoliClient(cacheBehavior: .noCache))
     }
 
     /// Returns the shared client instance.

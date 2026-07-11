@@ -20,7 +20,7 @@ public extension FoliClient {
             for: .agencies,
             load: { [cache] in try await cache?.loadAgencies() },
             loadStale: { [cache] in try await cache?.loadStaleAgencies() },
-            save: { [cache] agencies in try await cache?.saveAgencies(agencies) },
+            save: { [cache] agencies, datasetId in try await cache?.saveAgencies(agencies, datasetId: datasetId) },
             fetch: { [self] in try await fetchAgenciesFromNetwork() },
             rebuildIndex: { [self] agencies in await indexes.rebuildAgencies(using: agencies) }
         )

@@ -13,12 +13,12 @@ Caching is configured along two axes:
 
 ### Disk cache
 
-The package ships with ``Foli/DiskCache``, an actor-isolated file-based cache that stores serialized resources under the application support directory. The cache is initialized automatically when you create a ``FoliClient`` — if disk access is unavailable (e.g., sandbox restrictions), the client falls back to `.noCache` behavior transparently.
+The package ships with ``Foli/DiskCache``, an actor-isolated file-based cache that stores serialized resources under the application support directory. The cache is initialized automatically when you create a ``FoliClient`` with any cache behavior other than `.noCache`. Because a silently-downgraded cache can mask real environment problems (e.g. sandbox restrictions), ``FoliClient``'s initializers `throw` if disk-cache initialization fails — you decide how to react, rather than the client falling back invisibly. Pass `cacheBehavior: .noCache` if you don't want a disk cache at all; that path never attempts disk-cache initialization and therefore can't throw for that reason.
 
 Cache entries that fail to decode — file corruption, or model changes across package updates — are treated as cache misses: the poisoned file is removed and the next fetch re-populates it. All cache network traffic (dataset revalidation) flows through the client's configured transport, so injected mock transports fully isolate tests from the network.
 
 ```swift
-let client = FoliClient(
+let client = try FoliClient(
     cacheBehavior: .cachedOrFetch,
     cacheTTL: .default
 )
@@ -50,13 +50,19 @@ The Föli API publishes GTFS data as versioned datasets. The cache tracks which 
 The default behavior. Returns cached data if available and still valid (according to ``Foli/CacheTTL``); otherwise fetches from the network and updates the cache.
 
 ```swift
-let client = FoliClient(cacheBehavior: .cachedOrFetch)
+let client = try FoliClient(cacheBehavior: .cachedOrFetch)
 
 // First call: network fetch, cache write
 // Subsequent calls (within TTL): cache hit, no network
 // After TTL expires: network fetch, cache update
 let routes = try await client.fetchRoutes()
 ```
+
+When the TTL has expired, the client revalidates against the latest dataset ID before deciding what to do:
+
+- **Dataset unchanged:** the existing entry's freshness timestamp is refreshed and it's served as-is — no refetch.
+- **Dataset changed:** the entry is treated as a miss, and `cachedOrFetch` fetches fresh data from the network **synchronously** before returning — unlike `staleWhileRevalidate`, it never hands back data known to be out of date.
+- **Revalidation inconclusive** (e.g. a transient network error, as opposed to a definitive answer): the stale entry is served rather than failing the call, matching ``FoliClient/hasValidCache(for:)``.
 
 **When to use:** General-purpose caching where you want to avoid redundant network calls but ensure data doesn't become too stale.
 
@@ -65,7 +71,7 @@ let routes = try await client.fetchRoutes()
 Returns stale cached data immediately (even if expired) and kicks off a background refresh. The caller gets a fast response while the cache updates asynchronously.
 
 ```swift
-let client = FoliClient(cacheBehavior: .staleWhileRevalidate)
+let client = try FoliClient(cacheBehavior: .staleWhileRevalidate)
 
 // Returns cached data instantly, even if expired
 // Background task fetches fresh data and updates cache
@@ -88,7 +94,7 @@ await client.setOnBackgroundRefreshError { resource, error in
 Always fetches from the network and updates the cache. Ignores any existing cached data.
 
 ```swift
-let client = FoliClient(cacheBehavior: .forceRefresh)
+let client = try FoliClient(cacheBehavior: .forceRefresh)
 
 // Always network fetch, always cache write
 let routes = try await client.fetchRoutes()
@@ -101,7 +107,7 @@ let routes = try await client.fetchRoutes()
 Returns cached data if available — regardless of freshness — and throws ``Foli/CacheError/cacheMiss(_:)`` otherwise. Never makes network requests; stale data beats no data when offline.
 
 ```swift
-let client = FoliClient(cacheBehavior: .cachedOnly)
+let client = try FoliClient(cacheBehavior: .cachedOnly)
 
 do {
     let routes = try await client.fetchRoutes()
@@ -118,7 +124,7 @@ do {
 Fetches from the network without reading or writing the cache. Bypasses caching entirely.
 
 ```swift
-let client = FoliClient(cacheBehavior: .noCache)
+let client = try FoliClient(cacheBehavior: .noCache)
 
 // Always network fetch, no cache interaction
 let routes = try await client.fetchRoutes()
@@ -142,16 +148,16 @@ let routes = try await client.fetchRoutes()
 
 ```swift
 // Default: 24-hour validity
-let client = FoliClient(cacheTTL: .default)
+let client = try FoliClient(cacheTTL: .default)
 
 // Short-lived: 1-hour validity (useful during development)
-let client = FoliClient(cacheTTL: .shortLived)
+let client = try FoliClient(cacheTTL: .shortLived)
 
 // Long-lived: 7-day validity (minimizes network traffic)
-let client = FoliClient(cacheTTL: .longLived)
+let client = try FoliClient(cacheTTL: .longLived)
 
 // Custom duration
-let client = FoliClient(cacheTTL: .init(validityDuration: 2 * 60 * 60)) // 2 hours
+let client = try FoliClient(cacheTTL: .init(validityDuration: 2 * 60 * 60)) // 2 hours
 ```
 
 **Choosing a TTL:** Shorter durations ensure fresher data but increase network usage. GTFS data typically updates daily, so `.default` (24 hours) is appropriate for most production use cases. Use `.shortLived` during development or when GTFS updates frequently.

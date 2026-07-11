@@ -380,7 +380,7 @@ Start and stop polling based on view lifecycle:
 ```swift
 struct StopView: View {
     @State private var arrivals: [Foli.Arrival] = []
-    private let client = FoliClient()
+    private let client = try! FoliClient()
 
     var body: some View {
         List(arrivals) { arrival in

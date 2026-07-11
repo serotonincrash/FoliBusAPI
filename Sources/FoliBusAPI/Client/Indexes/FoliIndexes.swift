@@ -37,14 +37,14 @@ internal actor FoliIndexes {
         let fp = fingerprint(stops)
         guard fp != lastStopsFp else { return }
         lastStopsFp = fp
-        stopsByID = Dictionary(uniqueKeysWithValues: stops.map { ($0.id, $0) })
+        stopsByID = Dictionary(stops.map { ($0.id, $0) }, uniquingKeysWith: { _, new in new })
     }
 
     func rebuildRoutes(using routes: [Foli.Route]) {
         let fp = fingerprint(routes)
         guard fp != lastRoutesFp else { return }
         lastRoutesFp = fp
-        routesByID = Dictionary(uniqueKeysWithValues: routes.map { ($0.id, $0) })
+        routesByID = Dictionary(routes.map { ($0.id, $0) }, uniquingKeysWith: { _, new in new })
         routesByShortName = Dictionary(grouping: routes, by: \Foli.Route.shortName)
     }
 
@@ -52,21 +52,21 @@ internal actor FoliIndexes {
         let fp = fingerprint(agencies)
         guard fp != lastAgenciesFp else { return }
         lastAgenciesFp = fp
-        agenciesByID = Dictionary(uniqueKeysWithValues: agencies.map { ($0.id, $0) })
+        agenciesByID = Dictionary(agencies.map { ($0.id, $0) }, uniquingKeysWith: { _, new in new })
     }
 
     func rebuildCalendars(using calendars: [Foli.Calendar]) {
         let fp = fingerprint(calendars)
         guard fp != lastCalendarsFp else { return }
         lastCalendarsFp = fp
-        calendarsByID = Dictionary(uniqueKeysWithValues: calendars.map { ($0.id, $0) })
+        calendarsByID = Dictionary(calendars.map { ($0.id, $0) }, uniquingKeysWith: { _, new in new })
     }
 
     func rebuildTrips(using trips: [Foli.Trip]) {
         let fp = fingerprint(trips)
         guard fp != lastTripsFp else { return }
         lastTripsFp = fp
-        tripsByID = Dictionary(uniqueKeysWithValues: trips.map { ($0.id, $0) })
+        tripsByID = Dictionary(trips.map { ($0.id, $0) }, uniquingKeysWith: { _, new in new })
     }
 
     /// Merges trips into the index without discarding existing entries.

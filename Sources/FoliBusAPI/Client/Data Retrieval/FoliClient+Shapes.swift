@@ -17,15 +17,19 @@ public extension FoliClient {
     /// - Returns: Shape points ordered by sequence.
     internal func fetchShapePointsFromNetwork(forShape shapeId: String) async throws -> [Foli.ShapePoint] {
         try await dedup.performDeduplicated(forKey: .resource(.shapePointsForShape(shapeId))) { [self] in
-            let shapePointList = try await requestGTFS("/shapes/\(shapeId)", as: Foli.ShapePointList.self)
+            let shapePointList = try await requestGTFS("/shapes/\(FoliRequester.pathComponent(shapeId))", as: Foli.ShapePointList.self)
             return shapePointList.shapePoints
-                .enumerated()
-                .map { index, shapePoint in
+                .map { shapePoint in
                     Foli.ShapePoint(
                         shapeId: shapePoint.shapeId.isEmpty ? shapeId : shapePoint.shapeId,
                         latitude: shapePoint.latitude,
                         longitude: shapePoint.longitude,
-                        sequence: shapePoint.sequence > 0 ? shapePoint.sequence : index + 1,
+                        // `ShapePointList`'s decoding already back-fills a missing
+                        // `shape_pt_sequence` from the payload's array index; a
+                        // decoded sequence of 0 here is a legitimate GTFS value; not
+                        // a marker for "absent" (which would collide with a real
+                        // sequence-1 point's id).
+                        sequence: shapePoint.sequence,
                         shapeDistTraveled: shapePoint.shapeDistTraveled
                     )
                 }
@@ -40,7 +44,7 @@ public extension FoliClient {
             for: .shapeRouteIds,
             load: { [cache] in try await cache?.loadShapeRouteIds() },
             loadStale: { [cache] in try await cache?.loadStaleShapeRouteIds() },
-            save: { [cache] routeIds in try await cache?.saveShapeRouteIds(routeIds) },
+            save: { [cache] routeIds, datasetId in try await cache?.saveShapeRouteIds(routeIds, datasetId: datasetId) },
             fetch: { [self] in try await fetchShapeRouteIDsFromNetwork() }
         )
     }
@@ -60,7 +64,7 @@ public extension FoliClient {
             for: .shapePointsForShape(shapeId),
             load: { [cache] in try await cache?.loadShapePoints(forShape: shapeId) },
             loadStale: { [cache] in try await cache?.loadStaleShapePoints(forShape: shapeId) },
-            save: { [cache] shapePoints in try await cache?.saveShapePoints(shapePoints, forShape: shapeId) },
+            save: { [cache] shapePoints, datasetId in try await cache?.saveShapePoints(shapePoints, forShape: shapeId, datasetId: datasetId) },
             fetch: { [self] in try await fetchShapePointsFromNetwork(forShape: shapeId) }
         )
     }

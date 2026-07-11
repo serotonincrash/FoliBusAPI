@@ -18,6 +18,33 @@ internal struct FoliRequester: Sendable {
         self.transport = transport
     }
 
+    // MARK: - Path Component Encoding
+
+    /// Percent-encodes a raw value for safe interpolation into a URL path segment.
+    ///
+    /// Endpoint paths are built by interpolating caller-supplied IDs (e.g.
+    /// `"/shapes/\(shapeId)"`). Those IDs are opaque strings from GTFS data or
+    /// caller input and may contain characters like `/`, `?`, `#`, or spaces
+    /// that would otherwise be misinterpreted as path separators or query
+    /// delimiters, silently producing the wrong URL (or `Foli.APIError.invalidURL`)
+    /// instead of a request to the intended, distinct path segment.
+    /// - Parameter raw: The unencoded path component.
+    /// - Returns: A percent-encoded string safe to interpolate into a URL path.
+    internal static func pathComponent(_ raw: String) -> String {
+        raw.addingPercentEncoding(withAllowedCharacters: Self.allowedPathComponentCharacters) ?? raw
+    }
+
+    /// Alphanumerics plus RFC 3986 "unreserved" punctuation (`-`, `.`, `_`, `~`) that
+    /// real GTFS IDs commonly contain (e.g. shape ID `"0_7"`, trip ID
+    /// `"0000null__1901generatedBlock"`). Everything else — `/`, `?`, `#`, spaces,
+    /// etc. — gets percent-encoded so it can't be misread as a path separator or
+    /// query delimiter.
+    private static let allowedPathComponentCharacters: CharacterSet = {
+        var set = CharacterSet.alphanumerics
+        set.insert(charactersIn: "-._~")
+        return set
+    }()
+
     // MARK: - URL Construction
 
     /// Constructs a full URL for a given SIRI endpoint path.
