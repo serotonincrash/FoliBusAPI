@@ -5,7 +5,6 @@ import Foundation
 /// Extracting these into a dedicated actor means index rebuilds (O(N) CPU work)
 /// no longer block unrelated ``FoliClient`` calls, since they execute on the
 /// indexes actor's executor rather than the client's.
-@available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
 internal actor FoliIndexes {
     private var stopsByID: [String: Foli.Stop] = [:]
     private var routesByID: [String: Foli.Route] = [:]
@@ -38,14 +37,14 @@ internal actor FoliIndexes {
         let fp = fingerprint(stops)
         guard fp != lastStopsFp else { return }
         lastStopsFp = fp
-        stopsByID = Dictionary(uniqueKeysWithValues: stops.map { ($0.id, $0) })
+        stopsByID = Dictionary(stops.map { ($0.id, $0) }, uniquingKeysWith: { _, new in new })
     }
 
     func rebuildRoutes(using routes: [Foli.Route]) {
         let fp = fingerprint(routes)
         guard fp != lastRoutesFp else { return }
         lastRoutesFp = fp
-        routesByID = Dictionary(uniqueKeysWithValues: routes.map { ($0.id, $0) })
+        routesByID = Dictionary(routes.map { ($0.id, $0) }, uniquingKeysWith: { _, new in new })
         routesByShortName = Dictionary(grouping: routes, by: \Foli.Route.shortName)
     }
 
@@ -53,21 +52,34 @@ internal actor FoliIndexes {
         let fp = fingerprint(agencies)
         guard fp != lastAgenciesFp else { return }
         lastAgenciesFp = fp
-        agenciesByID = Dictionary(uniqueKeysWithValues: agencies.map { ($0.id, $0) })
+        agenciesByID = Dictionary(agencies.map { ($0.id, $0) }, uniquingKeysWith: { _, new in new })
     }
 
     func rebuildCalendars(using calendars: [Foli.Calendar]) {
         let fp = fingerprint(calendars)
         guard fp != lastCalendarsFp else { return }
         lastCalendarsFp = fp
-        calendarsByID = Dictionary(uniqueKeysWithValues: calendars.map { ($0.id, $0) })
+        calendarsByID = Dictionary(calendars.map { ($0.id, $0) }, uniquingKeysWith: { _, new in new })
     }
 
     func rebuildTrips(using trips: [Foli.Trip]) {
         let fp = fingerprint(trips)
         guard fp != lastTripsFp else { return }
         lastTripsFp = fp
-        tripsByID = Dictionary(uniqueKeysWithValues: trips.map { ($0.id, $0) })
+        tripsByID = Dictionary(trips.map { ($0.id, $0) }, uniquingKeysWith: { _, new in new })
+    }
+
+    /// Merges trips into the index without discarding existing entries.
+    ///
+    /// Used by route-scoped fetches, whose partial results must not replace the
+    /// global trips index the way ``rebuildTrips(using:)`` does.
+    func mergeTrips(_ newTrips: [Foli.Trip]) {
+        guard !newTrips.isEmpty else { return }
+        for trip in newTrips {
+            tripsByID[trip.id] = trip
+        }
+        // The index no longer matches any full-rebuild fingerprint.
+        lastTripsFp = nil
     }
 
     func stop(for id: String) -> Foli.Stop? { stopsByID[id] }

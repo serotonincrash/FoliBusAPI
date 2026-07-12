@@ -26,7 +26,7 @@ struct EndpointCompatibilityTests {
             try makeDataResponse(for: request, data: payload)
         }
 
-        let client = FoliClient(transport: transport, cacheBehavior: .noCache)
+        let client = try FoliClient(transport: transport, cacheBehavior: .noCache)
         _ = try await client.fetchRoutes()
         let requests = await transport.requests()
 
@@ -55,7 +55,7 @@ struct EndpointCompatibilityTests {
             try makeDataResponse(for: request, data: payload)
         }
 
-        let client = FoliClient(transport: transport, cacheBehavior: .noCache)
+        let client = try FoliClient(transport: transport, cacheBehavior: .noCache)
         _ = try await client.fetchTrips()
         let requests = await transport.requests()
 
@@ -83,7 +83,7 @@ struct EndpointCompatibilityTests {
             try makeDataResponse(for: request, data: payload)
         }
 
-        let client = FoliClient(transport: transport, cacheBehavior: .noCache)
+        let client = try FoliClient(transport: transport, cacheBehavior: .noCache)
         _ = try await client.fetchTrips(forRoute: "1")
         let requests = await transport.requests()
 
@@ -112,7 +112,7 @@ struct EndpointCompatibilityTests {
             try makeDataResponse(for: request, data: payload)
         }
 
-        let client = FoliClient(transport: transport, cacheBehavior: .noCache)
+        let client = try FoliClient(transport: transport, cacheBehavior: .noCache)
         _ = try await client.fetchStopTimes(forTrip: "0000null__1901generatedBlock")
         let requests = await transport.requests()
 
@@ -141,7 +141,7 @@ struct EndpointCompatibilityTests {
             try makeDataResponse(for: request, data: payload)
         }
 
-        let client = FoliClient(transport: transport, cacheBehavior: .noCache)
+        let client = try FoliClient(transport: transport, cacheBehavior: .noCache)
         _ = try await client.fetchStopTimes(forStop: "4")
         let requests = await transport.requests()
 
@@ -179,7 +179,7 @@ struct EndpointCompatibilityTests {
             try makeDataResponse(for: request, data: payload)
         }
 
-        let client = FoliClient(transport: transport, cacheBehavior: .noCache)
+        let client = try FoliClient(transport: transport, cacheBehavior: .noCache)
         _ = try await client.fetchStopMonitoring(for: "1000")
         let requests = await transport.requests()
 
@@ -207,7 +207,7 @@ struct EndpointCompatibilityTests {
             try makeDataResponse(for: request, data: payload)
         }
 
-        let client = FoliClient(transport: transport, cacheBehavior: .noCache)
+        let client = try FoliClient(transport: transport, cacheBehavior: .noCache)
         _ = try await client.fetchAgencies()
         let requests = await transport.requests()
 
@@ -237,7 +237,7 @@ struct EndpointCompatibilityTests {
             try makeDataResponse(for: request, data: payload)
         }
 
-        let client = FoliClient(transport: transport, cacheBehavior: .noCache)
+        let client = try FoliClient(transport: transport, cacheBehavior: .noCache)
         _ = try await client.fetchCalendars()
         let requests = await transport.requests()
 
@@ -257,7 +257,7 @@ struct EndpointCompatibilityTests {
             try makeDataResponse(for: request, data: payload)
         }
 
-        let client = FoliClient(transport: transport, cacheBehavior: .noCache)
+        let client = try FoliClient(transport: transport, cacheBehavior: .noCache)
         _ = try await client.fetchShapeRouteIDs()
         let requests = await transport.requests()
 
@@ -281,8 +281,8 @@ struct EndpointCompatibilityTests {
             try makeDataResponse(for: request, data: payload)
         }
 
-        let client = FoliClient(transport: transport, cacheBehavior: .noCache)
-        _ = try await client.fetchShapePoints(forRouteId: "0_7")
+        let client = try FoliClient(transport: transport, cacheBehavior: .noCache)
+        _ = try await client.fetchShapePoints(forShape: "0_7")
         let requests = await transport.requests()
 
         #expect(requests.count == 1)
@@ -307,7 +307,7 @@ struct EndpointCompatibilityTests {
             try makeDataResponse(for: request, data: payload)
         }
 
-        let client = FoliClient(transport: transport, cacheBehavior: .noCache)
+        let client = try FoliClient(transport: transport, cacheBehavior: .noCache)
         _ = try await client.fetchAlerts()
         let requests = await transport.requests()
 
@@ -353,7 +353,7 @@ struct EndpointCompatibilityTests {
             try makeDataResponse(for: request, data: payload)
         }
 
-        let client = FoliClient(transport: transport, cacheBehavior: .noCache)
+        let client = try FoliClient(transport: transport, cacheBehavior: .noCache)
         _ = try await client.fetchAlertMessages()
         let requests = await transport.requests()
 
@@ -391,7 +391,7 @@ struct EndpointCompatibilityTests {
             try makeDataResponse(for: request, data: payload)
         }
 
-        let client = FoliClient(transport: transport, cacheBehavior: .noCache)
+        let client = try FoliClient(transport: transport, cacheBehavior: .noCache)
         _ = try await client.fetchCancellations()
         let requests = await transport.requests()
 
@@ -416,7 +416,7 @@ struct EndpointCompatibilityTests {
             try makeDataResponse(for: request, data: payload)
         }
 
-        let client = FoliClient(transport: transport, cacheBehavior: .noCache)
+        let client = try FoliClient(transport: transport, cacheBehavior: .noCache)
         _ = try await client.fetchAlertCategories()
         let requests = await transport.requests()
 
@@ -454,7 +454,7 @@ struct EndpointCompatibilityTests {
             try makeDataResponse(for: request, data: payload)
         }
 
-        let client = FoliClient(transport: transport, cacheBehavior: .noCache)
+        let client = try FoliClient(transport: transport, cacheBehavior: .noCache)
         _ = try await client.fetchGeoJSONLayers()
         let requests = await transport.requests()
 
@@ -474,7 +474,7 @@ struct EndpointCompatibilityTests {
             try makeDataResponse(for: request, data: payload)
         }
 
-        let client = FoliClient(transport: transport, cacheBehavior: .noCache)
+        let client = try FoliClient(transport: transport, cacheBehavior: .noCache)
         _ = try await client.fetchPointsOfInterest()
         let requests = await transport.requests()
 
@@ -494,8 +494,8 @@ struct EndpointCompatibilityTests {
             try makeDataResponse(for: request, data: payload)
         }
 
-        let client = FoliClient(transport: transport, cacheBehavior: .noCache)
-        _ = try await client.fetchPointsOfInterest(category: "service_points")
+        let client = try FoliClient(transport: transport, cacheBehavior: .noCache)
+        _ = try await client.fetchPointsOfInterest(inCategory: "service_points")
         let requests = await transport.requests()
 
         #expect(requests.count == 1)
@@ -514,7 +514,7 @@ struct EndpointCompatibilityTests {
             try makeDataResponse(for: request, data: payload)
         }
 
-        let client = FoliClient(transport: transport, cacheBehavior: .noCache)
+        let client = try FoliClient(transport: transport, cacheBehavior: .noCache)
         _ = try await client.fetchServiceBounds(resolution: .normal, format: .multiPolygon)
         let requests = await transport.requests()
 
@@ -534,7 +534,7 @@ struct EndpointCompatibilityTests {
             try makeDataResponse(for: request, data: payload)
         }
 
-        let client = FoliClient(transport: transport, cacheBehavior: .noCache)
+        let client = try FoliClient(transport: transport, cacheBehavior: .noCache)
         _ = try await client.fetchServiceBounds(resolution: .strict, format: .multiPolygon)
         let requests = await transport.requests()
 
@@ -554,7 +554,7 @@ struct EndpointCompatibilityTests {
             try makeDataResponse(for: request, data: payload)
         }
 
-        let client = FoliClient(transport: transport, cacheBehavior: .noCache)
+        let client = try FoliClient(transport: transport, cacheBehavior: .noCache)
         _ = try await client.fetchServiceBounds(resolution: .compact, format: .multiPolygon)
         let requests = await transport.requests()
 
@@ -574,7 +574,7 @@ struct EndpointCompatibilityTests {
             try makeDataResponse(for: request, data: payload)
         }
 
-        let client = FoliClient(transport: transport, cacheBehavior: .noCache)
+        let client = try FoliClient(transport: transport, cacheBehavior: .noCache)
         _ = try await client.fetchServiceBounds(resolution: .normal, format: .multiLineString)
         let requests = await transport.requests()
 
@@ -594,7 +594,7 @@ struct EndpointCompatibilityTests {
             try makeDataResponse(for: request, data: payload)
         }
 
-        let client = FoliClient(transport: transport, cacheBehavior: .noCache)
+        let client = try FoliClient(transport: transport, cacheBehavior: .noCache)
         _ = try await client.fetchServiceBounds(resolution: .strict, format: .multiLineString)
         let requests = await transport.requests()
 

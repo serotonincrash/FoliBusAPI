@@ -7,9 +7,9 @@
 
 import Foundation
 
-// MARK: - Cache Timeout Configuration
+// MARK: - Cache TTL Configuration
 public extension Foli {
-    /// Configuration describing how long cached GTFS resources remain fresh.
+    /// Configuration describing how long cached GTFS resources remain fresh (TTL = Time To Live).
     ///
     /// Use this type to control how aggressively the client refreshes cached data.
     /// Shorter durations ensure fresher data but increase network usage.
@@ -22,19 +22,19 @@ public extension Foli {
     /// ## Example
     /// ```swift
     /// // Use short-lived cache for development
-    /// let client = FoliClient(cacheTimeout: .shortLived)
+    /// let client = try FoliClient(cacheTTL: .shortLived)
     ///
     /// // Use long-lived cache for stable environments
-    /// let client = FoliClient(cacheTimeout: .longLived)
+    /// let client = try FoliClient(cacheTTL: .longLived)
     /// ```
-    struct CacheTimeout: Sendable {
+    struct CacheTTL: Sendable {
         /// Default cache validity duration in seconds (24 hours).
         public static let defaultValidityDuration: TimeInterval = 24 * 60 * 60
         
         /// How long cached data remains valid before requiring a refresh.
         public let validityDuration: TimeInterval
         
-        /// Creates a cache-timeout configuration.
+        /// Creates a cache TTL configuration.
         /// - Parameter validityDuration: The freshness window, in seconds.
         public init(validityDuration: TimeInterval = defaultValidityDuration) {
             self.validityDuration = validityDuration
@@ -43,16 +43,16 @@ public extension Foli {
         /// A default 24-hour cache lifetime.
         ///
         /// Suitable for most production use cases where GTFS data is updated daily.
-        public static let `default` = CacheTimeout()
+        public static let `default` = CacheTTL()
         
         /// A 1-hour cache lifetime for more frequently changing data.
         ///
         /// Useful during development or when GTFS data updates frequently.
-        public static let shortLived = CacheTimeout(validityDuration: 60 * 60)
+        public static let shortLived = CacheTTL(validityDuration: 60 * 60)
         
         /// A 7-day cache lifetime for rarely changing data.
         ///
         /// Suitable for stable deployments where minimizing network traffic is important.
-        public static let longLived = CacheTimeout(validityDuration: 7 * 24 * 60 * 60)
+        public static let longLived = CacheTTL(validityDuration: 7 * 24 * 60 * 60)
     }
 }

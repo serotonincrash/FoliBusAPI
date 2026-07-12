@@ -9,7 +9,21 @@ import Foundation
 
 // MARK: - Caching
 
-@available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
+/// Holds a reference to a background refresh task so the task body can reference itself.
+///
+/// ``@unchecked Sendable`` is safe here because:
+/// 1. `ref.task = task` runs synchronously on the `FoliClient` actor *before* the
+///    `Task {}` closure begins executing, because `Task {}` inherits the actor's
+///    isolation and cannot start until the actor yields.
+/// 2. The closure reads `ref.task` only after the assignment has completed.
+///
+/// **Do not** change the `Task {}` to `Task.detached` or move this code to a
+/// `nonisolated` context — that would break the ordering guarantee and introduce
+/// a data race.
+private final class TaskReference: @unchecked Sendable {
+    var task: Task<Void, Never>?
+}
+
 public extension FoliClient {
     
     // MARK: - Cache Management
@@ -53,27 +67,43 @@ public extension FoliClient {
         return try await cache.revalidateCache(for: type)
     }
 
-    /// Starts a best-effort stale-while-revalidate refresh and removes its bookkeeping entry once the task finishes.
-    internal func refreshCacheInBackground<T: Sendable>(for type: Foli.Resource, fetch: @escaping @Sendable () async throws -> T, save: @escaping @Sendable (T) async throws -> Void) async {
-        await refreshTracker.cancelTask(for: type)
+    /// Starts a best-effort stale-while-revalidate refresh unless one is already in flight
+    /// for the resource, and removes its bookkeeping entry once the task finishes.
+    internal func refreshCacheInBackground<T: Sendable>(for type: Foli.Resource, fetch: @escaping @Sendable () async throws -> T, save: @escaping @Sendable (T, String?) async throws -> Void) async {
+        let (registration, registrationContinuation) = AsyncStream.makeStream(of: Bool.self)
 
-        let task = Task { [weak self] in
-            guard let self else { return }
-            await self.runBackgroundRefresh(for: type, fetch: fetch, save: save)
+        let ref = TaskReference()
+        let task = Task { [weak self, ref] in
+            // Do no work until the registration outcome is known, so the task can neither
+            // race an already-in-flight refresh nor finish before it is registered
+            // (which would strand a dead entry in the tracker).
+            var isRegistered = false
+            for await outcome in registration {
+                isRegistered = outcome
+                break
+            }
+            guard isRegistered, let self, let task = ref.task else { return }
+            await self.runBackgroundRefresh(for: type, task: task, fetch: fetch, save: save)
         }
+        ref.task = task
 
-        await refreshTracker.setTask(task, for: type)
+        let registered = await refreshTracker.setTaskIfAbsent(task, for: type)
+        registrationContinuation.yield(registered)
+        registrationContinuation.finish()
     }
 
     /// Resolves a cacheable GTFS resource according to the client's configured ``Foli.CacheBehavior``,
     /// centralizing the cached-or-fetch / stale-while-revalidate / force-refresh / cached-only / no-cache
-    /// policy that was previously duplicated across every data-retrieval call site.
+    /// policy across all data-retrieval call sites.
     ///
     /// - Parameters:
     ///   - resource: The cache resource key used for background refresh bookkeeping.
     ///   - load: Loads a fresh cached value, or nil if absent/expired.
     ///   - loadStale: Loads a stale cached value regardless of freshness, or nil if absent.
-    ///   - save: Persists a freshly fetched value to the cache.
+    ///   - save: Persists a freshly fetched value to the cache, tagged with the
+    ///     dataset ID captured immediately before the fetch that produced it (or `nil`
+    ///     if that capture failed, in which case the cache falls back to its own
+    ///     `datasetIdFetcher`).
     ///   - fetch: Fetches the value from the network.
     ///   - rebuildIndex: Optional callback to rebuild in-memory lookup indexes from the value.
     /// - Returns: The resolved value according to `cacheBehavior`.
@@ -81,7 +111,7 @@ public extension FoliClient {
         for resource: Foli.Resource,
         load: @escaping @Sendable () async throws -> T?,
         loadStale: @escaping @Sendable () async throws -> T?,
-        save: @escaping @Sendable (T) async throws -> Void,
+        save: @escaping @Sendable (T, String?) async throws -> Void,
         fetch: @escaping @Sendable () async throws -> T,
         rebuildIndex: (@Sendable (T) async -> Void)? = nil
     ) async throws -> T {
@@ -91,7 +121,16 @@ public extension FoliClient {
                 if let rebuildIndex { await rebuildIndex(cached) }
                 return cached
             }
-            fallthrough
+            // No fallthrough into `.staleWhileRevalidate`: a cache miss here (nil from
+            // `load()`) means either there's nothing cached, or `loadResource`'s own
+            // revalidation already determined the cached entry is stale/gone. Either
+            // way `.cachedOrFetch` fetches fresh synchronously rather than serving
+            // possibly-stale data from a background refresh.
+            let datasetId = try? await cache?.fetchLatestDatasetId()
+            let fresh = try await fetch()
+            if let rebuildIndex { await rebuildIndex(fresh) }
+            try? await save(fresh, datasetId)
+            return fresh
 
         case .staleWhileRevalidate:
             if let staleCached = try await loadStale() {
@@ -106,13 +145,16 @@ public extension FoliClient {
             fallthrough
 
         case .forceRefresh:
+            let datasetId = try? await cache?.fetchLatestDatasetId()
             let fresh = try await fetch()
             if let rebuildIndex { await rebuildIndex(fresh) }
-            try? await save(fresh)
+            try? await save(fresh, datasetId)
             return fresh
 
         case .cachedOnly:
-            guard let cached = try await load() else {
+            // Serve whatever is on disk regardless of freshness: `.cachedOnly` promises
+            // no network access, and load() revalidates expired entries over the network.
+            guard let cached = try await loadStale() else {
                 throw Foli.CacheError.cacheMiss(resource)
             }
             if let rebuildIndex { await rebuildIndex(cached) }
@@ -125,27 +167,32 @@ public extension FoliClient {
         }
     }
 
-    private func runBackgroundRefresh<T: Sendable>(for type: Foli.Resource, fetch: @escaping @Sendable () async throws -> T, save: @escaping @Sendable (T) async throws -> Void) async {
-        // Get the current task reference for proper cleanup
-        let currentTask = await refreshTracker.currentTask(for: type)
-
-        defer {
-            // Only clear if this is still the registered task (prevents clearing a newer task)
-            if let currentTask {
-                Task { [weak self] in
-                    await self?.refreshTracker.clearTask(for: type, matching: currentTask)
-                }
-            }
-        }
-
+    private func runBackgroundRefresh<T: Sendable>(
+        for type: Foli.Resource,
+        task: Task<Void, Never>,
+        fetch: @escaping @Sendable () async throws -> T,
+        save: @escaping @Sendable (T, String?) async throws -> Void
+    ) async {
         do {
             let cacheStillCurrent = try await revalidateCache(for: type)
-            guard !cacheStillCurrent else { return }
+            guard !cacheStillCurrent else {
+                await refreshTracker.clearTask(for: type, matching: task)
+                return
+            }
+            try Task.checkCancellation()
+            // Captured before `fetch()` so a mid-fetch dataset flip fails safe: the
+            // saved entry gets tagged with the pre-fetch ID, which the next
+            // revalidation will detect as stale and refetch (never stuck serving
+            // stale-forever).
+            let datasetId = try? await cache?.fetchLatestDatasetId()
             let freshValue = try await fetch()
-            try await save(freshValue)
+            try Task.checkCancellation()
+            try await save(freshValue, datasetId)
+            await refreshTracker.clearTask(for: type, matching: task)
         } catch is CancellationError {
-            // Task was cancelled - this is expected lifecycle behavior, not an error
+            await refreshTracker.clearTask(for: type, matching: task)
         } catch {
+            await refreshTracker.clearTask(for: type, matching: task)
             notifyBackgroundRefreshError(type, error: error)
         }
     }

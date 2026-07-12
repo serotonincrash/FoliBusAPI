@@ -10,7 +10,7 @@ extension Foli.DiskCache {
         let latest: String
         let datasets: [String]
 
-        enum CodingKeys: String, CodingKey {
+        private enum CodingKeys: String, CodingKey {
             case latest
             case datasets
         }
@@ -47,72 +47,16 @@ extension Foli.DiskCache {
         }
 
         let data = try Data(contentsOf: fileURL)
-        let decoder = JSONDecoder()
+        guard var json = try JSONSerialization.jsonObject(with: data) as? [String: Any],
+              var metadata = json["metadata"] as? [String: Any] else { return }
 
-        let cachedData: any Codable
-        switch type {
-        case .routes:
-            cachedData = try decoder.decode(CachedData<[Foli.Route]>.self, from: data)
-        case .stops:
-            cachedData = try decoder.decode(CachedData<[Foli.Stop]>.self, from: data)
-        case .trips, .tripsForRoute:
-            cachedData = try decoder.decode(CachedData<[Foli.Trip]>.self, from: data)
-        case .stopTimes, .stopTimesForTrip, .stopTimesForStop:
-            cachedData = try decoder.decode(CachedData<[Foli.StopTime]>.self, from: data)
-        case .calendarDates:
-            cachedData = try decoder.decode(CachedData<[Foli.CalendarDate]>.self, from: data)
-        case .agencies:
-            cachedData = try decoder.decode(CachedData<[Foli.Agency]>.self, from: data)
-        case .calendars:
-            cachedData = try decoder.decode(CachedData<[Foli.Calendar]>.self, from: data)
-        case .shapeRouteIds:
-            cachedData = try decoder.decode(CachedData<[String]>.self, from: data)
-        case .shapePointsForShape:
-            cachedData = try decoder.decode(CachedData<[Foli.ShapePoint]>.self, from: data)
-        case .geoJSONLayers:
-            cachedData = try decoder.decode(CachedData<[Foli.GeoJSONLayer]>.self, from: data)
-        case .geoJSONPOI, .geoJSONPOICategory, .geoJSONBounds:
-            cachedData = try decoder.decode(CachedData<Foli.FeatureCollection>.self, from: data)
-        }
+        // Update only the cachedAt timestamp; keep datasetId unchanged.
+        // JSONEncoder encodes Date as Double (timeIntervalSinceReferenceDate).
+        // Using the same representation here ensures JSONDecoder compatibility.
+        metadata["cachedAt"] = Date().timeIntervalSinceReferenceDate
+        json["metadata"] = metadata
 
-        let oldMetadata: DatasetMetadata
-        let newData: any Codable
-
-        switch cachedData {
-        case let cached as CachedData<[Foli.Route]>:
-            oldMetadata = cached.metadata
-            newData = CachedData(metadata: DatasetMetadata(datasetId: oldMetadata.datasetId, cachedAt: Date()), data: cached.data)
-        case let cached as CachedData<[Foli.Stop]>:
-            oldMetadata = cached.metadata
-            newData = CachedData(metadata: DatasetMetadata(datasetId: oldMetadata.datasetId, cachedAt: Date()), data: cached.data)
-        case let cached as CachedData<[Foli.Trip]>:
-            oldMetadata = cached.metadata
-            newData = CachedData(metadata: DatasetMetadata(datasetId: oldMetadata.datasetId, cachedAt: Date()), data: cached.data)
-        case let cached as CachedData<[Foli.StopTime]>:
-            oldMetadata = cached.metadata
-            newData = CachedData(metadata: DatasetMetadata(datasetId: oldMetadata.datasetId, cachedAt: Date()), data: cached.data)
-        case let cached as CachedData<[Foli.CalendarDate]>:
-            oldMetadata = cached.metadata
-            newData = CachedData(metadata: DatasetMetadata(datasetId: oldMetadata.datasetId, cachedAt: Date()), data: cached.data)
-        case let cached as CachedData<[Foli.Agency]>:
-            oldMetadata = cached.metadata
-            newData = CachedData(metadata: DatasetMetadata(datasetId: oldMetadata.datasetId, cachedAt: Date()), data: cached.data)
-        case let cached as CachedData<[Foli.Calendar]>:
-            oldMetadata = cached.metadata
-            newData = CachedData(metadata: DatasetMetadata(datasetId: oldMetadata.datasetId, cachedAt: Date()), data: cached.data)
-        case let cached as CachedData<[String]>:
-            oldMetadata = cached.metadata
-            newData = CachedData(metadata: DatasetMetadata(datasetId: oldMetadata.datasetId, cachedAt: Date()), data: cached.data)
-        case let cached as CachedData<[Foli.ShapePoint]>:
-            oldMetadata = cached.metadata
-            newData = CachedData(metadata: DatasetMetadata(datasetId: oldMetadata.datasetId, cachedAt: Date()), data: cached.data)
-        default:
-            return
-        }
-
-        let encoder = JSONEncoder()
-        encoder.outputFormatting = [.sortedKeys, .prettyPrinted]
-        let updatedData = try encoder.encode(newData)
+        let updatedData = try JSONSerialization.data(withJSONObject: json, options: [.sortedKeys, .prettyPrinted])
         try updatedData.write(to: fileURL, options: .atomic)
     }
 

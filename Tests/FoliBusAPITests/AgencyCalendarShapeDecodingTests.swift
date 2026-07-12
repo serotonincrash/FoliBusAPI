@@ -34,8 +34,8 @@ struct AgencyCalendarShapeDecodingTests {
         #expect(list.agencies.count == 2)
         #expect(list.agencies[0].id == "11")
         #expect(list.agencies[0].name == "SLA")
-        #expect(list.agencies[0].agencyTimezone == "Europe/Helsinki")
-        #expect(list.agencies[0].agencyLang == "  ")
+        #expect(list.agencies[0].timezone == "Europe/Helsinki")
+        #expect(list.agencies[0].language == "  ")
     }
 
     @Test("decodes calendar list from real API format")
@@ -74,8 +74,8 @@ struct AgencyCalendarShapeDecodingTests {
         #expect(list.calendars.contains { $0.id == "S:FÖLI_Kesä_2015_ver3" })
         let calendar = try #require(list.calendars.first { $0.id == "A:FÖLI_Kesä_2015_ver3" })
         #expect(calendar.monday == false)
-        #expect(calendar.startDate == "20150601")
-        #expect(calendar.endDate == "20150628")
+        #expect(calendar.startDateCode == "20150601")
+        #expect(calendar.endDateCode == "20150628")
     }
 
     @Test("decodes shape points from real API format")

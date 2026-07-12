@@ -1,8 +1,10 @@
 import Foundation
 
-@available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
 extension FoliClient {
     // MARK: - Request Forwarders
+    //
+    // Each method delegates to `requester` (``FoliRequester``) so that URL
+    // construction and JSON decoding run off the actor's executor.
 
     /// Fetch and decode a response from a SIRI endpoint.
     internal nonisolated func requestSIRI<T: Decodable>(_ path: String, as type: T.Type = T.self, headers: [String: String] = [:]) async throws -> T {
@@ -15,6 +17,9 @@ extension FoliClient {
     }
 
     /// Fetch and decode a response from an Alerts endpoint.
+    ///
+    /// The alerts endpoint declares an `Accept-Encoding: gzip` header; see
+    /// ``FoliRequester/requestAlerts(_:as:)``.
     internal nonisolated func requestAlerts<T: Decodable>(_ path: String, as type: T.Type = T.self) async throws -> T {
         try await requester.requestAlerts(path, as: type)
     }

@@ -8,43 +8,43 @@ public extension Foli {
         /// Category code (e.g., "TIMETABLE_CHANGES")
         public let category: String
         /// Finnish description
-        public let descrFi: String
+        public let descriptionFi: String
         /// Swedish description
-        public let descrSv: String?
+        public let descriptionSv: String?
         /// English description
-        public let descrEn: String?
+        public let descriptionEn: String?
         
         public var id: Int { catId }
         
-        enum CodingKeys: String, CodingKey {
+        private enum CodingKeys: String, CodingKey {
             case catId = "catid"
             case category
-            case descrFi = "descr_fi"
-            case descrSv = "descr_sv"
-            case descrEn = "descr_en"
+            case descriptionFi = "descr_fi"
+            case descriptionSv = "descr_sv"
+            case descriptionEn = "descr_en"
         }
         
         public init(
             catId: Int,
             category: String,
-            descrFi: String,
-            descrSv: String? = nil,
-            descrEn: String? = nil
+            descriptionFi: String,
+            descriptionSv: String? = nil,
+            descriptionEn: String? = nil
         ) {
             self.catId = catId
             self.category = category
-            self.descrFi = descrFi
-            self.descrSv = descrSv
-            self.descrEn = descrEn
+            self.descriptionFi = descriptionFi
+            self.descriptionSv = descriptionSv
+            self.descriptionEn = descriptionEn
         }
         
         /// Get localized description
         public func description(language: String) -> String {
             switch language {
-            case "fi": return descrFi
-            case "sv": return descrSv ?? descrFi
-            case "en": return descrEn ?? descrFi
-            default: return descrEn ?? descrFi
+            case "fi": return descriptionFi
+            case "sv": return descriptionSv ?? descriptionFi
+            case "en": return descriptionEn ?? descriptionFi
+            default: return descriptionEn ?? descriptionFi
             }
         }
     }

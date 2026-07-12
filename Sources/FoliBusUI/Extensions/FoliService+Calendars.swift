@@ -3,7 +3,6 @@ import FoliBusAPI
 
 // MARK: - Calendar API
 
-@available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
 public extension FoliService {
     /// Fetch all weekly service calendars from the API.
     /// - Returns: Array of all calendar records.
@@ -14,8 +13,9 @@ public extension FoliService {
     /// Fetch a specific calendar by service ID.
     /// - Parameter serviceId: The service ID to fetch.
     /// - Returns: The calendar if found.
+    /// - Throws: ``Foli/APIError/notFound`` if no calendar matches the service ID.
     func fetchCalendar(forServiceId serviceId: String) async throws -> Foli.Calendar {
-        guard let calendar = try await client.fetchCalendar(forServiceId: serviceId) else {
+        guard let calendar = try await client.calendar(for: serviceId) else {
             throw Foli.APIError.notFound
         }
         return calendar

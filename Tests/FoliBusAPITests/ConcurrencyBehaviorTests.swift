@@ -30,13 +30,13 @@ struct ConcurrencyBehaviorTests {
         }
 
         let cache = ControlledCache(revalidationResult: false)
-        let client = FoliClient(transport: transport, cacheBehavior: .staleWhileRevalidate)
+        let client = try FoliClient(transport: transport, cacheBehavior: .staleWhileRevalidate)
         await client.installCacheForTesting(cache)
 
         await client.refreshCacheInBackground(
             for: .routes,
             fetch: { ["fresh-routes"] },
-            save: { routes in
+            save: { routes, _ in
                 await cache.recordSavedRoutes(routes)
             }
         )
@@ -53,10 +53,51 @@ struct ConcurrencyBehaviorTests {
         #expect(await !client.refreshTracker.hasActiveTask(for: .routes))
         #expect(await cache.savedRoutes == [["fresh-routes"]])
     }
+
+    @Test("a handler registered via setOnBackgroundRefreshError receives background refresh failures")
+    func backgroundRefreshErrorHandlerReceivesFailure() async throws {
+        struct RefreshFailure: Error {}
+
+        let transport = MockTransport { request in
+            try makeDataResponse(for: request, data: Data("[]".utf8))
+        }
+        let client = try FoliClient(transport: transport, cacheBehavior: .staleWhileRevalidate)
+        await client.installCacheForTesting(ControlledCache(revalidationResult: false))
+
+        let reported = ReportedRefreshErrors()
+        await client.setOnBackgroundRefreshError { resource, error in
+            Task { await reported.record(resource: resource, error: error) }
+        }
+
+        await client.refreshCacheInBackground(
+            for: .routes,
+            fetch: { () async throws -> [String] in throw RefreshFailure() },
+            save: { _, _ in }
+        )
+
+        for _ in 0..<40 {
+            if await !reported.entries.isEmpty {
+                break
+            }
+            try await Task.sleep(for: .milliseconds(25))
+        }
+
+        let entry = try #require(await reported.entries.first)
+        #expect(entry.resource == .routes)
+        #expect(entry.error is RefreshFailure)
+    }
+}
+
+private actor ReportedRefreshErrors {
+    private(set) var entries: [(resource: Foli.Resource, error: Error)] = []
+
+    func record(resource: Foli.Resource, error: Error) {
+        entries.append((resource: resource, error: error))
+    }
 }
 
 private actor ControlledCache: Foli.Cache {
-    let timeoutDuration: Foli.CacheTimeout = .default
+    let timeoutDuration: Foli.CacheTTL = .default
     private let revalidationResult: Bool
     private(set) var savedRoutes: [[String]] = []
 
@@ -68,48 +109,17 @@ private actor ControlledCache: Foli.Cache {
         get async throws { nil }
     }
 
-    func loadRoutes() async throws -> [Foli.Route]? { nil }
-    func saveRoutes(_ routes: [Foli.Route]) async throws {}
-    func loadStops() async throws -> [Foli.Stop]? { nil }
-    func saveStops(_ stops: [Foli.Stop]) async throws {}
-    func loadTrips() async throws -> [Foli.Trip]? { nil }
-    func saveTrips(_ trips: [Foli.Trip]) async throws {}
-    func loadTrips(forRoute routeId: String) async throws -> [Foli.Trip]? { nil }
-    func saveTrips(_ trips: [Foli.Trip], forRoute routeId: String) async throws {}
-    func loadStopTimes() async throws -> [Foli.StopTime]? { nil }
-    func saveStopTimes(_ stopTimes: [Foli.StopTime]) async throws {}
-    func loadStopTimes(forTrip tripId: String) async throws -> [Foli.StopTime]? { nil }
-    func saveStopTimes(_ stopTimes: [Foli.StopTime], forTrip tripId: String) async throws {}
-    func loadStopTimes(forStop stopId: String) async throws -> [Foli.StopTime]? { nil }
-    func saveStopTimes(_ stopTimes: [Foli.StopTime], forStop stopId: String) async throws {}
-    func loadCalendarDates() async throws -> [Foli.CalendarDate]? { nil }
-    func saveCalendarDates(_ calendarDates: [Foli.CalendarDate]) async throws {}
-    func loadAgencies() async throws -> [Foli.Agency]? { nil }
-    func saveAgencies(_ agencies: [Foli.Agency]) async throws {}
-    func loadCalendars() async throws -> [Foli.Calendar]? { nil }
-    func saveCalendars(_ calendars: [Foli.Calendar]) async throws {}
-    func loadShapeRouteIds() async throws -> [String]? { nil }
-    func saveShapeRouteIds(_ routeIds: [String]) async throws {}
-    func loadShapePoints(forShape shapeId: String) async throws -> [Foli.ShapePoint]? { nil }
-    func saveShapePoints(_ shapePoints: [Foli.ShapePoint], forShape shapeId: String) async throws {}
+    func loadResource<T: Codable & Sendable>(_ type: T.Type, forKey key: Foli.Resource) async throws -> T? { nil }
+    func loadStaleResource<T: Codable & Sendable>(_ type: T.Type, forKey key: Foli.Resource) async throws -> T? { nil }
+    func saveResource<T: Codable & Sendable>(_ value: T, forKey key: Foli.Resource, datasetId: String?) async throws {}
+
     func clearAllCache() async throws {}
     func clearCache(for type: Foli.Resource) async throws {}
     func hasValidCache(for type: Foli.Resource) async -> Bool { false }
     func cacheAge(for type: Foli.Resource) async -> TimeInterval? { nil }
     func currentDatasetId(for type: Foli.Resource?) async throws -> String? { nil }
-    func loadStaleRoutes() async throws -> [Foli.Route]? { nil }
-    func loadStaleStops() async throws -> [Foli.Stop]? { nil }
-    func loadStaleTrips() async throws -> [Foli.Trip]? { nil }
-    func loadStaleTrips(forRoute routeId: String) async throws -> [Foli.Trip]? { nil }
-    func loadStaleStopTimes() async throws -> [Foli.StopTime]? { nil }
-    func loadStaleStopTimes(forTrip tripId: String) async throws -> [Foli.StopTime]? { nil }
-    func loadStaleStopTimes(forStop stopId: String) async throws -> [Foli.StopTime]? { nil }
-    func loadStaleCalendarDates() async throws -> [Foli.CalendarDate]? { nil }
-    func loadStaleAgencies() async throws -> [Foli.Agency]? { nil }
-    func loadStaleCalendars() async throws -> [Foli.Calendar]? { nil }
-    func loadStaleShapeRouteIds() async throws -> [String]? { nil }
-    func loadStaleShapePoints(forShape shapeId: String) async throws -> [Foli.ShapePoint]? { nil }
     func revalidateCache(for type: Foli.Resource) async throws -> Bool { revalidationResult }
+    func fetchLatestDatasetId() async throws -> String { "controlled-dataset" }
 
     func recordSavedRoutes(_ routes: [String]) {
         savedRoutes.append(routes)

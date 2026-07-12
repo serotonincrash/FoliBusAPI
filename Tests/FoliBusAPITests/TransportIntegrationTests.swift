@@ -26,7 +26,7 @@ struct TransportIntegrationTests {
             try makeDataResponse(for: request, data: payload)
         }
 
-        let client = FoliClient(transport: transport, cacheBehavior: .noCache)
+        let client = try FoliClient(transport: transport, cacheBehavior: .noCache)
         let routes = try await client.fetchRoutes()
         let requests = await transport.requests()
 
@@ -43,7 +43,7 @@ struct TransportIntegrationTests {
         let transport = MockTransport { request in
             try makeDataResponse(for: request, statusCode: 503, data: payload)
         }
-        let client = FoliClient(transport: transport, cacheBehavior: .noCache)
+        let client = try FoliClient(transport: transport, cacheBehavior: .noCache)
 
         do {
             _ = try await client.fetchRoutes()
@@ -61,7 +61,7 @@ struct TransportIntegrationTests {
         let transport = MockTransport { _ in
             throw URLError(.timedOut)
         }
-        let client = FoliClient(transport: transport, cacheBehavior: .noCache)
+        let client = try FoliClient(transport: transport, cacheBehavior: .noCache)
 
         do {
             _ = try await client.fetchRoutes()

@@ -4,27 +4,26 @@ import Foundation
 ///
 /// Use this type when providing clients through SwiftUI environment integration
 /// or when you want to centralize cache and transport-related defaults.
-@available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
 public struct FoliClientConfiguration: Sendable {
     /// The cache strategy used for cacheable GTFS resources.
     public let cacheBehavior: Foli.CacheBehavior
     /// The freshness policy used by the disk cache.
-    public let cacheTimeout: Foli.CacheTimeout
+    public let cacheTTL: Foli.CacheTTL
     /// The session used by the default transport when constructing clients from this configuration.
     public let session: URLSession
 
     /// Creates a client configuration.
     /// - Parameters:
     ///   - cacheBehavior: The cache strategy used for GTFS-backed resources.
-    ///   - cacheTimeout: The freshness policy used by the disk cache.
+    ///   - cacheTTL: The freshness policy used by the disk cache.
     ///   - session: The session used for request execution.
     public init(
         cacheBehavior: Foli.CacheBehavior = .cachedOrFetch,
-        cacheTimeout: Foli.CacheTimeout = .default,
+        cacheTTL: Foli.CacheTTL = .default,
         session: URLSession = .shared
     ) {
         self.cacheBehavior = cacheBehavior
-        self.cacheTimeout = cacheTimeout
+        self.cacheTTL = cacheTTL
         self.session = session
     }
 
@@ -33,25 +32,31 @@ public struct FoliClientConfiguration: Sendable {
 }
 
 /// A type that can vend configured ``FoliClient`` instances.
-@available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
 public protocol FoliClientProviding: Sendable {
     /// Returns a client instance suitable for the current environment.
     func client() -> FoliClient
 }
 
 /// Default provider that constructs and reuses a single configured client instance.
-@available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
 public final class DefaultFoliClientProvider: FoliClientProviding {
     private let sharedClient: FoliClient
 
     /// Creates a provider backed by the supplied configuration.
+    ///
+    /// This initializer cannot throw (it backs the SwiftUI environment default), so if
+    /// constructing a client with the supplied configuration fails (e.g. disk-cache
+    /// initialization failure), it falls back to a client with `cacheBehavior: .noCache`.
+    /// That fallback construction provably cannot throw: `FoliClient.init` only throws
+    /// when it attempts disk-cache initialization, which it skips entirely for `.noCache`.
     /// - Parameter configuration: The configuration used when the shared client is created.
     public init(configuration: FoliClientConfiguration = .default) {
-        self.sharedClient = FoliClient(
+        let client = try? FoliClient(
             session: configuration.session,
             cacheBehavior: configuration.cacheBehavior,
-            cacheTimeout: configuration.cacheTimeout
+            cacheTTL: configuration.cacheTTL
         )
+        // swiftlint:disable:next force_try
+        self.sharedClient = client ?? (try! FoliClient(cacheBehavior: .noCache))
     }
 
     /// Returns the shared client instance.

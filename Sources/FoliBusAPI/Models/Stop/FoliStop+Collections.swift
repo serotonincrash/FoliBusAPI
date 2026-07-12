@@ -26,6 +26,7 @@ public extension Collection where Element == Foli.Stop {
     
     /// Returns stops grouped by zone ID.
     /// - Returns: Dictionary mapping zone IDs to arrays of stops in that zone.
+    /// - Complexity: O(N) where N is the number of stops.
     func groupedByZone() -> [String?: [Foli.Stop]] {
         Dictionary(grouping: self) { $0.zoneId }
     }
@@ -42,6 +43,7 @@ public extension Collection where Element == Foli.Stop {
     ///   - latRange: The latitude range (e.g., 60.4...60.5).
     ///   - lonRange: The longitude range (e.g., 22.2...22.3).
     /// - Returns: Array of stops within the specified bounds.
+    /// - Complexity: O(N) where N is the number of stops.
     func within(latRange: ClosedRange<Double>, lonRange: ClosedRange<Double>) -> [Foli.Stop] {
         filter { stop in
             guard let lat = stop.latitude, let lon = stop.longitude else { return false }
@@ -56,6 +58,7 @@ public extension Collection where Element == Foli.Stop {
     ///
     /// - Parameter coordinate: The reference coordinate to measure distance from.
     /// - Returns: Array of stops sorted by distance (nearest first).
+    /// - Complexity: O(N log N) where N is the number of stops.
     func sortedByDistance(from coordinate: Foli.Coordinate) -> [Foli.Stop] {
         compactMap { stop -> (stop: Foli.Stop, distance: Double)? in
             guard let lat = stop.latitude, let lon = stop.longitude else { return nil }
@@ -72,6 +75,7 @@ public extension Collection where Element == Foli.Stop {
     ///
     /// - Parameter coordinate: The reference coordinate.
     /// - Returns: The nearest stop, or `nil` if no stops have valid locations.
+    /// - Complexity: O(N log N) where N is the number of stops.
     func nearest(to coordinate: Foli.Coordinate) -> Foli.Stop? {
         sortedByDistance(from: coordinate).first
     }

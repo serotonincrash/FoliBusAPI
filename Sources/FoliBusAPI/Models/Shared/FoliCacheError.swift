@@ -13,6 +13,7 @@ public extension Foli {
         /// are configured for deduplication only and should never be persisted to disk.
         /// This error indicates a programming error where disk cache methods were called
         /// with incompatible resource types.
+        @available(*, deprecated, message: "All Foli.Resource cases are now cacheable. This case is never thrown.")
         case resourceNotCacheable(Resource)
 
         /// No cached value is available for the requested resource.

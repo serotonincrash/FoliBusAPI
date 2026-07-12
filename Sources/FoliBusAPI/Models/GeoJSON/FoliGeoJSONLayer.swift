@@ -3,6 +3,8 @@ import Foundation
 // MARK: - GeoJSON Layer Model
 /// GeoJSON layer metadata from the Föli map data API.
 ///
+/// - SeeAlso: ``Foli/FeatureCollection``
+///
 /// Layers represent different categories of geographic data available from the API,
 /// such as points of interest, service boundaries, or bike parking locations.
 public extension Foli {

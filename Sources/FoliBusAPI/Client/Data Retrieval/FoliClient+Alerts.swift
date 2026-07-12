@@ -9,7 +9,6 @@ import Foundation
 
 // MARK: - Alerts
 
-@available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
 public extension FoliClient {
     
     /// Fetch all active alerts (messages and cancellations).
@@ -20,7 +19,7 @@ public extension FoliClient {
     /// - Note: Alert data is real-time. Recommended polling interval: 30-60 seconds.
     ///         Response may be gzip-compressed.
     func fetchAlerts() async throws -> Foli.AlertsResponse {
-        try await dedup.performDeduplicated(.alerts) { [self] in
+        try await dedup.performDeduplicated(forKey: .alerts) { [self] in
             try await requestAlerts("/alerts", as: Foli.AlertsResponse.self)
         }
     }
@@ -30,7 +29,7 @@ public extension FoliClient {
     /// - Returns: Array of alert messages.
     /// - Throws: `Foli.APIError` if the request fails.
     func fetchAlertMessages() async throws -> [Foli.Alert] {
-        try await dedup.performDeduplicated(.alertMessages) { [self] in
+        try await dedup.performDeduplicated(forKey: .alertMessages) { [self] in
             let response = try await requestAlerts("/alerts/messages", as: Foli.AlertsResponse.self)
             return response.messages
         }
@@ -41,7 +40,7 @@ public extension FoliClient {
     /// - Returns: Array of trip cancellations.
     /// - Throws: `Foli.APIError` if the request fails.
     func fetchCancellations() async throws -> [Foli.TripCancellation] {
-        try await dedup.performDeduplicated(.alertCancellations) { [self] in
+        try await dedup.performDeduplicated(forKey: .alertCancellations) { [self] in
             let response = try await requestAlerts("/alerts/cancellations", as: Foli.AlertsResponse.self)
             return response.cancellations
         }

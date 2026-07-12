@@ -7,9 +7,9 @@
 
 import Foundation
 import FoliBusAPI
+
 // MARK: - Arrivals API
 
-@available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
 public extension FoliService {
     
     /// Fetch arrivals for a specific stop
@@ -18,6 +18,13 @@ public extension FoliService {
     func fetchArrivals(for stopId: String) async throws -> [Foli.Arrival] {
         return try await client.fetchArrivals(for: stopId)
     }
-    
+
+    /// Fetch arrivals for a specific stop
+    /// - Parameter stopId: The numeric stop ID
+    /// - Returns: Array of arrivals for the stop
+    func fetchArrivals(for stopId: Int) async throws -> [Foli.Arrival] {
+        return try await client.fetchArrivals(for: stopId)
+    }
+
 }
 

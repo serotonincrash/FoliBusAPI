@@ -2,6 +2,8 @@ import Foundation
 
 // MARK: - Calendar Date Model
 /// Information about service exceptions for a specific date (GTFS calendar\_dates.txt)
+///
+/// - SeeAlso: ``Foli/Calendar``
 public extension Foli {
     struct CalendarDate: Codable, Sendable, Identifiable, Equatable, Hashable {
         /// The service ID that this exception applies to
@@ -10,7 +12,7 @@ public extension Foli {
         /// Date in YYYYMMDD format
         public let dateString: String
 
-        /// Exception type: 0 = service removed, 1 = service added
+        /// Exception type (GTFS `exception_type`): 1 = service added, 2 = service removed
         public let exceptionType: Int
 
         /// A deterministic stable identifier derived from `serviceId` and `dateString`.
@@ -32,10 +34,7 @@ public extension Foli {
 
         /// The date as a Date object, if the dateString is valid
         public var date: Date? {
-            let formatter = DateFormatter()
-            formatter.dateFormat = "yyyyMMdd"
-            formatter.calendar = Foundation.Calendar(identifier: .gregorian)
-            return formatter.date(from: dateString)
+            GTFSDateParser.date(from: dateString)
         }
 
         /// Whether this exception adds service for this date
@@ -43,9 +42,9 @@ public extension Foli {
             return exceptionType == 1
         }
 
-        /// Whether this exception removes service for this date
+        /// Whether this exception removes service for this date (GTFS `exception_type` 2)
         public var isServiceRemoved: Bool {
-            return exceptionType == 0
+            return exceptionType == 2
         }
     }
 }

@@ -1,47 +1,35 @@
 import Foundation
 
-/// Main client for interacting with the Foli public transport API
+/// Main client for interacting with the Foli public transport API.
 ///
-/// To configure client behavior for SwiftUI, inject a configured provider via the environment
-/// at your app's root, or pass a client explicitly to views that need it.
+/// `FoliClient` is an actor that coordinates request execution, caching, in-flight
+/// deduplication, and in-memory lookup indexes. It delegates the concrete work to
+/// dedicated extracted types:
 ///
-/// ## Environment Setup
+/// - ``requester`` (``FoliRequester``) owns transport, JSON decoding, and URL construction.
+/// - ``dedup`` (``FoliDedup``) coalesces concurrent identical requests.
+/// - ``indexes`` (``FoliIndexes``) maintains O(1) entity lookup dictionaries.
+/// - ``refreshTracker`` (``FoliRefreshTracker``) tracks background stale-while-revalidate tasks.
+///
+/// ## Direct usage
 /// ```swift
-/// @main
-/// struct MyApp: App {
-///     var body: some Scene {
-///         WindowGroup {
-///             ContentView()
-///                 .environment(
-///                     \.foliClientProvider,
-///                     DefaultFoliClientProvider(
-///                         configuration: FoliClientConfiguration(cacheBehavior: .forceRefresh)
-///                     )
-///                 )
-///         }
-///     }
-/// }
+/// let client = try FoliClient(
+///     cacheBehavior: .forceRefresh,
+///     cacheTTL: .default
+/// )
+/// let routes = try await client.fetchRoutes()
 /// ```
 ///
-/// ## SwiftUI usage through the environment
+/// ## Convenience facade
+/// For simple one-off access without managing a client instance, use the ``FoliBusAPI``
+/// static facade, which routes through a configurable provider:
 /// ```swift
-/// struct MyView: View {
-///     @FoliService var foliService
-///
-///     // rest of the view...
-/// }
+/// let routes = try await FoliBusAPI.fetchRoutes()
 /// ```
 ///
-/// ## SwiftUI usage with an explicit client
-/// ```swift
-/// struct MyView: View {
-///     let client: FoliClient = .configured(cacheBehavior: .forceRefresh)
-///     @FoliService(client: client) var foliService
-///
-///     // rest of the view...
-/// }
-/// ```
-@available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
+/// ## SwiftUI integration
+/// SwiftUI integration (the `@FoliService` property wrapper and environment provider)
+/// lives in the separate `FoliBusUI` target. See that target's documentation for details.
 public actor FoliClient {
     /// Transport, decoder, base URLs, and request execution.
     ///
@@ -66,31 +54,40 @@ public actor FoliClient {
     /// Called when a background stale-while-revalidate refresh fails.
     ///
     /// The client itself cannot surface errors from background refreshes (they are
-    /// fire-and-observe), so set this handler if you want to log or react to failures.
+    /// fire-and-observe), so register a handler via ``setOnBackgroundRefreshError(_:)``
+    /// if you want to log or react to failures.
     /// The handler is called on the actor's executor.
+    public private(set) var onBackgroundRefreshError: (@Sendable (_ resource: Foli.Resource, _ error: Error) -> Void)?
+
+    /// Registers a handler that is called when a background stale-while-revalidate
+    /// refresh fails.
     ///
     /// ```swift
-    /// client.onBackgroundRefreshError = { resource, error in
+    /// await client.setOnBackgroundRefreshError { resource, error in
     ///     logger.error("Background refresh failed for \(resource): \(error)")
     /// }
     /// ```
-    public var onBackgroundRefreshError: (@Sendable (Foli.Resource, Error) -> Void)?
+    /// - Parameter handler: The handler to invoke on each failure, or `nil` to remove
+    ///   the current handler. Called on the actor's executor.
+    public func setOnBackgroundRefreshError(_ handler: (@Sendable (_ resource: Foli.Resource, _ error: Error) -> Void)?) {
+        onBackgroundRefreshError = handler
+    }
 
     /// Creates a client that executes requests through a `URLSession`.
     /// - Parameters:
     ///   - session: The session used for network requests.
     ///   - cacheBehavior: The cache behavior to apply to cacheable GTFS resources.
-    ///   - cacheTimeout: The disk-cache freshness policy.
-    public init(session: URLSession = .shared, cacheBehavior: Foli.CacheBehavior = .cachedOrFetch, cacheTimeout: Foli.CacheTimeout = .default) {
-        self.requester = FoliRequester(transport: URLSessionTransport(session: session))
+    ///   - cacheTTL: The disk-cache freshness policy.
+    /// - Throws: The underlying error if disk-cache initialization fails. No error is
+    ///   thrown (and no disk cache is created) when `cacheBehavior == .noCache`, since
+    ///   no cache is needed in that mode.
+    public init(session: URLSession = .shared, cacheBehavior: Foli.CacheBehavior = .cachedOrFetch, cacheTTL: Foli.CacheTTL = .default) throws {
+        let requester = FoliRequester(transport: URLSessionTransport(session: session))
+        self.requester = requester
         self.cacheBehavior = cacheBehavior
 
-        do {
-            self.cache = try Foli.DiskCache(timeout: cacheTimeout)
-        } catch {
-            // Cache initialization failed - fall back to no-cache mode
-            // This is expected when disk access is unavailable
-            self.cacheBehavior = .noCache
+        if cacheBehavior != .noCache {
+            self.cache = try Foli.DiskCache(timeout: cacheTTL, datasetIdFetcher: Self.makeDatasetIdFetcher(requester: requester))
         }
     }
 
@@ -102,17 +99,25 @@ public actor FoliClient {
     /// - Parameters:
     ///   - transport: The transport used to execute requests.
     ///   - cacheBehavior: The cache behavior to apply to cacheable GTFS resources.
-    ///   - cacheTimeout: The disk-cache freshness policy.
-    public init(transport: any FoliTransport, cacheBehavior: Foli.CacheBehavior = .cachedOrFetch, cacheTimeout: Foli.CacheTimeout = .default) {
-        self.requester = FoliRequester(transport: transport)
+    ///   - cacheTTL: The disk-cache freshness policy.
+    /// - Throws: The underlying error if disk-cache initialization fails. No error is
+    ///   thrown (and no disk cache is created) when `cacheBehavior == .noCache`, since
+    ///   no cache is needed in that mode.
+    public init(transport: any FoliTransport, cacheBehavior: Foli.CacheBehavior = .cachedOrFetch, cacheTTL: Foli.CacheTTL = .default) throws {
+        let requester = FoliRequester(transport: transport)
+        self.requester = requester
         self.cacheBehavior = cacheBehavior
 
-        do {
-            self.cache = try Foli.DiskCache(timeout: cacheTimeout)
-        } catch {
-            // Cache initialization failed - fall back to no-cache mode
-            // This is expected when disk access is unavailable
-            self.cacheBehavior = .noCache
+        if cacheBehavior != .noCache {
+            self.cache = try Foli.DiskCache(timeout: cacheTTL, datasetIdFetcher: Self.makeDatasetIdFetcher(requester: requester))
+        }
+    }
+
+    /// Builds the dataset-ID fetcher handed to ``Foli/DiskCache``, routing the
+    /// cache's revalidation traffic through the client's transport.
+    private static func makeDatasetIdFetcher(requester: FoliRequester) -> @Sendable () async throws -> String {
+        {
+            try await requester.requestGTFS("/v0", as: Foli.DiskCache.GTFSInfoResponse.self).latest
         }
     }
 

@@ -1,6 +1,8 @@
 import Foundation
 
 /// Real-time location and status information for a vehicle
+///
+/// - SeeAlso: ``Foli/Arrival``, ``Foli/Route``
 public extension Foli {
     struct VehicleLocation: Codable, Sendable, Identifiable, Equatable, Hashable {
         /// Unix timestamp representing when this location was recorded
@@ -9,8 +11,9 @@ public extension Foli {
         public let validUntilTime: TimeInterval
         /// Distance along the route in meters
         public let linkDistance: Double?
-        /// Percentage completion of the current route segment
-        public let percentage: Double?
+        /// How far along the current link (segment between stops) the vehicle has progressed.
+        /// SIRI `PercentageOfLink` — a percentage between 0 and 100 (or nil when unknown).
+        public let segmentProgress: Double?
         /// Line reference (e.g., "14", "2A")
         public let lineRef: String
         /// Direction reference (typically "1" or "2")
@@ -86,7 +89,7 @@ public extension Foli {
             /// Expected departure time from this stop (Unix timestamp)
             public let expectedDepartureTime: TimeInterval?
 
-            enum CodingKeys: String, CodingKey {
+            private enum CodingKeys: String, CodingKey {
                 case stopPointRef = "stoppointref"
                 case visitNumber = "visitnumber"
                 case stopPointName = "stoppointname"
@@ -96,6 +99,16 @@ public extension Foli {
                 case expectedDepartureTime = "expecteddeparturetime"
             }
 
+            /// Creates a new stop call record.
+            ///
+            /// - Parameters:
+            ///   - stopPointRef: Reference code for the stop point.
+            ///   - visitNumber: Visit number for this stop in the trip sequence.
+            ///   - stopPointName: Name of the stop.
+            ///   - aimedArrivalTime: Planned arrival time at this stop.
+            ///   - expectedArrivalTime: Expected arrival time at this stop.
+            ///   - aimedDepartureTime: Planned departure time from this stop.
+            ///   - expectedDepartureTime: Expected departure time from this stop.
             public init(
                 stopPointRef: String,
                 visitNumber: Int? = nil,
@@ -115,11 +128,11 @@ public extension Foli {
             }
         }
 
-        enum CodingKeys: String, CodingKey {
+        private enum CodingKeys: String, CodingKey {
             case recordedAtTime = "recordedattime"
             case validUntilTime = "validuntiltime"
             case linkDistance = "linkdistance"
-            case percentage
+            case segmentProgress = "percentage"
             case lineRef = "lineref"
             case directionRef = "directionref"
             case publishedLineName = "publishedlinename"
@@ -149,11 +162,45 @@ public extension Foli {
             case onwardCalls = "onwardcalls"
         }
 
+        /// Creates a new vehicle location record.
+        ///
+        /// - Parameters:
+        ///   - recordedAtTime: Unix timestamp when this location was recorded.
+        ///   - validUntilTime: Unix timestamp until which this data is valid.
+        ///   - linkDistance: Distance along the route in meters.
+        ///   - segmentProgress: How far along the current link the vehicle has progressed (a percentage, 0–100).
+        ///   - lineRef: Line reference (e.g., "14", "2A").
+        ///   - directionRef: Direction reference (typically "1" or "2").
+        ///   - publishedLineName: Published line name displayed to passengers.
+        ///   - operatorRef: Operator reference code.
+        ///   - originRef: Reference code for the trip origin stop.
+        ///   - originName: Name of the origin stop.
+        ///   - destinationRef: Reference code for the trip destination stop.
+        ///   - destinationName: Name of the destination stop.
+        ///   - originAimedDepartureTime: Planned departure time from origin.
+        ///   - destinationAimedArrivalTime: Planned arrival time at destination.
+        ///   - monitored: Whether this vehicle is actively monitored.
+        ///   - inCongestion: Whether the vehicle is currently in congestion.
+        ///   - inPanic: Whether the vehicle has triggered a panic alarm.
+        ///   - longitude: Longitude of vehicle location (WGS-84).
+        ///   - latitude: Latitude of vehicle location (WGS-84).
+        ///   - delay: Delay from schedule as ISO 8601 duration string.
+        ///   - vehicleRef: Unique vehicle reference identifier.
+        ///   - previousCalls: Array of previous stop calls made by this vehicle.
+        ///   - vehicleAtStop: Whether the vehicle is currently at a stop.
+        ///   - nextStopPointRef: Reference code for the next stop.
+        ///   - nextStopPointName: Name of the next stop.
+        ///   - nextDestinationDisplay: Display text for next stop destination.
+        ///   - nextAimedArrivalTime: Planned arrival time at next stop.
+        ///   - nextExpectedArrivalTime: Expected arrival time at next stop.
+        ///   - nextAimedDepartureTime: Planned departure time from next stop.
+        ///   - nextExpectedDepartureTime: Expected departure time from next stop.
+        ///   - onwardCalls: Array of onward stop calls for this vehicle.
         public init(
             recordedAtTime: TimeInterval,
             validUntilTime: TimeInterval,
             linkDistance: Double? = nil,
-            percentage: Double? = nil,
+            segmentProgress: Double? = nil,
             lineRef: String,
             directionRef: String,
             publishedLineName: String,
@@ -185,7 +232,7 @@ public extension Foli {
             self.recordedAtTime = recordedAtTime
             self.validUntilTime = validUntilTime
             self.linkDistance = linkDistance
-            self.percentage = percentage
+            self.segmentProgress = segmentProgress
             self.lineRef = lineRef
             self.directionRef = directionRef
             self.publishedLineName = publishedLineName
@@ -234,6 +281,7 @@ public extension Foli {
 
         /// Parse ISO 8601 duration delay into seconds
         /// For example: "-PT13539S" -> -13539.0 seconds
+        /// - Complexity: O(L) where L is the length of the delay string.
         public var delayInSeconds: TimeInterval? {
             guard let delay = delay else { return nil }
             return parseISO8601Duration(delay)

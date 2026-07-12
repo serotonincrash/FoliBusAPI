@@ -24,11 +24,11 @@ The package is built around `FoliClient`, an actor that owns request execution, 
 
 ## Requirements
 
-- iOS 15.0+
-- macOS 12.0+
-- watchOS 8.0+
-- tvOS 15.0+
-- Swift 6.2 toolchain
+- iOS 17.0+
+- macOS 14.0+
+- watchOS 10.0+
+- tvOS 17.0+
+- Swift 6.0 toolchain
 
 ## Installation
 
@@ -40,13 +40,14 @@ Add the package to your `Package.swift` dependencies:
 .package(url: "https://github.com/serotonincrash/FoliBusAPI.git", branch: "main")
 ```
 
-Then add the product to your target:
+Then add the products to your target — `FoliBusAPI` for the client, plus `FoliBusUI` if you use the SwiftUI integration:
 
 ```swift
 .target(
     name: "MyApp",
     dependencies: [
-        .product(name: "FoliBusAPI", package: "FoliBusAPI")
+        .product(name: "FoliBusAPI", package: "FoliBusAPI"),
+        .product(name: "FoliBusUI", package: "FoliBusAPI")
     ]
 )
 ```
@@ -58,13 +59,12 @@ Then add the product to your target:
 ```swift
 import FoliBusAPI
 
-let client = FoliClient(
+let client = try FoliClient(
     cacheBehavior: .forceRefresh,
-    cacheTimeout: .default
+    cacheTTL: .default
 )
 
 let routes = try await client.fetchRoutes()
-let stopMonitoring = try await client.fetchStopMonitoring(for: "1000")
 let arrivals = try await client.fetchArrivals(for: "1000")
 ```
 
@@ -82,18 +82,19 @@ let arrivals = try await FoliBusAPI.fetchArrivals(for: "1000")
 ```swift
 import SwiftUI
 import FoliBusAPI
+import FoliBusUI
 
 @main
 struct DemoApp: App {
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            ContentView(stopId: "1000")
                 .environment(
                     \.foliClientProvider,
                     DefaultFoliClientProvider(
                         configuration: FoliClientConfiguration(
                             cacheBehavior: .staleWhileRevalidate,
-                            cacheTimeout: .default
+                            cacheTTL: .default
                         )
                     )
                 )
@@ -122,13 +123,24 @@ struct ContentView: View {
 
 ### Inject a custom transport
 
+To use a custom `URLSession`, pass it directly: `try FoliClient(session: mySession)`. For full control over request execution — offline fixtures, stubbing in tests — conform to the public `FoliTransport` protocol:
+
 ```swift
 import Foundation
 import FoliBusAPI
 
-let client = FoliClient(
-    transport: URLSessionTransport(session: .shared),
-    cacheBehavior: .cachedOrFetch
+struct FixtureTransport: FoliTransport {
+    func data(for request: URLRequest) async throws -> (data: Data, response: URLResponse) {
+        let response = HTTPURLResponse(
+            url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil
+        )!
+        return (Data("[]".utf8), response)
+    }
+}
+
+let client = try FoliClient(
+    transport: FixtureTransport(),
+    cacheBehavior: .noCache
 )
 ```
 

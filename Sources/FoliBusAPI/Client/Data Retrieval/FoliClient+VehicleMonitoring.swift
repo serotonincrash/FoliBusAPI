@@ -9,7 +9,6 @@ import Foundation
 
 // MARK: - Vehicle Monitoring
 
-@available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
 public extension FoliClient {
     
     /// Fetch all current vehicle locations from the SIRI Vehicle Monitoring (VM) endpoint.
@@ -28,7 +27,7 @@ public extension FoliClient {
     func fetchVehicleLocations() async throws -> [Foli.VehicleLocation] {
         let response = try await fetchVehicleMonitoring()
         guard response.isValid else {
-            throw Foli.APIError.serverError(response.status)
+            throw Foli.APIError.serverError(response.status.rawValue)
         }
         return response.vehicles
     }
@@ -59,7 +58,6 @@ public extension FoliClient {
     }
 }
 
-@available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
 extension FoliClient {
     
     /// Fetch vehicle-monitoring data from the SIRI VM endpoint.
@@ -70,7 +68,7 @@ extension FoliClient {
     /// - Note: This is an internal method. Use ``fetchVehicleLocations()`` for the public API.
     ///         Request is deduplicated to prevent concurrent duplicate requests.
     internal func fetchVehicleMonitoring() async throws -> Foli.VehicleMonitoringResponse {
-        try await dedup.performDeduplicated(.vehicleMonitoring) { [self] in
+        try await dedup.performDeduplicated(forKey: .vehicleMonitoring) { [self] in
             try await requestSIRI("/vm", as: Foli.VehicleMonitoringResponse.self)
         }
     }

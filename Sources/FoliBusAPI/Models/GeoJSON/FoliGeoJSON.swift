@@ -9,6 +9,8 @@ public extension Foli {
     // MARK: - FeatureCollection
     /// A GeoJSON Feature Collection containing multiple features.
     ///
+    /// - SeeAlso: ``Foli/Feature``, ``Foli/GeoJSONLayer``
+    ///
     /// Feature collections are the top-level response type for all geographic data endpoints.
     struct FeatureCollection: Codable, Sendable, Equatable, Hashable {
         /// GeoJSON type identifier (always "FeatureCollection").
@@ -81,7 +83,7 @@ public extension Foli {
         /// Multiple line strings for routes or linear boundaries.
         case multiLineString([[[Double]]])
         
-        enum CodingKeys: String, CodingKey {
+        private enum CodingKeys: String, CodingKey {
             case type
             case coordinates
         }
@@ -157,7 +159,7 @@ public extension Foli {
         /// Icon definition for map display.
         public let icon: GeoJSONIcon?
         
-        enum CodingKeys: String, CodingKey {
+        private enum CodingKeys: String, CodingKey {
             case category
             case name
             case nameFi = "name_fi"

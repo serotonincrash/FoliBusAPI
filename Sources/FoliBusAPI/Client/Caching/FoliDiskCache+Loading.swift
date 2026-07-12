@@ -1,102 +1,6 @@
 import Foundation
 
 extension Foli.DiskCache {
-    func loadRoutes() async throws -> [Foli.Route]? {
-        try await load(type: .routes)
-    }
-
-    func loadStaleRoutes() async throws -> [Foli.Route]? {
-        try await loadIgnoringFreshness(type: .routes)
-    }
-
-    func loadStops() async throws -> [Foli.Stop]? {
-        try await load(type: .stops)
-    }
-
-    func loadStaleStops() async throws -> [Foli.Stop]? {
-        try await loadIgnoringFreshness(type: .stops)
-    }
-
-    func loadTrips() async throws -> [Foli.Trip]? {
-        try await load(type: .trips)
-    }
-
-    func loadStaleTrips() async throws -> [Foli.Trip]? {
-        try await loadIgnoringFreshness(type: .trips)
-    }
-
-    func loadTrips(forRoute routeId: String) async throws -> [Foli.Trip]? {
-        try await load(type: .tripsForRoute(routeId))
-    }
-
-    func loadStaleTrips(forRoute routeId: String) async throws -> [Foli.Trip]? {
-        try await loadIgnoringFreshness(type: .tripsForRoute(routeId))
-    }
-
-    func loadStopTimes() async throws -> [Foli.StopTime]? {
-        try await load(type: .stopTimes)
-    }
-
-    func loadStaleStopTimes() async throws -> [Foli.StopTime]? {
-        try await loadIgnoringFreshness(type: .stopTimes)
-    }
-
-    func loadStopTimes(forTrip tripId: String) async throws -> [Foli.StopTime]? {
-        try await load(type: .stopTimesForTrip(tripId))
-    }
-
-    func loadStaleStopTimes(forTrip tripId: String) async throws -> [Foli.StopTime]? {
-        try await loadIgnoringFreshness(type: .stopTimesForTrip(tripId))
-    }
-
-    func loadStopTimes(forStop stopId: String) async throws -> [Foli.StopTime]? {
-        try await load(type: .stopTimesForStop(stopId))
-    }
-
-    func loadStaleStopTimes(forStop stopId: String) async throws -> [Foli.StopTime]? {
-        try await loadIgnoringFreshness(type: .stopTimesForStop(stopId))
-    }
-
-    func loadCalendarDates() async throws -> [Foli.CalendarDate]? {
-        try await load(type: .calendarDates)
-    }
-
-    func loadStaleCalendarDates() async throws -> [Foli.CalendarDate]? {
-        try await loadIgnoringFreshness(type: .calendarDates)
-    }
-
-    func loadAgencies() async throws -> [Foli.Agency]? {
-        try await load(type: .agencies)
-    }
-
-    func loadStaleAgencies() async throws -> [Foli.Agency]? {
-        try await loadIgnoringFreshness(type: .agencies)
-    }
-
-    func loadCalendars() async throws -> [Foli.Calendar]? {
-        try await load(type: .calendars)
-    }
-
-    func loadStaleCalendars() async throws -> [Foli.Calendar]? {
-        try await loadIgnoringFreshness(type: .calendars)
-    }
-
-    func loadShapeRouteIds() async throws -> [String]? {
-        try await load(type: .shapeRouteIds)
-    }
-
-    func loadStaleShapeRouteIds() async throws -> [String]? {
-        try await loadIgnoringFreshness(type: .shapeRouteIds)
-    }
-
-    func loadShapePoints(forShape shapeId: String) async throws -> [Foli.ShapePoint]? {
-        try await load(type: .shapePointsForShape(shapeId))
-    }
-
-    func loadStaleShapePoints(forShape shapeId: String) async throws -> [Foli.ShapePoint]? {
-        try await loadIgnoringFreshness(type: .shapePointsForShape(shapeId))
-    }
-
     func cacheAge(for type: Foli.Resource) async -> TimeInterval? {
         guard let metadata = try? await loadMetadata(for: type) else {
             return nil
@@ -104,23 +8,59 @@ extension Foli.DiskCache {
         return Date().timeIntervalSince(metadata.cachedAt)
     }
 
-    internal func load<T: Codable>(type: Foli.Resource) async throws -> T? {
-        guard await hasValidCache(for: type) else {
+    internal func loadResource<T: Codable & Sendable>(_ type: T.Type, forKey key: Foli.Resource) async throws -> T? {
+        let fileURL = try fileURL(for: key)
+        guard fileManager.fileExists(atPath: fileURL.path) else { return nil }
+
+        let data = try Data(contentsOf: fileURL)
+        let cachedData: CachedData<T>
+        do {
+            cachedData = try JSONDecoder().decode(CachedData<T>.self, from: data)
+        } catch is DecodingError {
+            // Corrupt or schema-evolved entry: treat as a miss and remove the file so
+            // the next fetch re-populates it, instead of failing every load until a
+            // manual clearCache(). I/O errors above still throw — a read failure does
+            // not prove the content is bad.
+            try? fileManager.removeItem(at: fileURL)
             return nil
         }
 
-        return try await loadIgnoringFreshness(type: type)
+        let age = Date().timeIntervalSince(cachedData.metadata.cachedAt)
+        if age <= timeoutDuration.validityDuration {
+            return cachedData.data
+        }
+
+        // Stale — try revalidation via network.
+        do {
+            let cacheStillCurrent = try await revalidateCache(for: key)
+            // Definitively `false`: revalidation *reached* the server and confirmed the
+            // dataset changed, so the entry really is out of date — the caller should
+            // fetch fresh, not receive stale data disguised as current.
+            return cacheStillCurrent ? cachedData.data : nil
+        } catch is CancellationError {
+            throw CancellationError()
+        } catch {
+            // Inconclusive (a transient network/decoding error, not a definitive
+            // "changed" answer): serve the stale entry rather than forcing every
+            // caller to handle a network hiccup, matching `hasValidCache`'s policy.
+            return cachedData.data
+        }
     }
 
-    internal func loadIgnoringFreshness<T: Codable>(type: Foli.Resource) async throws -> T? {
-        let fileURL = try fileURL(for: type)
+    internal func loadStaleResource<T: Codable & Sendable>(_ type: T.Type, forKey key: Foli.Resource) async throws -> T? {
+        let fileURL = try fileURL(for: key)
 
         guard fileManager.fileExists(atPath: fileURL.path) else {
             return nil
         }
 
         let data = try Data(contentsOf: fileURL)
-        let cachedData = try JSONDecoder().decode(CachedData<T>.self, from: data)
-        return cachedData.data
+        do {
+            return try JSONDecoder().decode(CachedData<T>.self, from: data).data
+        } catch is DecodingError {
+            // Same self-healing policy as loadResource.
+            try? fileManager.removeItem(at: fileURL)
+            return nil
+        }
     }
 }

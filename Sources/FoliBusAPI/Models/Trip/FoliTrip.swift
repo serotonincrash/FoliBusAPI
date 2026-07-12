@@ -3,6 +3,8 @@ import Foundation
 // MARK: - Foli.Trip Model
 /// Planned GTFS trip metadata for a single service run.
 ///
+/// - SeeAlso: ``Foli/Route``, ``Foli/StopTime``, ``Foli/Calendar``
+///
 /// A trip represents a single journey by a vehicle along a route at a specific time.
 /// Trips are associated with a service calendar that determines operating days.
 public extension Foli {

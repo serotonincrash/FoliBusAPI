@@ -3,6 +3,8 @@ import Foundation
 // MARK: - Foli.StopTime Model
 /// Planned timetable entry for a trip stop or stop-specific departure listing.
 ///
+/// - SeeAlso: ``Foli/Trip``, ``Foli/Stop``
+///
 /// Stop times define when a vehicle arrives at and departs from individual stops during a trip.
 /// Times are in HH:MM:SS format and may exceed 24:00:00 for trips crossing midnight.
 public extension Foli {

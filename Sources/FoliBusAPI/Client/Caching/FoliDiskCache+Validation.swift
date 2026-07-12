@@ -31,6 +31,7 @@ extension Foli.DiskCache {
         do {
             return try await revalidateCache(for: type)
         } catch {
+            if Task.isCancelled { return false }
             return true
         }
     }
@@ -51,11 +52,11 @@ extension Foli.DiskCache {
 
     @discardableResult
     func revalidateCache(for type: Foli.Resource) async throws -> Bool {
+        let latestDatasetId = try await fetchLatestDatasetId()
+
         guard let metadata = try await loadMetadata(for: type) else {
             return false
         }
-
-        let latestDatasetId = try await fetchLatestDatasetId()
 
         if latestDatasetId == metadata.datasetId {
             try? await refreshMetadataTimestamp(for: type)
@@ -66,18 +67,6 @@ extension Foli.DiskCache {
     }
 
     internal func fetchLatestDatasetId() async throws -> String {
-        guard let url = URL(string: baseURL) else {
-            throw Foli.APIError.invalidURL
-        }
-
-        let (data, response) = try await session.data(from: url)
-
-        guard let httpResponse = response as? HTTPURLResponse,
-              (200...299).contains(httpResponse.statusCode) else {
-            throw Foli.APIError.invalidResponse
-        }
-
-        let gtfsInfo = try JSONDecoder().decode(GTFSInfoResponse.self, from: data)
-        return gtfsInfo.latest
+        try await datasetIdFetcher()
     }
 }

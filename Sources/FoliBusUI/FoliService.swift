@@ -47,10 +47,9 @@ import FoliBusAPI
 ///
 /// Or inject a custom client directly:
 /// ```swift
-/// let customClient = FoliClient(cacheBehavior: .noCache)
+/// let customClient = try FoliClient(cacheBehavior: .noCache)
 /// @FoliService(client: customClient) var foliService
 /// ```
-@available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
 @propertyWrapper
 public struct FoliService: DynamicProperty, Sendable {
     
