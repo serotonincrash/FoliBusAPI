@@ -79,9 +79,10 @@ let arrivals = try await FoliBusAPI.fetchArrivals(for: "1000")
 
 ### SwiftUI integration
 
+`FoliBusUI` re-exports `FoliBusAPI`, so a single `import FoliBusUI` also provides `FoliClient`, the `Foli` model types, and `FoliClientConfiguration`.
+
 ```swift
 import SwiftUI
-import FoliBusAPI
 import FoliBusUI
 
 @main

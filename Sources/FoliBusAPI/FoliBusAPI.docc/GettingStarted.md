@@ -2,7 +2,7 @@
 
 ## Overview
 
-The package ships two products: **`FoliBusAPI`** (core logic, pure Foundation) and **`FoliBusUI`** (SwiftUI integration). Import `FoliBusAPI` for direct client usage, or `FoliBusUI` for the `@FoliService` property wrapper. Both can be imported together.
+The package ships two products: **`FoliBusAPI`** (core logic, pure Foundation) and **`FoliBusUI`** (SwiftUI integration). Import `FoliBusAPI` for direct client usage, or `FoliBusUI` for the `@FoliService` property wrapper. `FoliBusUI` re-exports `FoliBusAPI`, so SwiftUI apps only need `import FoliBusUI` to use the full API surface, including `FoliClient` and the `Foli` model types.
 
 Use ``FoliClient`` when you want direct control over caching and transport behavior, or use the higher-level ``FoliBusAPI`` convenience API for simple access.
 

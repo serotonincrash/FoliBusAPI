@@ -6,6 +6,8 @@ SwiftUI integration layer for the Föli transit API.
 
 `FoliBusUI` provides SwiftUI-friendly wrappers and extensions for consuming Föli transit data in your views. Use the ``FoliService`` property wrapper to access transit data with automatic environment-based client resolution.
 
+`FoliBusUI` re-exports `FoliBusAPI`, so a single `import FoliBusUI` also gives you `FoliClient`, the `Foli` model namespace (`Foli.Stop`, `Foli.Route`, …), and `FoliClientConfiguration` — no second import needed.
+
 ### Quick Start
 
 Set up the client provider at your app's root:

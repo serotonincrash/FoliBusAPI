@@ -37,9 +37,10 @@ struct MyApp: App {
 
 Once the environment is configured, add ``FoliService`` to any view.
 
+Because `FoliBusUI` re-exports `FoliBusAPI`, the single `import FoliBusUI` below is enough to name model types such as `Foli.Route`.
+
 ```swift
 import SwiftUI
-import FoliBusAPI
 import FoliBusUI
 
 struct RoutesView: View {
