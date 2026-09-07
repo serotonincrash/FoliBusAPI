@@ -56,6 +56,40 @@ struct TransportIntegrationTests {
         }
     }
 
+    @Test("404 on a GTFS collection endpoint decodes as an empty result")
+    func notFoundCollectionDecodesEmpty() async throws {
+        // Real Föli behavior: /trips/route/<id> for a route with no scheduled trips
+        // (e.g. route 8 = line 3T outside its service window) answers
+        // 404 {"success":false,"reason":"path_not_exists"}.
+        let payload = Data(#"{"success":false,"reason":"path_not_exists"}"#.utf8)
+        let transport = MockTransport { request in
+            try makeDataResponse(for: request, statusCode: 404, data: payload)
+        }
+        let client = try FoliClient(transport: transport, cacheBehavior: .noCache)
+
+        let trips = try await client.fetchTrips(forRoute: "8")
+        #expect(trips.isEmpty)
+    }
+
+    @Test("404 on an object-shaped response still maps to invalidResponse")
+    func notFoundObjectStillThrows() async throws {
+        let payload = Data("[]".utf8)
+        let transport = MockTransport { request in
+            try makeDataResponse(for: request, statusCode: 404, data: payload)
+        }
+        let client = try FoliClient(transport: transport, cacheBehavior: .noCache)
+
+        do {
+            _ = try await client.fetchArrivals(for: "1000")
+            Issue.record("Expected fetchArrivals to throw invalidResponse")
+        } catch let error as Foli.APIError {
+            guard case .invalidResponse = error else {
+                Issue.record("Expected invalidResponse, got \(error)")
+                return
+            }
+        }
+    }
+
     @Test("transport-thrown errors map to networkError")
     func thrownTransportErrorMapsToNetworkError() async throws {
         let transport = MockTransport { _ in

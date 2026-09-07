@@ -102,9 +102,4 @@ extension Foli.DiskCache {
     internal enum CodingError: Error {
         case invalidMetadata
     }
-
-    internal func isMetadataFresh(_ metadata: DatasetMetadata) -> Bool {
-        let age = Date().timeIntervalSince(metadata.cachedAt)
-        return age <= timeoutDuration.validityDuration
-    }
 }

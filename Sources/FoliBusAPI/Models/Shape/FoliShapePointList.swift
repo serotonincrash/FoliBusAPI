@@ -3,7 +3,7 @@ import Foundation
 // MARK: - Shape Point List Response
 extension Foli {
     /// Response containing shape geometry points (GTFS shapes.txt)
-    struct ShapePointList: Codable, Sendable, Equatable, Hashable {
+    struct ShapePointList: Decodable, Sendable, Equatable, Hashable {
         /// Ordered shape points for a specific shape.
         let shapePoints: [Foli.ShapePoint]
 
@@ -74,11 +74,6 @@ extension Foli {
                     shapeDistTraveled: point.traveled
                 )
             }
-        }
-
-        func encode(to encoder: Encoder) throws {
-            var container = encoder.singleValueContainer()
-            try container.encode(shapePoints)
         }
     }
 }

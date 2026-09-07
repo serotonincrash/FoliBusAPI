@@ -4,7 +4,7 @@ import Foundation
 extension Foli {
     /// Response containing all calendar date exceptions (GTFS calendar_dates.txt)
     /// The API returns a dictionary where keys are service IDs and values are arrays of date exceptions
-    struct CalendarDatesList: Codable, Sendable, Equatable, Hashable {
+    struct CalendarDatesList: Decodable, Sendable, Equatable, Hashable {
         /// Array of all calendar date exceptions across all services
         let calendarDates: [Foli.CalendarDate]
 
@@ -38,25 +38,6 @@ extension Foli {
             }
 
             self.calendarDates = allDates.sorted { $0.dateString < $1.dateString }
-        }
-
-        func encode(to encoder: Encoder) throws {
-            var container = encoder.singleValueContainer()
-            var dictionary: [String: [APICalendarDateEntry]] = [:]
-
-            for calendarDate in calendarDates {
-                let entry = APICalendarDateEntry(
-                    date: calendarDate.dateString,
-                    exception_type: calendarDate.exceptionType
-                )
-
-                if dictionary[calendarDate.serviceId] == nil {
-                    dictionary[calendarDate.serviceId] = []
-                }
-                dictionary[calendarDate.serviceId]?.append(entry)
-            }
-
-            try container.encode(dictionary)
         }
     }
 }

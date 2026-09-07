@@ -9,11 +9,6 @@ import Foundation
 internal actor FoliRefreshTracker {
     private var tasks: [Foli.Resource: Task<Void, Never>] = [:]
 
-    /// Records a background refresh task for the provided resource.
-    func setTask(_ task: Task<Void, Never>, for resource: Foli.Resource) {
-        tasks[resource] = task
-    }
-
     /// Registers a task only if no task is already registered for the resource.
     /// Returns `true` if the task was registered, `false` if a task already exists.
     func setTaskIfAbsent(_ task: Task<Void, Never>, for resource: Foli.Resource) -> Bool {
@@ -28,11 +23,6 @@ internal actor FoliRefreshTracker {
             return
         }
         tasks[resource] = nil
-    }
-
-    /// Returns the currently registered background refresh task for the given resource, if any.
-    func currentTask(for resource: Foli.Resource) -> Task<Void, Never>? {
-        tasks[resource]
     }
 
     /// Returns whether a resource currently has a background refresh task registered.

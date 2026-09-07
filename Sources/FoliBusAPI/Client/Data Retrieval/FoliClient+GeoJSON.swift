@@ -60,14 +60,9 @@ public extension FoliClient {
         
         return try await dedup.performDeduplicated(forKey: .resource(.geoJSONBounds(resolution: resolutionKey, format: formatKey))) { [self] in
             var path = "/geojson/bounds"
-            
-            switch resolution {
-            case .strict:
-                path += "/strict"
-            case .compact:
-                path += "/compact"
-            case .normal:
-                break
+
+            if resolution != .normal {
+                path += "/\(resolutionKey)"
             }
             
             if format == .multiLineString {
