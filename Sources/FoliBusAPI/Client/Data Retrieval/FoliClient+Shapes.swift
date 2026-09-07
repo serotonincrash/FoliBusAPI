@@ -58,7 +58,8 @@ public extension FoliClient {
     /// let points = try await client.fetchShapePoints(forShape: shapeIds[0])
     /// ```
     /// - Parameter shapeId: The GTFS shape identifier to fetch points for.
-    /// - Returns: Shape points ordered by sequence.
+    /// - Returns: Shape points ordered by sequence. Empty when the shape has no
+    ///   points in the current dataset or the shape ID is unknown.
     func fetchShapePoints(forShape shapeId: String) async throws -> [Foli.ShapePoint] {
         try await resolveCached(
             for: .shapePointsForShape(shapeId),

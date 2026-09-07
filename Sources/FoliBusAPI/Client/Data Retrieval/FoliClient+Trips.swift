@@ -55,7 +55,10 @@ public extension FoliClient {
 
     /// Fetch trips for a specific route using the client's configured caching behavior.
     /// - Parameter routeId: The ID of the route to fetch trips for.
-    /// - Returns: Array of Trip objects belonging to the specified route.
+    /// - Returns: Array of Trip objects belonging to the specified route. Empty when
+    ///   the route has no trips in the current service window — e.g. variant lines
+    ///   (1T, 3T, …) outside their service hours — or the route ID is unknown;
+    ///   distinguish the two with ``route(for:)``.
     /// - Throws: `Foli.APIError` if the network request or decoding fails.
     func fetchTrips(forRoute routeId: String) async throws -> [Foli.Trip] {
         try await resolveCached(
