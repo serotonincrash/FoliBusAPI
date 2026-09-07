@@ -92,8 +92,19 @@ internal struct FoliRequester: Sendable {
         do {
             let (data, response) = try await transport.data(for: request)
 
-            guard let httpResponse = response as? HTTPURLResponse,
-                  (200...299).contains(httpResponse.statusCode) else {
+            let httpResponse = response as? HTTPURLResponse
+            let statusCode = httpResponse?.statusCode ?? -1
+            guard (200...299).contains(statusCode) else {
+                // The Föli GTFS API answers 404 `path_not_exists` for collection
+                // endpoints whose entity currently has no entries — e.g.
+                // `/trips/route/8` (line 3T) outside its service window. "No trips
+                // right now" is an empty collection, not a transport failure, so a
+                // 404 decodes as `[]` when the response type allows it. Object-shaped
+                // types (SIRI responses) can't decode `[]` and keep invalidResponse.
+                if statusCode == 404,
+                   let empty = try? decoder.decode(T.self, from: Data("[]".utf8)) {
+                    return empty
+                }
                 throw Foli.APIError.invalidResponse
             }
 
