@@ -42,19 +42,17 @@ extension Foli.DiskCache {
         return cacheDirectory.appendingPathComponent(filename)
     }
 
-    /// Percent-encodes every byte outside ASCII alphanumerics so identifiers taken from
-    /// resource keys cannot introduce path separators or traversal sequences, and cannot
-    /// collide with the `_`-delimited filename scheme (`_` itself is encoded).
+    private static let safeFilenameCharacters = CharacterSet(
+        charactersIn: "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+    )
+
+    /// Percent-encodes every character outside ASCII alphanumerics so identifiers
+    /// taken from resource keys cannot introduce path separators or traversal
+    /// sequences, and cannot collide with the `_`-delimited filename scheme
+    /// (`_` itself is encoded). Do NOT use `CharacterSet.alphanumerics` here — it
+    /// permits Unicode letters (e.g. Ö, ä in Finnish service IDs) and would change
+    /// on-disk cache filenames.
     private func sanitized(_ component: String) -> String {
-        var result = ""
-        for byte in component.utf8 {
-            let isASCIIAlphanumeric = (0x30...0x39).contains(byte) || (0x41...0x5A).contains(byte) || (0x61...0x7A).contains(byte)
-            if isASCIIAlphanumeric {
-                result.append(Character(UnicodeScalar(byte)))
-            } else {
-                result.append(String(format: "%%%02X", byte))
-            }
-        }
-        return result
+        component.addingPercentEncoding(withAllowedCharacters: Self.safeFilenameCharacters) ?? component
     }
 }

@@ -43,12 +43,4 @@ extension FoliClient {
             try await requestSIRI("/sm/\(FoliRequester.pathComponent(stopId))", as: Foli.ArrivalResponse.self)
         }
     }
-    
-    /// Fetch stop-monitoring data for a stop identified by numeric ID.
-    /// - Parameter stopId: The numeric stop ID to query.
-    /// - Returns: A stop-monitoring response containing arrivals and departures.
-    /// - Note: This is an internal method. Use `fetchArrivals(for:)` for the public API.
-    internal func fetchStopMonitoring(for stopId: Int) async throws -> Foli.ArrivalResponse {
-        return try await fetchStopMonitoring(for: String(stopId))
-    }
 }

@@ -193,12 +193,7 @@ public extension FoliClient {
             await refreshTracker.clearTask(for: type, matching: task)
         } catch {
             await refreshTracker.clearTask(for: type, matching: task)
-            notifyBackgroundRefreshError(type, error: error)
+            onBackgroundRefreshError?(type, error)
         }
-    }
-
-    /// Forwards a background-refresh error to the registered ``onBackgroundRefreshError`` handler.
-    private func notifyBackgroundRefreshError(_ type: Foli.Resource, error: Error) {
-        onBackgroundRefreshError?(type, error)
     }
 }

@@ -24,7 +24,7 @@ extension Foli.DiskCache {
             return false
         }
 
-        if isMetadataFresh(metadata) {
+        if Date().timeIntervalSince(metadata.cachedAt) <= timeoutDuration.validityDuration {
             return true
         }
 

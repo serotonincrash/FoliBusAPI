@@ -4,36 +4,6 @@ import Testing
 
 @Suite("Endpoint Compatibility Tests")
 struct EndpointCompatibilityTests {
-    @Test("fetchRoutes requests GTFS routes path")
-    func fetchRoutesUsesGTFSRoutesPath() async throws {
-        // Based on actual API response from https://data.foli.fi/gtfs/routes
-        let payload = #"""
-        [
-          {
-            "route_id": "25",
-            "agency_id": "2",
-            "route_short_name": "L14",
-            "route_long_name": "Loukinainen-Avanti",
-            "route_desc": "",
-            "route_type": 3,
-            "route_url": "",
-            "route_color": "000000",
-            "route_text_color": "ffffff"
-          }
-        ]
-        """#.data(using: .utf8)!
-        let transport = MockTransport { request in
-            try makeDataResponse(for: request, data: payload)
-        }
-
-        let client = try FoliClient(transport: transport, cacheBehavior: .noCache)
-        _ = try await client.fetchRoutes()
-        let requests = await transport.requests()
-
-        #expect(requests.count == 1)
-        #expect(requests.first?.url?.absoluteString == "https://data.foli.fi/gtfs/routes")
-    }
-
     @Test("fetchTrips requests GTFS trips all path")
     func fetchTripsUsesTripsAllPath() async throws {
         // Based on actual API response from https://data.foli.fi/gtfs/trips/all

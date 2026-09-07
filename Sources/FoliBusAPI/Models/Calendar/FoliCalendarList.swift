@@ -3,7 +3,7 @@ import Foundation
 // MARK: - Calendar List Response
 extension Foli {
     /// Response containing weekly calendars (GTFS calendar.txt)
-    struct CalendarList: Codable, Sendable, Equatable, Hashable {
+    struct CalendarList: Decodable, Sendable, Equatable, Hashable {
         /// Array of decoded weekly service calendars.
         let calendars: [Foli.Calendar]
         
@@ -18,19 +18,7 @@ extension Foli {
             let sunday: Bool
             let startDateCode: String
             let endDateCode: String
-            
-            init(calendar: Foli.Calendar) {
-                self.monday = calendar.monday
-                self.tuesday = calendar.tuesday
-                self.wednesday = calendar.wednesday
-                self.thursday = calendar.thursday
-                self.friday = calendar.friday
-                self.saturday = calendar.saturday
-                self.sunday = calendar.sunday
-                self.startDateCode = calendar.startDateCode
-                self.endDateCode = calendar.endDateCode
-            }
-            
+
             private enum CodingKeys: String, CodingKey {
                 case monday
                 case tuesday
@@ -74,15 +62,6 @@ extension Foli {
             
             let array = try container.decode([Foli.Calendar].self)
             self.calendars = array.sorted { $0.id < $1.id }
-        }
-        
-        func encode(to encoder: Encoder) throws {
-            var container = encoder.singleValueContainer()
-            var dictionary: [String: APICalendarEntry] = [:]
-            for calendar in calendars {
-                dictionary[calendar.id] = APICalendarEntry(calendar: calendar)
-            }
-            try container.encode(dictionary)
         }
     }
 }
