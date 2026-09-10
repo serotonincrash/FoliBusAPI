@@ -77,9 +77,13 @@ extension Foli {
             Date(timeIntervalSince1970: serverTime)
         }
         
-        /// Get all vehicles as an array
+        /// All vehicles that currently have a position fix, as an array.
+        ///
+        /// Vehicles without coordinates (e.g. entering service before their first
+        /// position estimate) are omitted; ``VehicleMonitoringResult/vehicles``
+        /// retains the raw feed including them.
         var vehicles: [Foli.VehicleLocation] {
-            Array(result.vehicles.values)
+            result.vehicles.values.filter { $0.location != nil }
         }
     }
     

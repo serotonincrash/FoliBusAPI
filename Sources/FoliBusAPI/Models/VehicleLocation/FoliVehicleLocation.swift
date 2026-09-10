@@ -40,10 +40,12 @@ public extension Foli {
         public let inCongestion: Bool
         /// Whether the vehicle has triggered a panic alarm
         public let inPanic: Bool
-        /// Longitude of vehicle location (WGS-84)
-        public let longitude: Double
-        /// Latitude of vehicle location (WGS-84)
-        public let latitude: Double
+        /// Longitude of vehicle location (WGS-84), or nil when the vehicle has no
+        /// position fix yet (e.g. entering service before its first estimate).
+        public let longitude: Double?
+        /// Latitude of vehicle location (WGS-84), or nil when the vehicle has no
+        /// position fix yet (e.g. entering service before its first estimate).
+        public let latitude: Double?
         /// Delay from schedule as ISO 8601 duration string (e.g., "-PT13539S")
         public let delay: String?
         /// Unique vehicle reference identifier
@@ -182,8 +184,8 @@ public extension Foli {
         ///   - monitored: Whether this vehicle is actively monitored.
         ///   - inCongestion: Whether the vehicle is currently in congestion.
         ///   - inPanic: Whether the vehicle has triggered a panic alarm.
-        ///   - longitude: Longitude of vehicle location (WGS-84).
-        ///   - latitude: Latitude of vehicle location (WGS-84).
+        ///   - longitude: Longitude of vehicle location (WGS-84), or nil when no position fix exists.
+        ///   - latitude: Latitude of vehicle location (WGS-84), or nil when no position fix exists.
         ///   - delay: Delay from schedule as ISO 8601 duration string.
         ///   - vehicleRef: Unique vehicle reference identifier.
         ///   - previousCalls: Array of previous stop calls made by this vehicle.
@@ -214,8 +216,8 @@ public extension Foli {
             monitored: Bool,
             inCongestion: Bool,
             inPanic: Bool,
-            longitude: Double,
-            latitude: Double,
+            longitude: Double? = nil,
+            latitude: Double? = nil,
             delay: String? = nil,
             vehicleRef: String,
             previousCalls: [StopCall]? = nil,
@@ -274,9 +276,11 @@ public extension Foli {
             Date(timeIntervalSince1970: validUntilTime)
         }
 
-        /// Location coordinates as Foli.Coordinate
-        public var location: Foli.Coordinate {
-            Foli.Coordinate(latitude: latitude, longitude: longitude)
+        /// Location coordinates as Foli.Coordinate, or nil while the vehicle has
+        /// no position fix.
+        public var location: Foli.Coordinate? {
+            guard let latitude, let longitude else { return nil }
+            return Foli.Coordinate(latitude: latitude, longitude: longitude)
         }
 
         /// Parse ISO 8601 duration delay into seconds
