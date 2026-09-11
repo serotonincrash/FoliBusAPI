@@ -22,6 +22,7 @@ public extension FoliClient {
     /// - Note: The VM endpoint returns a large response (high bandwidth usage).
     ///         Recommended minimum polling interval is 3 seconds.
     ///         Vehicle locations are estimates based on GPS, odometer, and schedule data.
+    ///         Vehicles without a position fix are omitted from the result.
     ///
     /// - SeeAlso: ``fetchVehicleLocations(for:)`` for filtering by line reference.
     func fetchVehicleLocations() async throws -> [Foli.VehicleLocation] {

@@ -95,6 +95,70 @@ struct VehicleMonitoringDecodingTests {
         #expect(vehicle.onwardCalls?.count == 1)
     }
 
+    @Test("VM response tolerates a vehicle without coordinates and omits it from vehicles")
+    func decodeVMResponseWithCoordinatelessVehicle() throws {
+        // Modeled on the real feed: vehicle 80071 (line 4) transmits every field
+        // except latitude/longitude while entering service. One such element must
+        // not fail the whole response (previously keyNotFound killed all 259+).
+        let json = """
+        {
+            "sys": "VM",
+            "status": "OK",
+            "servertime": 1789043589,
+            "result": {
+                "responsetimestamp": 1789043589,
+                "producerref": "jlt",
+                "responsemessageidentifier": "jlt-27327",
+                "status": true,
+                "moredata": false,
+                "vehicles": {
+                    "550011": {
+                        "recordedattime": 1789043580,
+                        "validuntiltime": 1789043680,
+                        "lineref": "14",
+                        "directionref": "1",
+                        "publishedlinename": "14",
+                        "operatorref": "55",
+                        "monitored": true,
+                        "incongestion": false,
+                        "inpanic": false,
+                        "longitude": 22.240084,
+                        "latitude": 60.431302,
+                        "vehicleref": "550011"
+                    },
+                    "80071": {
+                        "recordedattime": 1789043580,
+                        "validuntiltime": 1789043680,
+                        "linkdistance": 123.4,
+                        "lineref": "4",
+                        "directionref": "1",
+                        "publishedlinename": "4",
+                        "operatorref": "55",
+                        "monitored": true,
+                        "incongestion": false,
+                        "inpanic": false,
+                        "vehicleref": "80071",
+                        "onwardcalls": []
+                    }
+                }
+            }
+        }
+        """.data(using: .utf8)!
+
+        let response = try JSONDecoder().decode(Foli.VehicleMonitoringResponse.self, from: json)
+
+        #expect(response.isValid)
+        // Raw feed retains both vehicles, with the positionless one decoding nil.
+        #expect(response.result.vehicles.count == 2)
+        #expect(response.result.vehicles["80071"]?.latitude == nil)
+        #expect(response.result.vehicles["80071"]?.longitude == nil)
+        #expect(response.result.vehicles["80071"]?.location == nil)
+        // Consumer-facing collection omits the positionless vehicle.
+        #expect(response.vehicles.count == 1)
+        #expect(response.vehicles.first?.vehicleRef == "550011")
+        #expect(response.vehicles.first?.location == Foli.Coordinate(latitude: 60.431302, longitude: 22.240084))
+    }
+
     @Test("VehicleLocation parses ISO 8601 duration delay")
     func parseDelayDuration() throws {
         let json = """
