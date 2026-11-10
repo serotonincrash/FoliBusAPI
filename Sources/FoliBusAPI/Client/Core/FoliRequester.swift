@@ -1,4 +1,7 @@
 import Foundation
+#if canImport(FoundationNetworking)
+import FoundationNetworking
+#endif
 
 /// Owns the HTTP transport, decoder, base URLs, and all request/decode logic
 /// that was previously on the ``FoliClient`` actor itself.
