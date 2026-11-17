@@ -31,7 +31,9 @@ public extension FoliClient {
     /// - Returns: The calendar if found.
     /// - Throws: `Foli.APIError` if the network request or decoding fails.
     func calendar(for serviceId: String) async throws -> Foli.Calendar? {
-        _ = try await fetchCalendars()
+        if !(await indexIsTrusted(.calendars)) {
+            _ = try await fetchCalendars()
+        }
         return await indexes.calendar(for: serviceId)
     }
 }

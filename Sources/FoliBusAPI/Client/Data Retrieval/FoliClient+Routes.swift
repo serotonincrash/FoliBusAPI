@@ -31,7 +31,9 @@ public extension FoliClient {
     /// - Returns: The route if found
     /// - Throws: `Foli.APIError` if the network request or decoding fails.
     func route(for routeId: String) async throws -> Foli.Route? {
-        _ = try await fetchRoutes()
+        if !(await indexIsTrusted(.routes)) {
+            _ = try await fetchRoutes()
+        }
         return await indexes.route(for: routeId)
     }
     
@@ -40,7 +42,9 @@ public extension FoliClient {
     /// - Returns: Array of matching routes
     /// - Throws: `Foli.APIError` if the network request or decoding fails.
     func routes(forLine lineRef: String) async throws -> [Foli.Route] {
-        _ = try await fetchRoutes()
+        if !(await indexIsTrusted(.routes)) {
+            _ = try await fetchRoutes()
+        }
         return await indexes.routes(forShortName: lineRef)
     }
     
