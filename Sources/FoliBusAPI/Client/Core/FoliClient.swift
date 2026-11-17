@@ -81,16 +81,19 @@ public actor FoliClient {
     ///   - session: The session used for network requests.
     ///   - cacheBehavior: The cache behavior to apply to cacheable GTFS resources.
     ///   - cacheTTL: The disk-cache freshness policy.
+    ///   - cacheDirectory: Where cache files are stored. Pass `nil` (the default) to use
+    ///     `<Application Support>/FoliBusAPI/Cache`. Supply a directory on platforms where
+    ///     that location is unavailable, such as Android or Linux.
     /// - Throws: The underlying error if disk-cache initialization fails. No error is
     ///   thrown (and no disk cache is created) when `cacheBehavior == .noCache`, since
     ///   no cache is needed in that mode.
-    public init(session: URLSession = .shared, cacheBehavior: Foli.CacheBehavior = .cachedOrFetch, cacheTTL: Foli.CacheTTL = .default) throws {
+    public init(session: URLSession = .shared, cacheBehavior: Foli.CacheBehavior = .cachedOrFetch, cacheTTL: Foli.CacheTTL = .default, cacheDirectory: URL? = nil) throws {
         let requester = FoliRequester(transport: URLSessionTransport(session: session))
         self.requester = requester
         self.cacheBehavior = cacheBehavior
 
         if cacheBehavior != .noCache {
-            self.cache = try Foli.DiskCache(timeout: cacheTTL, datasetIdFetcher: Self.makeDatasetIdFetcher(requester: requester))
+            self.cache = try Foli.DiskCache(timeout: cacheTTL, directory: cacheDirectory, datasetIdFetcher: Self.makeDatasetIdFetcher(requester: requester))
         }
     }
 
@@ -103,16 +106,19 @@ public actor FoliClient {
     ///   - transport: The transport used to execute requests.
     ///   - cacheBehavior: The cache behavior to apply to cacheable GTFS resources.
     ///   - cacheTTL: The disk-cache freshness policy.
+    ///   - cacheDirectory: Where cache files are stored. Pass `nil` (the default) to use
+    ///     `<Application Support>/FoliBusAPI/Cache`. Supply a directory on platforms where
+    ///     that location is unavailable, such as Android or Linux.
     /// - Throws: The underlying error if disk-cache initialization fails. No error is
     ///   thrown (and no disk cache is created) when `cacheBehavior == .noCache`, since
     ///   no cache is needed in that mode.
-    public init(transport: any FoliTransport, cacheBehavior: Foli.CacheBehavior = .cachedOrFetch, cacheTTL: Foli.CacheTTL = .default) throws {
+    public init(transport: any FoliTransport, cacheBehavior: Foli.CacheBehavior = .cachedOrFetch, cacheTTL: Foli.CacheTTL = .default, cacheDirectory: URL? = nil) throws {
         let requester = FoliRequester(transport: transport)
         self.requester = requester
         self.cacheBehavior = cacheBehavior
 
         if cacheBehavior != .noCache {
-            self.cache = try Foli.DiskCache(timeout: cacheTTL, datasetIdFetcher: Self.makeDatasetIdFetcher(requester: requester))
+            self.cache = try Foli.DiskCache(timeout: cacheTTL, directory: cacheDirectory, datasetIdFetcher: Self.makeDatasetIdFetcher(requester: requester))
         }
     }
 

@@ -68,6 +68,19 @@ let routes = try await client.fetchRoutes()
 let arrivals = try await client.fetchArrivals(for: "1000")
 ```
 
+### Custom cache directory (Android, Linux)
+
+By default the disk cache lives under the Application Support directory. On platforms where that
+location is unavailable (Android, Linux), pass the app's files directory instead:
+
+```swift
+let filesDir = URL(fileURLWithPath: appFilesPath, isDirectory: true)
+let client = try FoliClient(cacheDirectory: filesDir.appending(path: "FoliCache"))
+```
+
+If a `DefaultFoliClientProvider` cannot initialize the cache, it falls back to `.noCache` and
+reports the reason through `cacheInitializationError`.
+
 ### Shared convenience facade
 
 ```swift
