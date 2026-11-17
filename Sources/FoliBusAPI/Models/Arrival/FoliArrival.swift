@@ -31,23 +31,26 @@ public extension Foli {
         public let expectedDepartureTime: TimeInterval
         /// Delay in seconds (optional, may not always be present)
         public let delay: Int?
+        /// Vehicle serving this trip, matching ``Foli/VehicleLocation/vehicleRef``.
+        /// Present only for monitored arrivals.
+        public let vehicleRef: String?
 
         // Föli extensions (`__tripref`, `__routeref`, `__directionid`), not part of SIRI.
-        private let rawTripRef: FoliLenientScalar?
-        private let rawRouteRef: FoliLenientScalar?
+        private let rawGtfsTripId: FoliLenientScalar?
+        private let rawGtfsRouteId: FoliLenientScalar?
         private let rawGTFSDirectionId: FoliLenientScalar?
 
         /// GTFS `trip_id` of this trip, for ``FoliClient/trip(for:)`` and
         /// ``FoliClient/fetchStopTimes(forTrip:)``.
         ///
         /// A Föli extension (`__tripref`), not part of SIRI; nil when absent.
-        public var tripRef: String? { rawTripRef?.stringValue }
+        public var gtfsTripId: String? { rawGtfsTripId?.stringValue }
 
         /// GTFS `route_id` of this trip. Not the same as ``lineRef``, which is the
         /// route's short name.
         ///
         /// A Föli extension (`__routeref`), not part of SIRI; nil when absent.
-        public var routeRef: String? { rawRouteRef?.stringValue }
+        public var gtfsRouteId: String? { rawGtfsRouteId?.stringValue }
 
         /// GTFS `direction_id` of this trip (0 or 1). Unlike SIRI direction
         /// references, this matches ``Foli/Trip/directionId``.
@@ -73,8 +76,9 @@ public extension Foli {
         ///   - aimedDepartureTime: Planned departure time from this stop.
         ///   - expectedDepartureTime: Estimated real departure time from this stop.
         ///   - delay: Optional delay in seconds.
-        ///   - tripRef: Optional GTFS `trip_id` (Föli extension).
-        ///   - routeRef: Optional GTFS `route_id` (Föli extension).
+        ///   - vehicleRef: Optional vehicle reference; set only for monitored arrivals.
+        ///   - gtfsTripId: Optional GTFS `trip_id` (Föli extension).
+        ///   - gtfsRouteId: Optional GTFS `route_id` (Föli extension).
         ///   - gtfsDirectionId: Optional GTFS `direction_id` (Föli extension).
         public init(
             recordedAtTime: TimeInterval,
@@ -90,8 +94,9 @@ public extension Foli {
             aimedDepartureTime: TimeInterval,
             expectedDepartureTime: TimeInterval,
             delay: Int? = nil,
-            tripRef: String? = nil,
-            routeRef: String? = nil,
+            vehicleRef: String? = nil,
+            gtfsTripId: String? = nil,
+            gtfsRouteId: String? = nil,
             gtfsDirectionId: Int? = nil
         ) {
             self.recordedAtTime = recordedAtTime
@@ -107,8 +112,9 @@ public extension Foli {
             self.aimedDepartureTime = aimedDepartureTime
             self.expectedDepartureTime = expectedDepartureTime
             self.delay = delay
-            self.rawTripRef = tripRef.map(FoliLenientScalar.init)
-            self.rawRouteRef = routeRef.map(FoliLenientScalar.init)
+            self.vehicleRef = vehicleRef
+            self.rawGtfsTripId = gtfsTripId.map(FoliLenientScalar.init)
+            self.rawGtfsRouteId = gtfsRouteId.map(FoliLenientScalar.init)
             self.rawGTFSDirectionId = gtfsDirectionId.map { FoliLenientScalar(String($0)) }
         }
 
@@ -126,8 +132,9 @@ public extension Foli {
             case aimedDepartureTime = "aimeddeparturetime"
             case expectedDepartureTime = "expecteddeparturetime"
             case delay
-            case rawTripRef = "__tripref"
-            case rawRouteRef = "__routeref"
+            case vehicleRef = "vehicleref"
+            case rawGtfsTripId = "__tripref"
+            case rawGtfsRouteId = "__routeref"
             case rawGTFSDirectionId = "__directionid"
         }
 

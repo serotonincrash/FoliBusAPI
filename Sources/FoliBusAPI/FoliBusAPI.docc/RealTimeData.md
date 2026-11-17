@@ -129,18 +129,20 @@ print(vehicle.destinationName)
 
 ### Linking real-time data to GTFS
 
-Föli adds three fields to both vehicle monitoring and stop monitoring that aren't part of SIRI: ``Foli/VehicleLocation/tripRef`` (the GTFS `trip_id`), ``Foli/VehicleLocation/routeRef`` (the GTFS `route_id`) and ``Foli/VehicleLocation/gtfsDirectionId`` (the GTFS `direction_id`). ``Foli/Arrival`` has the same three. They're undocumented, so they are optional and may be absent.
+Föli adds three fields to both vehicle monitoring and stop monitoring that aren't part of SIRI: ``Foli/VehicleLocation/gtfsTripId`` (the GTFS `trip_id`), ``Foli/VehicleLocation/gtfsRouteId`` (the GTFS `route_id`) and ``Foli/VehicleLocation/gtfsDirectionId`` (the GTFS `direction_id`). ``Foli/Arrival`` has the same three. They're undocumented, so they are optional and may be absent.
 
 Use them to load the exact trip a vehicle is running instead of guessing from the line and SIRI direction:
 
 ```swift
-if let tripRef = vehicle.tripRef {
-    let trip = try await client.trip(for: tripRef)          // headsign, shapeId
-    let stopTimes = try await client.fetchStopTimes(forTrip: tripRef)
+if let gtfsTripId = vehicle.gtfsTripId {
+    let trip = try await client.trip(for: gtfsTripId)          // headsign, shapeId
+    let stopTimes = try await client.fetchStopTimes(forTrip: gtfsTripId)
 }
 ```
 
-> Note: `routeRef` is the GTFS route id, not the line number — line `"8"` is route `"16"`. `directionRef` is SIRI's `"1"`/`"2"`; `gtfsDirectionId` is GTFS's `0`/`1` and matches ``Foli/Trip/directionId``.
+Monitored arrivals also carry ``Foli/Arrival/vehicleRef``, which matches ``Foli/VehicleLocation/vehicleRef``, so an arrival can be tied to its live vehicle directly.
+
+> Note: `gtfsRouteId` is the GTFS route id, not the line number — line `"8"` is route `"16"`. `directionRef` is SIRI's `"1"`/`"2"`; `gtfsDirectionId` is GTFS's `0`/`1` and matches ``Foli/Trip/directionId``.
 
 ### Delay parsing
 

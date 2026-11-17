@@ -79,9 +79,10 @@ struct TripRefDecodingTests {
         """)
         let arrival = try #require(try JSONDecoder().decode(Foli.ArrivalResponse.self, from: json).result.first)
 
-        #expect(arrival.tripRef == "00012308__1001060110")
-        #expect(arrival.routeRef == "1")
+        #expect(arrival.gtfsTripId == "00012308__1001060110")
+        #expect(arrival.gtfsRouteId == "1")
         #expect(arrival.gtfsDirectionId == 1)
+        #expect(arrival.vehicleRef == "80012")
     }
 
     @Test("vehicle decodes Föli trip, route and direction references")
@@ -95,9 +96,9 @@ struct TripRefDecodingTests {
         let response = try JSONDecoder().decode(Foli.VehicleMonitoringResponse.self, from: json)
         let vehicle = try #require(response.vehicles.first)
 
-        #expect(vehicle.tripRef == "00017019__1008090110")
+        #expect(vehicle.gtfsTripId == "00017019__1008090110")
         // The GTFS route id differs from the line number.
-        #expect(vehicle.routeRef == "16")
+        #expect(vehicle.gtfsRouteId == "16")
         #expect(vehicle.lineRef == "8")
         #expect(vehicle.gtfsDirectionId == 0)
     }
@@ -111,8 +112,8 @@ struct TripRefDecodingTests {
             try JSONDecoder().decode(Foli.VehicleMonitoringResponse.self, from: Self.vehiclePayload(extensions: "")).vehicles.first
         )
 
-        #expect(arrival.tripRef == nil && arrival.routeRef == nil && arrival.gtfsDirectionId == nil)
-        #expect(vehicle.tripRef == nil && vehicle.routeRef == nil && vehicle.gtfsDirectionId == nil)
+        #expect(arrival.gtfsTripId == nil && arrival.gtfsRouteId == nil && arrival.gtfsDirectionId == nil)
+        #expect(vehicle.gtfsTripId == nil && vehicle.gtfsRouteId == nil && vehicle.gtfsDirectionId == nil)
     }
 
     @Test("numeric references decode instead of failing the record")
@@ -125,8 +126,8 @@ struct TripRefDecodingTests {
         """)
         let vehicle = try #require(try JSONDecoder().decode(Foli.VehicleMonitoringResponse.self, from: json).vehicles.first)
 
-        #expect(vehicle.tripRef == "12345")
-        #expect(vehicle.routeRef == "16")
+        #expect(vehicle.gtfsTripId == "12345")
+        #expect(vehicle.gtfsRouteId == "16")
         #expect(vehicle.gtfsDirectionId == 1)
     }
 
@@ -136,20 +137,36 @@ struct TripRefDecodingTests {
             recordedAtTime: 1, validUntilTime: 2, lineRef: "8", directionRef: "1",
             publishedLineName: "8", operatorRef: "8", monitored: true,
             inCongestion: false, inPanic: false, vehicleRef: "80245",
-            tripRef: "t1", routeRef: "16", gtfsDirectionId: 0
+            gtfsTripId: "t1", gtfsRouteId: "16", gtfsDirectionId: 0
         )
         let decoded = try JSONDecoder().decode(Foli.VehicleLocation.self, from: JSONEncoder().encode(vehicle))
 
         #expect(decoded == vehicle)
-        #expect(decoded.tripRef == "t1")
+        #expect(decoded.gtfsTripId == "t1")
         #expect(decoded.gtfsDirectionId == 0)
 
         let arrival = Foli.Arrival(
             recordedAtTime: 1, lineRef: "1", monitored: true,
             originAimedDepartureTime: 2, destinationAimedArrivalTime: 3, destinationDisplay: "X",
             aimedArrivalTime: 4, expectedArrivalTime: 4, aimedDepartureTime: 5, expectedDepartureTime: 5,
-            tripRef: "t2", routeRef: "1", gtfsDirectionId: 1
+            gtfsTripId: "t2", gtfsRouteId: "1", gtfsDirectionId: 1
         )
         #expect(try JSONDecoder().decode(Foli.Arrival.self, from: JSONEncoder().encode(arrival)) == arrival)
+    }
+}
+
+@Suite("Arrival vehicle reference")
+struct ArrivalVehicleRefTests {
+    @Test("unmonitored arrivals have no vehicle reference")
+    func unmonitoredArrivalHasNoVehicleRef() throws {
+        let json = """
+        {"sys":"SM","status":"OK","servertime":1794930375,"result":[{
+          "recordedattime":1794930376,"lineref":"1","originaimeddeparturetime":1794929700,
+          "destinationaimedarrivaltime":1794932040,"monitored":false,"destinationdisplay":"Lentoasema",
+          "aimedarrivaltime":1794930630,"expectedarrivaltime":1794930630,
+          "aimeddeparturetime":1794930720,"expecteddeparturetime":1794930720}]}
+        """.data(using: .utf8)!
+        let arrival = try #require(try JSONDecoder().decode(Foli.ArrivalResponse.self, from: json).result.first)
+        #expect(arrival.vehicleRef == nil)
     }
 }
