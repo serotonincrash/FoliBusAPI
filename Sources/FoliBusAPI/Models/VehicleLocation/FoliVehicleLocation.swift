@@ -71,6 +71,29 @@ public extension Foli {
         /// Array of onward stop calls for this vehicle
         public let onwardCalls: [StopCall]?
 
+        // Föli extensions (`__tripref`, `__routeref`, `__directionid`), not part of SIRI.
+        private let rawTripRef: FoliLenientScalar?
+        private let rawRouteRef: FoliLenientScalar?
+        private let rawGTFSDirectionId: FoliLenientScalar?
+
+        /// GTFS `trip_id` of the trip this vehicle is running, for
+        /// ``FoliClient/trip(for:)`` and ``FoliClient/fetchStopTimes(forTrip:)``.
+        ///
+        /// A Föli extension (`__tripref`), not part of SIRI; nil when absent.
+        public var tripRef: String? { rawTripRef?.stringValue }
+
+        /// GTFS `route_id` of the trip. Not the same as ``lineRef``, which is the
+        /// route's short name.
+        ///
+        /// A Föli extension (`__routeref`), not part of SIRI; nil when absent.
+        public var routeRef: String? { rawRouteRef?.stringValue }
+
+        /// GTFS `direction_id` of the trip (0 or 1). Unlike ``directionRef``, this
+        /// matches ``Foli/Trip/directionId``.
+        ///
+        /// A Föli extension (`__directionid`), not part of SIRI; nil when absent.
+        public var gtfsDirectionId: Int? { rawGTFSDirectionId.flatMap { Int($0.stringValue) } }
+
         /// Unique identifier for SwiftUI (uses vehicleRef)
         public var id: String { vehicleRef }
 
@@ -162,6 +185,9 @@ public extension Foli {
             case nextAimedDepartureTime = "next_aimeddeparturetime"
             case nextExpectedDepartureTime = "next_expecteddeparturetime"
             case onwardCalls = "onwardcalls"
+            case rawTripRef = "__tripref"
+            case rawRouteRef = "__routeref"
+            case rawGTFSDirectionId = "__directionid"
         }
 
         /// Creates a new vehicle location record.
@@ -198,6 +224,9 @@ public extension Foli {
         ///   - nextAimedDepartureTime: Planned departure time from next stop.
         ///   - nextExpectedDepartureTime: Expected departure time from next stop.
         ///   - onwardCalls: Array of onward stop calls for this vehicle.
+        ///   - tripRef: Optional GTFS `trip_id` (Föli extension).
+        ///   - routeRef: Optional GTFS `route_id` (Föli extension).
+        ///   - gtfsDirectionId: Optional GTFS `direction_id` (Föli extension).
         public init(
             recordedAtTime: TimeInterval,
             validUntilTime: TimeInterval,
@@ -229,7 +258,10 @@ public extension Foli {
             nextExpectedArrivalTime: TimeInterval? = nil,
             nextAimedDepartureTime: TimeInterval? = nil,
             nextExpectedDepartureTime: TimeInterval? = nil,
-            onwardCalls: [StopCall]? = nil
+            onwardCalls: [StopCall]? = nil,
+            tripRef: String? = nil,
+            routeRef: String? = nil,
+            gtfsDirectionId: Int? = nil
         ) {
             self.recordedAtTime = recordedAtTime
             self.validUntilTime = validUntilTime
@@ -262,6 +294,9 @@ public extension Foli {
             self.nextAimedDepartureTime = nextAimedDepartureTime
             self.nextExpectedDepartureTime = nextExpectedDepartureTime
             self.onwardCalls = onwardCalls
+            self.rawTripRef = tripRef.map(FoliLenientScalar.init)
+            self.rawRouteRef = routeRef.map(FoliLenientScalar.init)
+            self.rawGTFSDirectionId = gtfsDirectionId.map { FoliLenientScalar(String($0)) }
         }
 
         // MARK: - Computed Properties

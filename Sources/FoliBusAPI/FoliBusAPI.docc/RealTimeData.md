@@ -127,6 +127,21 @@ print(vehicle.originName)
 print(vehicle.destinationName)
 ```
 
+### Linking real-time data to GTFS
+
+Föli adds three fields to both vehicle monitoring and stop monitoring that aren't part of SIRI: ``Foli/VehicleLocation/tripRef`` (the GTFS `trip_id`), ``Foli/VehicleLocation/routeRef`` (the GTFS `route_id`) and ``Foli/VehicleLocation/gtfsDirectionId`` (the GTFS `direction_id`). ``Foli/Arrival`` has the same three. They're undocumented, so they are optional and may be absent.
+
+Use them to load the exact trip a vehicle is running instead of guessing from the line and SIRI direction:
+
+```swift
+if let tripRef = vehicle.tripRef {
+    let trip = try await client.trip(for: tripRef)          // headsign, shapeId
+    let stopTimes = try await client.fetchStopTimes(forTrip: tripRef)
+}
+```
+
+> Note: `routeRef` is the GTFS route id, not the line number — line `"8"` is route `"16"`. `directionRef` is SIRI's `"1"`/`"2"`; `gtfsDirectionId` is GTFS's `0`/`1` and matches ``Foli/Trip/directionId``.
+
 ### Delay parsing
 
 Vehicle delay is encoded as an ISO 8601 duration string (e.g., `"PT120S"`, `"-PT60S"`). Use the computed property to parse it:
