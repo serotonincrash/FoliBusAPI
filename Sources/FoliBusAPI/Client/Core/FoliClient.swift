@@ -45,6 +45,15 @@ public actor FoliClient {
 
     internal let indexes = FoliIndexes()
 
+    /// The disk-cache freshness policy this client was created with.
+    internal let cacheTTL: Foli.CacheTTL
+
+    /// Longest that by-ID lookups (``stop(for:)``, ``route(for:)``, …) answer straight
+    /// from a recently rebuilt index instead of re-resolving the whole collection
+    /// through the cache, which re-reads and re-decodes it from disk on every call.
+    /// Capped by ``cacheTTL``, so a short TTL is never extended.
+    internal static let maxIndexTrustWindow: Duration = .seconds(60)
+
     /// Deduplicates concurrent in-flight requests for the same resource.
     internal let dedup = FoliDedup()
 
@@ -85,6 +94,7 @@ public actor FoliClient {
         let requester = FoliRequester(transport: URLSessionTransport(session: session))
         self.requester = requester
         self.cacheBehavior = cacheBehavior
+        self.cacheTTL = cacheTTL
 
         if cacheBehavior != .noCache {
             self.cache = try Foli.DiskCache(timeout: cacheTTL, datasetIdFetcher: Self.makeDatasetIdFetcher(requester: requester))
@@ -107,6 +117,7 @@ public actor FoliClient {
         let requester = FoliRequester(transport: transport)
         self.requester = requester
         self.cacheBehavior = cacheBehavior
+        self.cacheTTL = cacheTTL
 
         if cacheBehavior != .noCache {
             self.cache = try Foli.DiskCache(timeout: cacheTTL, datasetIdFetcher: Self.makeDatasetIdFetcher(requester: requester))
@@ -121,4 +132,17 @@ public actor FoliClient {
         }
     }
 
+    /// Whether `resource`'s index can answer a by-ID lookup without going through the
+    /// cache: it was rebuilt from the complete collection within the trust window, and
+    /// the cache behavior allows serving cached data. `.forceRefresh` and `.noCache`
+    /// always re-resolve, keeping their always-fetch contract.
+    internal func indexIsTrusted(_ resource: Foli.Resource) async -> Bool {
+        switch cacheBehavior {
+        case .cachedOrFetch, .staleWhileRevalidate, .cachedOnly:
+            let window = min(Self.maxIndexTrustWindow, .seconds(cacheTTL.validityDuration))
+            return await indexes.isFresh(resource, within: window)
+        case .forceRefresh, .noCache:
+            return false
+        }
+    }
 }

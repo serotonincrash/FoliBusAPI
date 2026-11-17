@@ -24,6 +24,29 @@ internal actor FoliIndexes {
     /// Fingerprint of the last array passed to ``rebuildTrips(using:)``.
     private var lastTripsFp: Int?
 
+    /// When each index was last rebuilt from its complete collection, keyed by that
+    /// collection's resource (`.stops`, `.routes`, `.agencies`, `.calendars`, `.trips`).
+    /// A rebuild whose fingerprint is unchanged still counts: the data was re-confirmed.
+    /// Route-scoped trip merges never stamp `.trips`, since they are partial.
+    private var rebuiltAt: [Foli.Resource: ContinuousClock.Instant] = [:]
+
+    /// Whether `resource`'s index was rebuilt from its complete collection within
+    /// `window`. A fresh index answers lookups authoritatively, misses included.
+    func isFresh(_ resource: Foli.Resource, within window: Duration) -> Bool {
+        guard let rebuiltAt = rebuiltAt[resource] else { return false }
+        return ContinuousClock.now - rebuiltAt <= window
+    }
+
+    /// Forgets rebuild times so the next lookup goes back through the cache;
+    /// `nil` forgets all of them. The indexed values themselves are kept.
+    func invalidate(_ resource: Foli.Resource? = nil) {
+        if let resource {
+            rebuiltAt[resource] = nil
+        } else {
+            rebuiltAt.removeAll()
+        }
+    }
+
     /// Returns a stable hash of the items for cheap idempotency checks.
     /// Uses the elements' synthesized `Hashable` conformance, so any field-level
     /// change (not just an ID change) produces a different fingerprint.
@@ -34,6 +57,7 @@ internal actor FoliIndexes {
     }
 
     func rebuildStops(using stops: [Foli.Stop]) {
+        rebuiltAt[.stops] = .now
         let fp = fingerprint(stops)
         guard fp != lastStopsFp else { return }
         lastStopsFp = fp
@@ -41,6 +65,7 @@ internal actor FoliIndexes {
     }
 
     func rebuildRoutes(using routes: [Foli.Route]) {
+        rebuiltAt[.routes] = .now
         let fp = fingerprint(routes)
         guard fp != lastRoutesFp else { return }
         lastRoutesFp = fp
@@ -49,6 +74,7 @@ internal actor FoliIndexes {
     }
 
     func rebuildAgencies(using agencies: [Foli.Agency]) {
+        rebuiltAt[.agencies] = .now
         let fp = fingerprint(agencies)
         guard fp != lastAgenciesFp else { return }
         lastAgenciesFp = fp
@@ -56,6 +82,7 @@ internal actor FoliIndexes {
     }
 
     func rebuildCalendars(using calendars: [Foli.Calendar]) {
+        rebuiltAt[.calendars] = .now
         let fp = fingerprint(calendars)
         guard fp != lastCalendarsFp else { return }
         lastCalendarsFp = fp
@@ -63,6 +90,7 @@ internal actor FoliIndexes {
     }
 
     func rebuildTrips(using trips: [Foli.Trip]) {
+        rebuiltAt[.trips] = .now
         let fp = fingerprint(trips)
         guard fp != lastTripsFp else { return }
         lastTripsFp = fp
