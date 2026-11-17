@@ -1,5 +1,7 @@
 import Foundation
+#if canImport(CoreLocation)
 import CoreLocation
+#endif
 
 // MARK: - Namespace for Foli Data Models
 /// Namespace containing the package's data models, cache types, and shared helper types.
@@ -24,11 +26,13 @@ public extension Foli {
             self.longitude = longitude
         }
 
+        #if canImport(CoreLocation)
         /// Converts this value into CoreLocation's `CLLocationCoordinate2D`.
         /// - Returns: A CoreLocation coordinate with the same latitude and longitude.
         public func toCLCoordinate() -> CoreLocation.CLLocationCoordinate2D {
             return CoreLocation.CLLocationCoordinate2D(latitude: latitude, longitude: longitude)
         }
+        #endif
     }
 }
 

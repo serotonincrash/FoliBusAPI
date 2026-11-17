@@ -1,4 +1,7 @@
 import Foundation
+#if canImport(FoundationNetworking)
+import FoundationNetworking
+#endif
 
 /// Main client for interacting with the Foli public transport API.
 ///
@@ -45,6 +48,15 @@ public actor FoliClient {
 
     internal let indexes = FoliIndexes()
 
+    /// The disk-cache freshness policy this client was created with.
+    internal let cacheTTL: Foli.CacheTTL
+
+    /// Longest that by-ID lookups (``stop(for:)``, ``route(for:)``, …) answer straight
+    /// from a recently rebuilt index instead of re-resolving the whole collection
+    /// through the cache, which re-reads and re-decodes it from disk on every call.
+    /// Capped by ``cacheTTL``, so a short TTL is never extended.
+    internal static let maxIndexTrustWindow: Duration = .seconds(60)
+
     /// Deduplicates concurrent in-flight requests for the same resource.
     internal let dedup = FoliDedup()
 
@@ -78,16 +90,20 @@ public actor FoliClient {
     ///   - session: The session used for network requests.
     ///   - cacheBehavior: The cache behavior to apply to cacheable GTFS resources.
     ///   - cacheTTL: The disk-cache freshness policy.
+    ///   - cacheDirectory: Where cache files are stored. Pass `nil` (the default) to use
+    ///     `<Application Support>/FoliBusAPI/Cache`. Supply a directory on platforms where
+    ///     that location is unavailable, such as Android or Linux.
     /// - Throws: The underlying error if disk-cache initialization fails. No error is
     ///   thrown (and no disk cache is created) when `cacheBehavior == .noCache`, since
     ///   no cache is needed in that mode.
-    public init(session: URLSession = .shared, cacheBehavior: Foli.CacheBehavior = .cachedOrFetch, cacheTTL: Foli.CacheTTL = .default) throws {
+    public init(session: URLSession = .shared, cacheBehavior: Foli.CacheBehavior = .cachedOrFetch, cacheTTL: Foli.CacheTTL = .default, cacheDirectory: URL? = nil) throws {
         let requester = FoliRequester(transport: URLSessionTransport(session: session))
         self.requester = requester
         self.cacheBehavior = cacheBehavior
+        self.cacheTTL = cacheTTL
 
         if cacheBehavior != .noCache {
-            self.cache = try Foli.DiskCache(timeout: cacheTTL, datasetIdFetcher: Self.makeDatasetIdFetcher(requester: requester))
+            self.cache = try Foli.DiskCache(timeout: cacheTTL, directory: cacheDirectory, datasetIdFetcher: Self.makeDatasetIdFetcher(requester: requester))
         }
     }
 
@@ -100,16 +116,20 @@ public actor FoliClient {
     ///   - transport: The transport used to execute requests.
     ///   - cacheBehavior: The cache behavior to apply to cacheable GTFS resources.
     ///   - cacheTTL: The disk-cache freshness policy.
+    ///   - cacheDirectory: Where cache files are stored. Pass `nil` (the default) to use
+    ///     `<Application Support>/FoliBusAPI/Cache`. Supply a directory on platforms where
+    ///     that location is unavailable, such as Android or Linux.
     /// - Throws: The underlying error if disk-cache initialization fails. No error is
     ///   thrown (and no disk cache is created) when `cacheBehavior == .noCache`, since
     ///   no cache is needed in that mode.
-    public init(transport: any FoliTransport, cacheBehavior: Foli.CacheBehavior = .cachedOrFetch, cacheTTL: Foli.CacheTTL = .default) throws {
+    public init(transport: any FoliTransport, cacheBehavior: Foli.CacheBehavior = .cachedOrFetch, cacheTTL: Foli.CacheTTL = .default, cacheDirectory: URL? = nil) throws {
         let requester = FoliRequester(transport: transport)
         self.requester = requester
         self.cacheBehavior = cacheBehavior
+        self.cacheTTL = cacheTTL
 
         if cacheBehavior != .noCache {
-            self.cache = try Foli.DiskCache(timeout: cacheTTL, datasetIdFetcher: Self.makeDatasetIdFetcher(requester: requester))
+            self.cache = try Foli.DiskCache(timeout: cacheTTL, directory: cacheDirectory, datasetIdFetcher: Self.makeDatasetIdFetcher(requester: requester))
         }
     }
 
@@ -121,4 +141,17 @@ public actor FoliClient {
         }
     }
 
+    /// Whether `resource`'s index can answer a by-ID lookup without going through the
+    /// cache: it was rebuilt from the complete collection within the trust window, and
+    /// the cache behavior allows serving cached data. `.forceRefresh` and `.noCache`
+    /// always re-resolve, keeping their always-fetch contract.
+    internal func indexIsTrusted(_ resource: Foli.Resource) async -> Bool {
+        switch cacheBehavior {
+        case .cachedOrFetch, .staleWhileRevalidate, .cachedOnly:
+            let window = min(Self.maxIndexTrustWindow, .seconds(cacheTTL.validityDuration))
+            return await indexes.isFresh(resource, within: window)
+        case .forceRefresh, .noCache:
+            return false
+        }
+    }
 }

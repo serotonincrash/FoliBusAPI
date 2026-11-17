@@ -30,7 +30,9 @@ public extension FoliClient {
     /// - Returns: The stop if found
     /// - Throws: `Foli.APIError` if the network request or decoding fails.
     func stop(for stopId: String) async throws -> Foli.Stop? {
-        _ = try await fetchStops()
+        if !(await indexIsTrusted(.stops)) {
+            _ = try await fetchStops()
+        }
         return await indexes.stop(for: stopId)
     }
     

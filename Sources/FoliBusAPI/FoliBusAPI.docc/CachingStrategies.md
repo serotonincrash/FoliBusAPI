@@ -162,6 +162,19 @@ let client = try FoliClient(cacheTTL: .init(validityDuration: 2 * 60 * 60)) // 2
 
 **Choosing a TTL:** Shorter durations ensure fresher data but increase network usage. GTFS data typically updates daily, so `.default` (24 hours) is appropriate for most production use cases. Use `.shortLived` during development or when GTFS updates frequently.
 
+### Custom cache directory (Android, Linux)
+
+By default the disk cache lives under the Application Support directory. On platforms where that
+location is unavailable (Android, Linux), pass the app's files directory instead:
+
+```swift
+let filesDir = URL(fileURLWithPath: appFilesPath, isDirectory: true)
+let client = try FoliClient(cacheDirectory: filesDir.appending(path: "FoliCache"))
+```
+
+If a `DefaultFoliClientProvider` cannot initialize the cache, it falls back to `.noCache` and
+reports the reason through `cacheInitializationError`.
+
 ## Dataset revalidation
 
 When using `.staleWhileRevalidate`, the client performs a lightweight metadata check before downloading a full dataset. If the dataset ID hasn't changed, the cache is considered current and no download occurs.

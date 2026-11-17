@@ -31,11 +31,13 @@ public extension FoliClient {
     /// Clear all cached GTFS data
     func clearCache() async throws {
         try await cache?.clearAllCache()
+        await indexes.invalidate()
     }
     
     /// Clear cached data for a specific type
     func clearCache(for type: Foli.Resource) async throws {
         try await cache?.clearCache(for: type)
+        await indexes.invalidate(type)
     }
     
     /// Returns whether the cache currently has usable data for the given resource.

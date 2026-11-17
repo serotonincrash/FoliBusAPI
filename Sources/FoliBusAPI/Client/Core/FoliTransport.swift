@@ -1,4 +1,7 @@
 import Foundation
+#if canImport(FoundationNetworking)
+import FoundationNetworking
+#endif
 
 /// A minimal transport interface used by ``FoliClient`` to execute network requests.
 ///
